@@ -42,11 +42,11 @@ class DNSService : Service() {
             Log.d("service", "command:" + command)
         }
 
-        when {
-            command == ACTION_START -> {
+        when (command) {
+            ACTION_START -> {
                 this.setEnabled(true)
             }
-            command == ACTION_TOGGLE -> {
+            ACTION_TOGGLE -> {
                 setEnabled(!this.enabled)
             }
             else -> {
@@ -74,14 +74,14 @@ class DNSService : Service() {
             this.createNotificationChannel(id, "DoNotSpeak")
         }
 
-        var toggleIntent = Intent(this, DNSService::class.java).setAction(ACTION_TOGGLE)
-        var pendingIntent = PendingIntent.getService(this, 0, toggleIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+        val toggleIntent = Intent(this, DNSService::class.java).setAction(ACTION_TOGGLE)
+        val pendingIntent = PendingIntent.getService(this, 0, toggleIntent, PendingIntent.FLAG_CANCEL_CURRENT)
 
-        var remoteViews = RemoteViews(this.packageName, R.layout.notification_layout)
+        val remoteViews = RemoteViews(this.packageName, R.layout.notification_layout)
         remoteViews.setImageViewResource(R.id.imageView, if (enabled) R.drawable.ic_launcher else R.drawable.ic_noisy)
         remoteViews.setTextViewText(R.id.textView, if (enabled) "enabled" else "disabled")
 
-        var notification =
+        val notification =
             NotificationCompat.Builder(this, id)
                 .setSmallIcon(if (enabled) R.drawable.ic_volume_off_black_24dp else R.drawable.ic_volume_up_black_24dp)
                 .setContent(remoteViews)
@@ -95,7 +95,7 @@ class DNSService : Service() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel(channelId: String, channelName: String) {
-        var manager = NotificationManagerCompat.from(this)
+        val manager = NotificationManagerCompat.from(this)
         if (manager.getNotificationChannel(channelId) == null) {
             val chan = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
             chan.lightColor = Color.BLUE
@@ -105,7 +105,7 @@ class DNSService : Service() {
     }
 
     private fun mute() {
-        var audioManager = ContextCompat.getSystemService(this, AudioManager::class.java)
+        val audioManager = ContextCompat.getSystemService(this, AudioManager::class.java)
         if (audioManager != null) {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
         }
