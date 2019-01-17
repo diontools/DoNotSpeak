@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.media.AudioManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
 import android.util.Log
 import android.widget.RemoteViews
@@ -18,11 +19,14 @@ private const val NOTIFICATION_ID = "DoNotSpeak_Notification"
 
 class DNSService : Service() {
     companion object {
+        val TAG = DNSService::class.java.simpleName
+
         const val ACTION_START = "START"
         const val ACTION_TOGGLE = "TOGGLE"
     }
 
     private var enabled = false
+    private var contentObserver = DNSContentObserver(Handler())
 
     override fun onBind(intent: Intent?): IBinder? {
         throw UnsupportedOperationException("not implemented")
@@ -30,16 +34,17 @@ class DNSService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d("service", "onCreate")
+        Log.d(TAG, "onCreate")
+        this.contentResolver.registerContentObserver(android.provider.Settings.System.CONTENT_URI, true, this.contentObserver)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("service", "started! flags:" + flags + " id:" + startId)
+        Log.d(TAG, "started! flags:" + flags + " id:" + startId)
 
         var command = null as String?
         if (intent != null) {
             command = intent.action
-            Log.d("service", "command:" + command)
+            Log.d(TAG, "command:" + command)
         }
 
         when (command) {
@@ -50,7 +55,7 @@ class DNSService : Service() {
                 setEnabled(!this.enabled)
             }
             else -> {
-                Log.d("service", "unknown command")
+                Log.d(TAG, "unknown command")
             }
         }
 
@@ -113,6 +118,6 @@ class DNSService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("service", "onDestroy!")
+        Log.d(TAG, "onDestroy!")
     }
 }

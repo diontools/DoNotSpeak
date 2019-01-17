@@ -2,8 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="io.github.diontools.donotspeak">
 
-    <permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
             android:allowBackup="true"
@@ -12,13 +13,25 @@
             android:roundIcon="@drawable/ic_launcher"
             android:supportsRtl="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
+        <receiver
+                android:name=".DNSReceiver"
+                android:enabled="true"
+                android:exported="false">
+            <intent-filter>
+                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".DNSService" />
+
+        <service android:name=".DNSService"/>
     </application>
 
 </manifest>
