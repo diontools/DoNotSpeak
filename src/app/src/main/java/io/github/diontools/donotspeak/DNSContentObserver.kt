@@ -5,7 +5,7 @@ import android.net.Uri
 import android.os.Handler
 import android.util.Log
 
-class DNSContentObserver(handler: Handler): ContentObserver(handler) {
+class DNSContentObserver(handler: Handler, private val callback: () -> Unit): ContentObserver(handler) {
     companion object {
         val TAG = DNSContentObserver::class.java.simpleName
     }
@@ -13,5 +13,6 @@ class DNSContentObserver(handler: Handler): ContentObserver(handler) {
     override fun onChange(selfChange: Boolean, uri: Uri?) {
         super.onChange(selfChange, uri)
         Log.d(TAG, "setting changed:" + uri)
+        this.callback()
     }
 }

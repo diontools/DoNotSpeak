@@ -26,7 +26,9 @@ class DNSService : Service() {
     }
 
     private var enabled = false
-    private var contentObserver = DNSContentObserver(Handler())
+    private var contentObserver = DNSContentObserver(Handler()) {
+        this.setEnabled(true)
+    }
 
     override fun onBind(intent: Intent?): IBinder? {
         throw UnsupportedOperationException("not implemented")
@@ -35,16 +37,16 @@ class DNSService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "onCreate")
-        this.contentResolver.registerContentObserver(android.provider.Settings.System.CONTENT_URI, true, this.contentObserver)
+        this.applicationContext.contentResolver.registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "started! flags:" + flags + " id:" + startId)
+        Log.d(TAG, "started! flags:$flags id:$startId")
 
         var command = null as String?
         if (intent != null) {
             command = intent.action
-            Log.d(TAG, "command:" + command)
+            Log.d(TAG, "command:$command")
         }
 
         when (command) {
