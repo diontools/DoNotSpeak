@@ -1,38 +1,108 @@
 package io.github.diontools.donotspeak
 
-import android.app.Notification
-import android.app.Service
+import android.app.*
 import android.content.Intent
+import android.graphics.Color
 import android.media.AudioManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.RemoteViews
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
+private const val NOTIFICATION_ID = "DoNotSpeak_Notification"
+
 class DNSService : Service() {
+    companion object {
+        const val COMMAND_NAME = "Command"
+        const val COMMAND_START = 1
+        const val COMMAND_TOGGLE = 2
+    }
+
+    private var enabled = false
+
     override fun onBind(intent: Intent?): IBinder? {
         throw UnsupportedOperationException("not implemented")
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        Log.d("service", "onCreate")
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("service", "started!")
-        var notificationService = NotificationManagerCompat.from(this)
-        var id = "DoNotSpeak_Notification"
+        Log.d("service", "started! flags:" + flags + " id:" + startId)
+
+        var command = -1
+        if (intent != null) {
+            command = intent.getIntExtra(COMMAND_NAME, -1)
+            Log.d("service", "command:" + command)
+        }
+
+        when {
+            command == COMMAND_START -> {
+                this.setEnabled(true)
+            }
+            command == COMMAND_TOGGLE -> {
+                setEnabled(!this.enabled)
+            }
+            else -> {
+                Log.d("service", "unknown command")
+            }
+        }
+
+        return START_STICKY
+    }
+
+    private fun setEnabled(enabled: Boolean) {
+        this.enabled = enabled
+        this.createNotification(NOTIFICATION_ID, enabled)
+
+        if (enabled) {
+            this.mute()
+            Toast.makeText(this, "DoNotSpeak!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Speak!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun createNotification(id: String, enabled: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.createNotificationChannel(id, "DoNotSpeak")
+        }
+
+        var toggleIntent = Intent(this, DNSService::class.java).putExtra(COMMAND_NAME, COMMAND_TOGGLE)
+        var pendingIntent = PendingIntent.getService(this, 0, toggleIntent, PendingIntent.FLAG_CANCEL_CURRENT)
+
+        var remoteViews = RemoteViews(this.packageName, R.layout.notification_layout)
+        remoteViews.setImageViewResource(R.id.imageView, if (enabled) R.drawable.ic_launcher else R.drawable.ic_noisy)
+        remoteViews.setTextViewText(R.id.textView, if (enabled) "enabled" else "disabled")
 
         var notification =
             NotificationCompat.Builder(this, id)
-                .setContentTitle("たいとる")
-                .setContentText("こんてんと")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(if (enabled) R.drawable.ic_volume_off_black_24dp else R.drawable.ic_volume_up_black_24dp)
+                .setContent(remoteViews)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setContentIntent(pendingIntent)
                 .build()
 
         this.startForeground(1, notification)
+    }
 
-        this.mute()
-
-        return START_STICKY
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel(channelId: String, channelName: String) {
+        var manager = NotificationManagerCompat.from(this)
+        if (manager.getNotificationChannel(channelId) == null) {
+            val chan = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+            chan.lightColor = Color.BLUE
+            chan.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            manager.createNotificationChannel(chan)
+        }
     }
 
     private fun mute() {
@@ -40,5 +110,10 @@ class DNSService : Service() {
         if (audioManager != null) {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("service", "onDestroy!")
     }
 }
