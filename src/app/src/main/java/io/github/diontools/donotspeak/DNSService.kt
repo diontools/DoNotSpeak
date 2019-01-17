@@ -18,9 +18,8 @@ private const val NOTIFICATION_ID = "DoNotSpeak_Notification"
 
 class DNSService : Service() {
     companion object {
-        const val COMMAND_NAME = "Command"
-        const val COMMAND_START = 1
-        const val COMMAND_TOGGLE = 2
+        const val ACTION_START = "START"
+        const val ACTION_TOGGLE = "TOGGLE"
     }
 
     private var enabled = false
@@ -37,17 +36,17 @@ class DNSService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("service", "started! flags:" + flags + " id:" + startId)
 
-        var command = -1
+        var command = null as String?
         if (intent != null) {
-            command = intent.getIntExtra(COMMAND_NAME, -1)
+            command = intent.action
             Log.d("service", "command:" + command)
         }
 
         when {
-            command == COMMAND_START -> {
+            command == ACTION_START -> {
                 this.setEnabled(true)
             }
-            command == COMMAND_TOGGLE -> {
+            command == ACTION_TOGGLE -> {
                 setEnabled(!this.enabled)
             }
             else -> {
@@ -75,7 +74,7 @@ class DNSService : Service() {
             this.createNotificationChannel(id, "DoNotSpeak")
         }
 
-        var toggleIntent = Intent(this, DNSService::class.java).putExtra(COMMAND_NAME, COMMAND_TOGGLE)
+        var toggleIntent = Intent(this, DNSService::class.java).setAction(ACTION_TOGGLE)
         var pendingIntent = PendingIntent.getService(this, 0, toggleIntent, PendingIntent.FLAG_CANCEL_CURRENT)
 
         var remoteViews = RemoteViews(this.packageName, R.layout.notification_layout)

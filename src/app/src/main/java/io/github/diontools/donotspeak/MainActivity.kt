@@ -14,14 +14,14 @@ class MainActivity : AppCompatActivity() {
         //setContentView(R.layout.activity_main)
 
         Log.d("tag", "start service!")
-        var serviceIntent = Intent(this, DNSService::class.java).putExtra(DNSService.COMMAND_NAME, DNSService.COMMAND_START)
+        var serviceIntent = Intent(this, DNSService::class.java).setAction(DNSService.ACTION_START)
         ContextCompat.startForegroundService(this, serviceIntent)
 
         this.finish()
         return
 
         this.button.setOnClickListener {
-            var intent = Intent(this, DNSService::class.java).putExtra(DNSService.COMMAND_NAME, DNSService.COMMAND_TOGGLE)
+            var intent = Intent(this, DNSService::class.java).setAction(DNSService.ACTION_TOGGLE)
             this.startService(intent)
         }
     }
