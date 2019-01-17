@@ -10,6 +10,10 @@ class DNSContentObserver(handler: Handler, private val callback: () -> Unit): Co
         val TAG = DNSContentObserver::class.java.simpleName
     }
 
+    override fun deliverSelfNotifications(): Boolean {
+        return false
+    }
+
     override fun onChange(selfChange: Boolean, uri: Uri?) {
         super.onChange(selfChange, uri)
         Log.d(TAG, "setting changed:" + uri)

@@ -14,6 +14,9 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import android.media.AudioDeviceInfo
+
+
 
 private const val NOTIFICATION_ID = "DoNotSpeak_Notification"
 
@@ -27,7 +30,7 @@ class DNSService : Service() {
 
     private var enabled = false
     private var contentObserver = DNSContentObserver(Handler()) {
-        this.setEnabled(true)
+        this.update()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -66,14 +69,21 @@ class DNSService : Service() {
 
     private fun setEnabled(enabled: Boolean) {
         this.enabled = enabled
-        this.createNotification(NOTIFICATION_ID, enabled)
+        this.update()
 
-        if (enabled) {
-            this.mute()
+        if (this.enabled) {
             Toast.makeText(this, "DoNotSpeak!", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Speak!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun update() {
+        if (this.enabled) {
+            this.mute()
+        }
+
+        this.createNotification(NOTIFICATION_ID, this.enabled)
     }
 
     private fun createNotification(id: String, enabled: Boolean) {
@@ -91,6 +101,8 @@ class DNSService : Service() {
         val notification =
             NotificationCompat.Builder(this, id)
                 .setSmallIcon(if (enabled) R.drawable.ic_volume_off_black_24dp else R.drawable.ic_volume_up_black_24dp)
+                .setContentTitle(if (enabled) "enabled" else "disabled")
+                .setContentText("DoNotSpeak")
                 .setContent(remoteViews)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
@@ -113,8 +125,37 @@ class DNSService : Service() {
 
     private fun mute() {
         val audioManager = ContextCompat.getSystemService(this, AudioManager::class.java)
-        if (audioManager != null) {
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
+        if (audioManager == null) {
+            Log.d(TAG, "AudioManage is null")
+            return
+        }
+
+        if (isHeadsetConnected(audioManager)) {
+            Log.d(TAG, "Headset connected!")
+            return
+        }
+
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
+    }
+
+    private fun isHeadsetConnected(audioManager: AudioManager): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return audioManager.isWiredHeadsetOn() || audioManager.isBluetoothScoOn() || audioManager.isBluetoothA2dpOn()
+        } else {
+            val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            for (i in 0 until devices.size) {
+                val device = devices[i]
+
+                if (device.type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+                    || device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+                    || device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+                    || device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                ) {
+                    return true
+                }
+            }
+
+            return false
         }
     }
 
