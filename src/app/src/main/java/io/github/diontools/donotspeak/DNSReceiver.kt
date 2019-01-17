@@ -17,7 +17,7 @@ class DNSReceiver : BroadcastReceiver() {
         when (action) {
             AudioManager.ACTION_AUDIO_BECOMING_NOISY -> {
                 Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY")
-                val startIntent = Intent(context, DNSService::class.java).setAction(DNSService.ACTION_START)
+                val startIntent = Intent(context, DNSService::class.java).setAction(DNSService.ACTION_FORCE_MUTE)
                 context.startService(startIntent)
             }
             Intent.ACTION_BOOT_COMPLETED -> {

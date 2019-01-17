@@ -26,6 +26,7 @@ class DNSService : Service() {
 
         const val ACTION_START = "START"
         const val ACTION_TOGGLE = "TOGGLE"
+        const val ACTION_FORCE_MUTE = "FORCE_MUTE"
     }
 
     private var enabled = false
@@ -59,6 +60,10 @@ class DNSService : Service() {
             ACTION_TOGGLE -> {
                 setEnabled(!this.enabled)
             }
+            ACTION_FORCE_MUTE -> {
+                this.mute(true)
+                this.setEnabled(true)
+            }
             else -> {
                 Log.d(TAG, "unknown command")
             }
@@ -80,7 +85,7 @@ class DNSService : Service() {
 
     private fun update() {
         if (this.enabled) {
-            this.mute()
+            this.mute(false)
         }
 
         this.createNotification(NOTIFICATION_ID, this.enabled)
@@ -105,7 +110,7 @@ class DNSService : Service() {
                 .setContentText("DoNotSpeak")
                 .setContent(remoteViews)
                 .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setContentIntent(pendingIntent)
                 .build()
 
@@ -123,14 +128,14 @@ class DNSService : Service() {
         }
     }
 
-    private fun mute() {
+    private fun mute(force: Boolean) {
         val audioManager = ContextCompat.getSystemService(this, AudioManager::class.java)
         if (audioManager == null) {
             Log.d(TAG, "AudioManage is null")
             return
         }
 
-        if (isHeadsetConnected(audioManager)) {
+        if (!force && isHeadsetConnected(audioManager)) {
             Log.d(TAG, "Headset connected!")
             return
         }
