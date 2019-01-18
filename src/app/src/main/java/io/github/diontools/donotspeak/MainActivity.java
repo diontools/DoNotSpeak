@@ -39,6 +39,12 @@ public final class MainActivity extends Activity {
                                     MainActivity.this.finish();
                                 }
                             })
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialog) {
+                                    MainActivity.this.finish();
+                                }
+                            })
                             .create();
             dialog.show();
         } else {
