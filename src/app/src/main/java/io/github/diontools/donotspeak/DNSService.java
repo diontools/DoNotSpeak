@@ -54,13 +54,16 @@ public final class DNSService extends Service {
         switch (command) {
             case ACTION_START: {
                 this.setEnabled(true);
+                break;
             }
             case ACTION_TOGGLE: {
                 setEnabled(!this.enabled);
+                break;
             }
             case ACTION_FORCE_MUTE: {
                 this.mute(true);
                 this.setEnabled(true);
+                break;
             }
             default: {
                 Log.d(TAG, "unknown command");

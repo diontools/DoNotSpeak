@@ -17,11 +17,13 @@ public final class DNSReceiver extends BroadcastReceiver {
                 Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
                 Intent startIntent = new Intent(context, DNSService.class).setAction(DNSService.ACTION_FORCE_MUTE);
                 context.startService(startIntent);
+                break;
             }
             case Intent.ACTION_BOOT_COMPLETED: {
                 Log.d(TAG, "ACTION_BOOT_COMPLETED");
                 Intent startIntent = new Intent(context, DNSService.class).setAction(DNSService.ACTION_START);
                 Compat.startForegroundService(context, startIntent);
+                break;
             }
         }
     }
