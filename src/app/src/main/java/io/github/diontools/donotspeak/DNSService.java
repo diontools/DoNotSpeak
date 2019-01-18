@@ -10,11 +10,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 import android.media.AudioDeviceInfo;
 
 
@@ -34,7 +29,6 @@ public final class DNSService extends Service {
         }
     });
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("not implemented");
@@ -108,32 +102,33 @@ public final class DNSService extends Service {
         remoteViews.setTextViewText(R.id.textView, enabled ? "enabled" : "disabled");
 
         Notification notification =
-            new NotificationCompat.Builder(this, id)
+            Compat.createNotificationBuilder(this, id)
                 .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
                 .setContentTitle(enabled ? "enabled" : "disabled")
                 .setContentText("DoNotSpeak")
                 .setContent(remoteViews)
                 .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(Notification.PRIORITY_LOW)
                 .setContentIntent(pendingIntent)
                 .build();
 
         this.startForeground(1, notification);
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private void createNotificationChannel(String channelId, String channelName) {
-        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
-        if (manager.getNotificationChannel(channelId) == null) {
-            NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
-            chan.setLightColor(Color.BLUE);
-            chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            manager.createNotificationChannel(chan);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager manager = this.getSystemService(NotificationManager.class);
+            if (manager.getNotificationChannel(channelId) == null) {
+                NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
+                chan.setLightColor(Color.BLUE);
+                chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                manager.createNotificationChannel(chan);
+            }
         }
     }
 
     private void mute(boolean force) {
-        AudioManager audioManager = ContextCompat.getSystemService(this, AudioManager.class);
+        AudioManager audioManager = Compat.getSystemService(this, AudioManager.class);
         if (audioManager == null) {
             Log.d(TAG, "AudioManage is null");
             return;

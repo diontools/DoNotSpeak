@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.util.Log;
-import androidx.core.content.ContextCompat;
 
 public final class DNSReceiver extends BroadcastReceiver {
     private static final String TAG = "DNSReceiver";
@@ -22,7 +21,7 @@ public final class DNSReceiver extends BroadcastReceiver {
             case Intent.ACTION_BOOT_COMPLETED: {
                 Log.d(TAG, "ACTION_BOOT_COMPLETED");
                 Intent startIntent = new Intent(context, DNSService.class).setAction(DNSService.ACTION_START);
-                ContextCompat.startForegroundService(context, startIntent);
+                Compat.startForegroundService(context, startIntent);
             }
         }
     }
