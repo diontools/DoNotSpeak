@@ -1,13 +1,12 @@
 package io.github.diontools.donotspeak
 
+import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,11 +17,5 @@ class MainActivity : AppCompatActivity() {
         ContextCompat.startForegroundService(this, serviceIntent)
 
         this.finish()
-        return
-
-        this.button.setOnClickListener {
-            val intent = Intent(this, DNSService::class.java).setAction(DNSService.ACTION_TOGGLE)
-            this.startService(intent)
-        }
     }
 }
