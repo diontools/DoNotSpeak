@@ -19,6 +19,7 @@ public final class DNSService extends Service {
 
     public static final String ACTION_START = "START";
     public static final String ACTION_TOGGLE = "TOGGLE";
+    public static final  String ACTION_STOP = "STOP";
     public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
 
     private boolean enabled = false;
@@ -60,7 +61,17 @@ public final class DNSService extends Service {
                     break;
                 }
                 case ACTION_TOGGLE: {
-                    setEnabled(!this.enabled);
+                    if (this.enabled) {
+                        // to disable
+                        Intent disableIntent = new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_DISABLE_DIALOG).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        this.startActivity(disableIntent);
+                    } else {
+                        this.setEnabled(!this.enabled);
+                    }
+                    break;
+                }
+                case ACTION_STOP: {
+                    this.setEnabled(false);
                     break;
                 }
                 case ACTION_FORCE_MUTE: {

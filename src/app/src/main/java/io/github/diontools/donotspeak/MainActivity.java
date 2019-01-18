@@ -1,11 +1,15 @@
 package io.github.diontools.donotspeak;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
 public final class MainActivity extends Activity {
+    private static final String TAG = "MainActivity";
+    public static final String ACTION_DISABLE_DIALOG = "DISABLE_DIALOG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -13,10 +17,36 @@ public final class MainActivity extends Activity {
 
         //setContentView(R.layout.activity_main)
 
-        Log.d("tag", "start service!");
-        Intent serviceIntent = new Intent(this, DNSService.class).setAction(DNSService.ACTION_START);
-        Compat.startForegroundService(this, serviceIntent);
+        String action = this.getIntent().getAction();
+        Log.d(TAG, action);
 
-        this.finish();
+        if (action == ACTION_DISABLE_DIALOG) {
+            AlertDialog dialog =
+                    new AlertDialog.Builder(this)
+                            .setTitle("Speak?")
+                            .setMessage("WARNING: Enable Speakers?")
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent(MainActivity.this, DNSService.class).setAction(DNSService.ACTION_STOP);
+                                    MainActivity.this.startService(intent);
+                                    MainActivity.this.finish();
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    MainActivity.this.finish();
+                                }
+                            })
+                            .create();
+            dialog.show();
+        } else {
+            Log.d(TAG, "start service!");
+            Intent serviceIntent = new Intent(this, DNSService.class).setAction(DNSService.ACTION_START);
+            Compat.startForegroundService(this, serviceIntent);
+
+            this.finish();
+        }
     }
 }
