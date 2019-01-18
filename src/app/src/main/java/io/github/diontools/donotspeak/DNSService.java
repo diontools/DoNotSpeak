@@ -1,0 +1,177 @@
+package io.github.diontools.donotspeak;
+
+import android.app.*;
+import android.content.Intent;
+import android.graphics.Color;
+import android.media.AudioManager;
+import android.os.Build;
+import android.os.Handler;
+import android.os.IBinder;
+import android.util.Log;
+import android.widget.RemoteViews;
+import android.widget.Toast;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
+import android.media.AudioDeviceInfo;
+
+
+public final class DNSService extends Service {
+    private static final String NOTIFICATION_ID = "DoNotSpeak_Notification";
+    private static final String TAG = "DNSService";
+
+    public static final String ACTION_START = "START";
+    public static final String ACTION_TOGGLE = "TOGGLE";
+    public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
+
+    private boolean enabled = false;
+    private DNSContentObserver contentObserver = new DNSContentObserver(new Handler(), new Runnable() {
+        @Override
+        public void run() {
+            DNSService.this.update();
+        }
+    });
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        throw new UnsupportedOperationException("not implemented");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "onCreate");
+        this.getApplicationContext().getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "started! flags:$flags id:$startId");
+
+        String command = null;
+        if (intent != null) {
+            command = intent.getAction();
+            Log.d(TAG, "command:" + command);
+        }
+
+        switch (command) {
+            case ACTION_START: {
+                this.setEnabled(true);
+            }
+            case ACTION_TOGGLE: {
+                setEnabled(!this.enabled);
+            }
+            case ACTION_FORCE_MUTE: {
+                this.mute(true);
+                this.setEnabled(true);
+            }
+            default: {
+                Log.d(TAG, "unknown command");
+            }
+        }
+
+        return START_STICKY;
+    }
+
+    private void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        this.update();
+
+        if (this.enabled) {
+            Toast.makeText(this, "DoNotSpeak!", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Speak!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void update() {
+        if (this.enabled) {
+            this.mute(false);
+        }
+
+        this.createNotification(NOTIFICATION_ID, this.enabled);
+    }
+
+    private void createNotification(String id, boolean enabled) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.createNotificationChannel(id, "DoNotSpeak");
+        }
+
+        Intent toggleIntent = new Intent(this, DNSService.class).setAction(ACTION_TOGGLE);
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, toggleIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
+        remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher : R.drawable.ic_noisy);
+        remoteViews.setTextViewText(R.id.textView, enabled ? "enabled" : "disabled");
+
+        Notification notification =
+            new NotificationCompat.Builder(this, id)
+                .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
+                .setContentTitle(enabled ? "enabled" : "disabled")
+                .setContentText("DoNotSpeak")
+                .setContent(remoteViews)
+                .setOngoing(true)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setContentIntent(pendingIntent)
+                .build();
+
+        this.startForeground(1, notification);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private void createNotificationChannel(String channelId, String channelName) {
+        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
+        if (manager.getNotificationChannel(channelId) == null) {
+            NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
+            chan.setLightColor(Color.BLUE);
+            chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            manager.createNotificationChannel(chan);
+        }
+    }
+
+    private void mute(boolean force) {
+        AudioManager audioManager = ContextCompat.getSystemService(this, AudioManager.class);
+        if (audioManager == null) {
+            Log.d(TAG, "AudioManage is null");
+            return;
+        }
+
+        if (!force && isHeadsetConnected(audioManager)) {
+            Log.d(TAG, "Headset connected!");
+            return;
+        }
+
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+    }
+
+    private boolean isHeadsetConnected(AudioManager audioManager) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return audioManager.isWiredHeadsetOn() || audioManager.isBluetoothScoOn() || audioManager.isBluetoothA2dpOn();
+        } else {
+            AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+            for (int i = 0; i < devices.length; i++) {
+                AudioDeviceInfo device = devices[i];
+
+                int type = device.getType();
+                if (type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+                    || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+                    || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+                    || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                ) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy!");
+    }
+}
