@@ -51,22 +51,26 @@ public final class DNSService extends Service {
             Log.d(TAG, "command:" + command);
         }
 
-        switch (command) {
-            case ACTION_START: {
-                this.setEnabled(true);
-                break;
-            }
-            case ACTION_TOGGLE: {
-                setEnabled(!this.enabled);
-                break;
-            }
-            case ACTION_FORCE_MUTE: {
-                this.mute(true);
-                this.setEnabled(true);
-                break;
-            }
-            default: {
-                Log.d(TAG, "unknown command");
+        if (command == null) {
+            Log.d(TAG, "command is null");
+        } else {
+            switch (command) {
+                case ACTION_START: {
+                    this.setEnabled(true);
+                    break;
+                }
+                case ACTION_TOGGLE: {
+                    setEnabled(!this.enabled);
+                    break;
+                }
+                case ACTION_FORCE_MUTE: {
+                    this.mute(true);
+                    this.setEnabled(true);
+                    break;
+                }
+                default: {
+                    Log.d(TAG, "unknown command");
+                }
             }
         }
 

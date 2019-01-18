@@ -12,6 +12,8 @@ public final class DNSReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        if (action == null) return;
+
         switch (action) {
             case AudioManager.ACTION_AUDIO_BECOMING_NOISY: {
                 Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
