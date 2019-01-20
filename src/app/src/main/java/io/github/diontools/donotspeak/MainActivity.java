@@ -55,7 +55,7 @@ public final class MainActivity extends Activity {
             Intent serviceIntent = new Intent(this, DNSService.class).setAction(DNSService.ACTION_START);
             Compat.startForegroundService(this, serviceIntent);
 
-            this.finish();
+            this.finishAndRemoveTask();
         }
     }
 }
