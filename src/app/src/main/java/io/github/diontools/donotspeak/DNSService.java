@@ -127,6 +127,7 @@ public final class DNSService extends Service {
                 .setContent(remoteViews)
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_LOW)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setContentIntent(pendingIntent)
                 .build();
 
