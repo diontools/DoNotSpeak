@@ -22,6 +22,8 @@ public final class DNSService extends Service {
     public static final  String ACTION_STOP = "STOP";
     public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
 
+    public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
+
     private boolean enabled = false;
     private DNSContentObserver contentObserver = new DNSContentObserver(new Handler(), new Runnable() {
         @Override
@@ -71,7 +73,10 @@ public final class DNSService extends Service {
                     break;
                 }
                 case ACTION_STOP: {
-                    this.setEnabled(false);
+                    int disableTime = intent.getIntExtra(DISABLE_TIME_NAME, 0);
+                    if (disableTime > 0) {
+                        this.setEnabled(false);
+                    }
                     break;
                 }
                 case ACTION_FORCE_MUTE: {

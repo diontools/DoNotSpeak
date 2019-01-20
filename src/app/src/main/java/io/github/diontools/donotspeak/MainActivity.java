@@ -6,6 +6,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.NumberPicker;
 
 public final class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -21,14 +24,23 @@ public final class MainActivity extends Activity {
         Log.d(TAG, action);
 
         if (action == ACTION_DISABLE_DIALOG) {
+            View view = this.getLayoutInflater().inflate(R.layout.disable_dialog_layout, null);
+            final NumberPicker numPicker = view.findViewById(R.id.numberPicker);
+            numPicker.setMaxValue(120);
+            numPicker.setMinValue(1);
+
             AlertDialog dialog =
                     new AlertDialog.Builder(this)
                             .setTitle("Speak?")
-                            .setMessage("WARNING: Enable Speakers?")
+                            .setView(view)
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent(MainActivity.this, DNSService.class).setAction(DNSService.ACTION_STOP);
+                                    int disableTime = numPicker.getValue();
+                                    Intent intent =
+                                            new Intent(MainActivity.this, DNSService.class)
+                                                    .setAction(DNSService.ACTION_STOP)
+                                                    .putExtra(DNSService.DISABLE_TIME_NAME, disableTime);
                                     MainActivity.this.startService(intent);
                                     MainActivity.this.exit();
                                 }
