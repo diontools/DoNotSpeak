@@ -117,13 +117,11 @@ public final class DNSService extends Service {
 
         RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
         remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher : R.drawable.ic_noisy);
-        remoteViews.setTextViewText(R.id.textView, enabled ? "enabled" : "disabled");
+        remoteViews.setTextViewText(R.id.textView, enabled ? "DoNotSpeak!" : "Speak!");
 
         Notification notification =
             Compat.createNotificationBuilder(this, id)
                 .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
-                .setContentTitle(enabled ? "enabled" : "disabled")
-                .setContentText("DoNotSpeak")
                 .setContent(remoteViews)
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_LOW)
