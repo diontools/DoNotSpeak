@@ -30,22 +30,19 @@ public final class MainActivity extends Activity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     Intent intent = new Intent(MainActivity.this, DNSService.class).setAction(DNSService.ACTION_STOP);
                                     MainActivity.this.startService(intent);
-                                    MainActivity.this.finishAndRemoveTask();
-                                    MainActivity.this.overridePendingTransition(0, 0);
+                                    MainActivity.this.exit();
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    MainActivity.this.finishAndRemoveTask();
-                                    MainActivity.this.overridePendingTransition(0, 0);
+                                    MainActivity.this.exit();
                                 }
                             })
                             .setOnDismissListener(new DialogInterface.OnDismissListener() {
                                 @Override
                                 public void onDismiss(DialogInterface dialog) {
-                                    MainActivity.this.finishAndRemoveTask();
-                                    MainActivity.this.overridePendingTransition(0, 0);
+                                    MainActivity.this.exit();
                                 }
                             })
                             .create();
@@ -55,7 +52,12 @@ public final class MainActivity extends Activity {
             Intent serviceIntent = new Intent(this, DNSService.class).setAction(DNSService.ACTION_START);
             Compat.startForegroundService(this, serviceIntent);
 
-            this.finishAndRemoveTask();
+            this.exit();
         }
+    }
+
+    private void exit() {
+        this.finishAndRemoveTask();
+        this.overridePendingTransition(0, 0);
     }
 }
