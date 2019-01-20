@@ -30,21 +30,21 @@ public final class MainActivity extends Activity {
                                 public void onClick(DialogInterface dialog, int which) {
                                     Intent intent = new Intent(MainActivity.this, DNSService.class).setAction(DNSService.ACTION_STOP);
                                     MainActivity.this.startService(intent);
-                                    MainActivity.this.finish();
+                                    MainActivity.this.finishAndRemoveTask();
                                     MainActivity.this.overridePendingTransition(0, 0);
                                 }
                             })
                             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    MainActivity.this.finish();
+                                    MainActivity.this.finishAndRemoveTask();
                                     MainActivity.this.overridePendingTransition(0, 0);
                                 }
                             })
                             .setOnDismissListener(new DialogInterface.OnDismissListener() {
                                 @Override
                                 public void onDismiss(DialogInterface dialog) {
-                                    MainActivity.this.finish();
+                                    MainActivity.this.finishAndRemoveTask();
                                     MainActivity.this.overridePendingTransition(0, 0);
                                 }
                             })
