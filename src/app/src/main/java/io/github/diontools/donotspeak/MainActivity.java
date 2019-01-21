@@ -39,7 +39,7 @@ public final class MainActivity extends Activity {
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    int disableTime = (numPicker.getValue() + 1) * 5;
+                                    int disableTime = (numPicker.getValue() + 1) * 5 * 60 * 1000;
                                     Intent intent =
                                             new Intent(MainActivity.this, DNSService.class)
                                                     .setAction(DNSService.ACTION_STOP)

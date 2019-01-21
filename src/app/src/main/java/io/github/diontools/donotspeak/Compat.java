@@ -1,6 +1,8 @@
 package io.github.diontools.donotspeak;
 
+import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -30,6 +32,8 @@ final class Compat {
         }
 
         if (serviceClass == AudioManager.class) return Context.AUDIO_SERVICE;
+        if (serviceClass == NotificationManager.class) return Context.NOTIFICATION_SERVICE;
+        if (serviceClass == AlarmManager.class) return Context.ALARM_SERVICE;
         throw new Resources.NotFoundException();
     }
 

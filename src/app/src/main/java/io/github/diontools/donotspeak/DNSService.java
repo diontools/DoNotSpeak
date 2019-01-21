@@ -28,22 +28,24 @@ public final class DNSService extends Service {
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
     private boolean enabled = false;
-    private Handler mainHandler = new Handler();
-    private DNSContentObserver contentObserver = new DNSContentObserver(this.mainHandler, new Runnable() {
+    private final Handler mainHandler = new Handler();
+    private final DNSContentObserver contentObserver = new DNSContentObserver(this.mainHandler, new Runnable() {
         @Override
         public void run() {
             DNSService.this.update();
         }
     });
 
-    private Runnable startingRunnable = new Runnable() {
-        @Override
-        public void run() {
-            DNSService.this.start();
-        }
-    };
-    private Timer disableTimer;
+    private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private String disableTimeString = "";
+
+    private Intent disableIntent;
+    private PendingIntent toggleIntent;
+    private PendingIntent startIntent;
+
+    private AlarmManager alarmManager;
+    private NotificationManager notificationManager;
+    private AudioManager audioManager;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -54,6 +56,35 @@ public final class DNSService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate");
+
+        this.disableIntent =
+                new Intent(this, MainActivity.class)
+                        .setAction(MainActivity.ACTION_DISABLE_DIALOG)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        this.toggleIntent =
+                PendingIntent.getService(
+                        this,
+                        0,
+                        new Intent(this, DNSService.class).setAction(ACTION_TOGGLE),
+                        PendingIntent.FLAG_CANCEL_CURRENT);
+
+        this.startIntent =
+                PendingIntent.getService(
+                        this,
+                        0,
+                        new Intent(this, DNSService.class).setAction(ACTION_START),
+                        PendingIntent.FLAG_CANCEL_CURRENT);
+
+        this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
+        if (this.notificationManager == null) throw new UnsupportedOperationException("NotificationManager is null");
+
+        this.alarmManager = Compat.getSystemService(this, AlarmManager.class);
+        if (this.alarmManager == null) throw new UnsupportedOperationException("AlarmManager is null");
+
+        this.audioManager = Compat.getSystemService(this, AudioManager.class);
+        if (this.audioManager == null) throw new UnsupportedOperationException("AudioManager is null");
+
         this.getApplicationContext().getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver);
     }
 
@@ -78,8 +109,7 @@ public final class DNSService extends Service {
                 case ACTION_TOGGLE: {
                     if (this.enabled) {
                         // to disable
-                        Intent disableIntent = new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_DISABLE_DIALOG).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        this.startActivity(disableIntent);
+                        this.startActivity(this.disableIntent);
                     } else {
                         this.start();
                     }
@@ -116,30 +146,24 @@ public final class DNSService extends Service {
     private void stop(int disableTime) {
         this.enabled = false;
 
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        c.add(Calendar.MINUTE, disableTime);
-        Date dt = c.getTime();
-        this.disableTimeString = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(dt);
+        long startTime = System.currentTimeMillis() + disableTime;
+        this.disableTimeString = DateFormat.format(new Date(startTime));
 
         this.cancelTimer();
-        this.disableTimer = new Timer(true);
-        this.disableTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                DNSService.this.mainHandler.post(DNSService.this.startingRunnable);
-            }
-        }, dt);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
+        } else {
+            this.alarmManager.setExact(AlarmManager.RTC, startTime, this.startIntent);
+        }
+
         this.update();
         Toast.makeText(this, "Speak until " + this.disableTimeString, Toast.LENGTH_SHORT).show();
     }
 
     private void cancelTimer() {
-        if (this.disableTimer != null) {
-            Log.d(TAG, "cancel timer");
-            this.disableTimer.cancel();
-            this.disableTimer = null;
-        }
+        Log.d(TAG, "cancel timer");
+        this.alarmManager.cancel(this.startIntent);
     }
 
     private void update() {
@@ -155,9 +179,6 @@ public final class DNSService extends Service {
             this.createNotificationChannel(id, "DoNotSpeak");
         }
 
-        Intent toggleIntent = new Intent(this, DNSService.class).setAction(ACTION_TOGGLE);
-        PendingIntent pendingIntent = PendingIntent.getService(this, 0, toggleIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
         RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
         remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher : R.drawable.ic_noisy);
         remoteViews.setTextViewText(R.id.textView, enabled ? "DoNotSpeak!" : "Speak until " + this.disableTimeString);
@@ -169,7 +190,7 @@ public final class DNSService extends Service {
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
-                        .setContentIntent(pendingIntent)
+                        .setContentIntent(toggleIntent)
                         .build();
 
         this.startForeground(1, notification);
@@ -177,36 +198,29 @@ public final class DNSService extends Service {
 
     private void createNotificationChannel(String channelId, String channelName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationManager manager = this.getSystemService(NotificationManager.class);
-            if (manager.getNotificationChannel(channelId) == null) {
+            if (this.notificationManager.getNotificationChannel(channelId) == null) {
                 NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
                 chan.setLightColor(Color.BLUE);
                 chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                manager.createNotificationChannel(chan);
+                this.notificationManager.createNotificationChannel(chan);
             }
         }
     }
 
     private void mute(boolean force) {
-        AudioManager audioManager = Compat.getSystemService(this, AudioManager.class);
-        if (audioManager == null) {
-            Log.d(TAG, "AudioManage is null");
-            return;
-        }
-
-        if (!force && isHeadsetConnected(audioManager)) {
+        if (!force && this.isHeadsetConnected()) {
             Log.d(TAG, "Headset connected!");
             return;
         }
 
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+        this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
     }
 
-    private boolean isHeadsetConnected(AudioManager audioManager) {
+    private boolean isHeadsetConnected() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return audioManager.isWiredHeadsetOn() || audioManager.isBluetoothScoOn() || audioManager.isBluetoothA2dpOn();
+            return this.audioManager.isWiredHeadsetOn() || this.audioManager.isBluetoothScoOn() || this.audioManager.isBluetoothA2dpOn();
         } else {
-            AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+            AudioDeviceInfo[] devices = this.audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
             for (int i = 0; i < devices.length; i++) {
                 AudioDeviceInfo device = devices[i];
 
