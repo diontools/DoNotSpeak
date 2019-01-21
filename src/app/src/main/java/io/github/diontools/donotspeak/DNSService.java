@@ -12,6 +12,9 @@ import android.widget.RemoteViews;
 import android.widget.Toast;
 import android.media.AudioDeviceInfo;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 
 public final class DNSService extends Service {
     private static final String NOTIFICATION_ID = "DoNotSpeak_Notification";
@@ -19,18 +22,28 @@ public final class DNSService extends Service {
 
     public static final String ACTION_START = "START";
     public static final String ACTION_TOGGLE = "TOGGLE";
-    public static final  String ACTION_STOP = "STOP";
+    public static final String ACTION_STOP = "STOP";
     public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
     private boolean enabled = false;
-    private DNSContentObserver contentObserver = new DNSContentObserver(new Handler(), new Runnable() {
+    private Handler mainHandler = new Handler();
+    private DNSContentObserver contentObserver = new DNSContentObserver(this.mainHandler, new Runnable() {
         @Override
         public void run() {
             DNSService.this.update();
         }
     });
+
+    private Runnable startingRunnable = new Runnable() {
+        @Override
+        public void run() {
+            DNSService.this.start();
+        }
+    };
+    private Timer disableTimer;
+    private String disableTimeString = "";
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -46,7 +59,7 @@ public final class DNSService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "started! flags:$flags id:$startId");
+        Log.d(TAG, "started! flags:" + flags + " id:" + startId);
 
         String command = null;
         if (intent != null) {
@@ -95,14 +108,38 @@ public final class DNSService extends Service {
 
     private void start() {
         this.enabled = true;
+        this.cancelTimer();
         this.update();
         Toast.makeText(this, "DoNotSpeak!", Toast.LENGTH_SHORT).show();
     }
 
     private void stop(int disableTime) {
         this.enabled = false;
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.MINUTE, disableTime);
+        Date dt = c.getTime();
+        this.disableTimeString = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(dt);
+
+        this.cancelTimer();
+        this.disableTimer = new Timer(true);
+        this.disableTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                DNSService.this.mainHandler.post(DNSService.this.startingRunnable);
+            }
+        }, dt);
         this.update();
-        Toast.makeText(this, "Speak!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Speak until " + this.disableTimeString, Toast.LENGTH_SHORT).show();
+    }
+
+    private void cancelTimer() {
+        if (this.disableTimer != null) {
+            Log.d(TAG, "cancel timer");
+            this.disableTimer.cancel();
+            this.disableTimer = null;
+        }
     }
 
     private void update() {
@@ -123,17 +160,17 @@ public final class DNSService extends Service {
 
         RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
         remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher : R.drawable.ic_noisy);
-        remoteViews.setTextViewText(R.id.textView, enabled ? "DoNotSpeak!" : "Speak!");
+        remoteViews.setTextViewText(R.id.textView, enabled ? "DoNotSpeak!" : "Speak until " + this.disableTimeString);
 
         Notification notification =
-            Compat.createNotificationBuilder(this, id)
-                .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
-                .setContent(remoteViews)
-                .setOngoing(true)
-                .setPriority(Notification.PRIORITY_LOW)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setContentIntent(pendingIntent)
-                .build();
+                Compat.createNotificationBuilder(this, id)
+                        .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
+                        .setContent(remoteViews)
+                        .setOngoing(true)
+                        .setPriority(Notification.PRIORITY_LOW)
+                        .setVisibility(Notification.VISIBILITY_PUBLIC)
+                        .setContentIntent(pendingIntent)
+                        .build();
 
         this.startForeground(1, notification);
     }
@@ -175,9 +212,9 @@ public final class DNSService extends Service {
 
                 int type = device.getType();
                 if (type == AudioDeviceInfo.TYPE_WIRED_HEADSET
-                    || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
-                    || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
-                    || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                        || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+                        || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+                        || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
                 ) {
                     return true;
                 }
