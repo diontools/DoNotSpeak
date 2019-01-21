@@ -26,8 +26,11 @@ public final class MainActivity extends Activity {
         if (action == ACTION_DISABLE_DIALOG) {
             View view = this.getLayoutInflater().inflate(R.layout.disable_dialog_layout, null);
             final NumberPicker numPicker = view.findViewById(R.id.numberPicker);
-            numPicker.setMaxValue(120);
-            numPicker.setMinValue(1);
+            String[] values = new String[24];
+            for (int i = 0; i < values.length; i++) values[i] = String.valueOf((i + 1) * 5);
+            numPicker.setMinValue(0);
+            numPicker.setMaxValue(values.length - 1);
+            numPicker.setDisplayedValues(values);
 
             AlertDialog dialog =
                     new AlertDialog.Builder(this)
@@ -36,7 +39,7 @@ public final class MainActivity extends Activity {
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    int disableTime = numPicker.getValue();
+                                    int disableTime = (numPicker.getValue() + 1) * 5;
                                     Intent intent =
                                             new Intent(MainActivity.this, DNSService.class)
                                                     .setAction(DNSService.ACTION_STOP)
