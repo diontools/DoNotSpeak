@@ -59,7 +59,7 @@ public final class DNSService extends Service {
         } else {
             switch (command) {
                 case ACTION_START: {
-                    this.setEnabled(true);
+                    this.start();
                     break;
                 }
                 case ACTION_TOGGLE: {
@@ -68,20 +68,20 @@ public final class DNSService extends Service {
                         Intent disableIntent = new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_DISABLE_DIALOG).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         this.startActivity(disableIntent);
                     } else {
-                        this.setEnabled(!this.enabled);
+                        this.start();
                     }
                     break;
                 }
                 case ACTION_STOP: {
                     int disableTime = intent.getIntExtra(DISABLE_TIME_NAME, 0);
                     if (disableTime > 0) {
-                        this.setEnabled(false);
+                        this.stop(disableTime);
                     }
                     break;
                 }
                 case ACTION_FORCE_MUTE: {
                     this.mute(true);
-                    this.setEnabled(true);
+                    this.start();
                     break;
                 }
                 default: {
@@ -93,15 +93,16 @@ public final class DNSService extends Service {
         return START_STICKY;
     }
 
-    private void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    private void start() {
+        this.enabled = true;
         this.update();
+        Toast.makeText(this, "DoNotSpeak!", Toast.LENGTH_SHORT).show();
+    }
 
-        if (this.enabled) {
-            Toast.makeText(this, "DoNotSpeak!", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Speak!", Toast.LENGTH_SHORT).show();
-        }
+    private void stop(int disableTime) {
+        this.enabled = false;
+        this.update();
+        Toast.makeText(this, "Speak!", Toast.LENGTH_SHORT).show();
     }
 
     private void update() {
