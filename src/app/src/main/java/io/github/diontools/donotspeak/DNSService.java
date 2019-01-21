@@ -151,6 +151,7 @@ public final class DNSService extends Service {
 
         this.cancelTimer();
 
+        Log.d(TAG, "set timer: " + this.disableTimeString);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
         } else {
