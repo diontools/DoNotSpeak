@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
 
@@ -34,9 +33,9 @@ public final class MainActivity extends Activity {
 
             AlertDialog dialog =
                     new AlertDialog.Builder(this)
-                            .setTitle("Speak?")
+                            .setTitle(R.string.disable_alert_title)
                             .setView(view)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            .setPositiveButton(R.string.disable_alert_okButton, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     int disableTime = (numPicker.getValue() + 1) * 5 * 60 * 1000;
@@ -48,7 +47,7 @@ public final class MainActivity extends Activity {
                                     MainActivity.this.exit();
                                 }
                             })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            .setNegativeButton(R.string.disable_alert_cancelButton, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     MainActivity.this.exit();

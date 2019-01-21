@@ -140,7 +140,7 @@ public final class DNSService extends Service {
         this.enabled = true;
         this.cancelTimer();
         this.update();
-        Toast.makeText(this, "DoNotSpeak!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, this.getStartedMessage(), Toast.LENGTH_SHORT).show();
     }
 
     private void stop(int disableTime) {
@@ -159,7 +159,15 @@ public final class DNSService extends Service {
         }
 
         this.update();
-        Toast.makeText(this, "Speak until " + this.disableTimeString, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, this.getStoppedMessage(), Toast.LENGTH_SHORT).show();
+    }
+
+    private String getStartedMessage() {
+        return this.getResources().getString(R.string.start_toast_text);
+    }
+
+    private String getStoppedMessage() {
+        return String.format(this.getResources().getString(R.string.stop_toast_text), this.disableTimeString);
     }
 
     private void cancelTimer() {
@@ -177,12 +185,12 @@ public final class DNSService extends Service {
 
     private void createNotification(String id, boolean enabled) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            this.createNotificationChannel(id, "DoNotSpeak");
+            this.createNotificationChannel(id, this.getResources().getString(R.string.notification_channel_name));
         }
 
         RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
         remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher : R.drawable.ic_noisy);
-        remoteViews.setTextViewText(R.id.textView, enabled ? "DoNotSpeak!" : "Speak until " + this.disableTimeString);
+        remoteViews.setTextViewText(R.id.textView, enabled ? this.getStartedMessage() : this.getStoppedMessage());
 
         Notification notification =
                 Compat.createNotificationBuilder(this, id)
