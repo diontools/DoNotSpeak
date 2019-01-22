@@ -8,7 +8,7 @@
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="64dp"
             android:paddingBottom="8dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
@@ -19,7 +19,7 @@
                 android:src="@drawable/ic_launcher"
                 android:layout_height="match_parent"
                 android:scaleType="fitCenter"
-                android:layout_width="wrap_content"
+                android:layout_width="96dp"
         />
         <TextView
                 android:text="TextView"
