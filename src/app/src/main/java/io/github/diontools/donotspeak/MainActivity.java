@@ -47,6 +47,16 @@ public final class MainActivity extends Activity {
                                     MainActivity.this.exit();
                                 }
                             })
+                            .setNeutralButton(R.string.disable_alert_untilScreenOffButton, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent =
+                                            new Intent(MainActivity.this, DNSService.class)
+                                                    .setAction(DNSService.ACTION_STOP_UNTIL_SCREEN_OFF);
+                                    MainActivity.this.startService(intent);
+                                    MainActivity.this.exit();
+                                }
+                            })
                             .setNegativeButton(R.string.disable_alert_cancelButton, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {

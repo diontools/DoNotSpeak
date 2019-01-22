@@ -5,7 +5,9 @@
     <string name="disable_alert_time_unit">min</string>
     <string name="disable_alert_okButton">Enable</string>
     <string name="disable_alert_cancelButton">Cancel</string>
+    <string name="disable_alert_untilScreenOffButton">Until Screen Off</string>
     <string name="start_toast_text">DoNotSpeak!</string>
     <string name="stop_toast_text">Speak until %1$s</string>
+    <string name="stop_until_screen_off">Speak until screen off</string>
     <string name="notification_channel_name">DoNotSpeak</string>
 </resources>

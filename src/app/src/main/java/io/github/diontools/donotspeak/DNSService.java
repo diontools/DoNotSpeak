@@ -1,7 +1,11 @@
 package io.github.diontools.donotspeak;
 
 import android.app.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
@@ -24,10 +28,13 @@ public final class DNSService extends Service {
     public static final String ACTION_TOGGLE = "TOGGLE";
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
+    public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
     private boolean enabled = false;
+    private boolean stopUntilScreenOff = false;
+
     private final Handler mainHandler = new Handler();
     private final DNSContentObserver contentObserver = new DNSContentObserver(this.mainHandler, new Runnable() {
         @Override
@@ -94,6 +101,21 @@ public final class DNSService extends Service {
         if (this.audioManager == null) throw new UnsupportedOperationException("AudioManager is null");
 
         this.getApplicationContext().getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver);
+
+        this.registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (intent.getAction() == Intent.ACTION_SCREEN_OFF) {
+                            if (DNSService.this.stopUntilScreenOff) {
+                                DNSService.this.start();
+                            } else {
+                                DNSService.this.update();
+                            }
+                        }
+                    }
+                },
+                new IntentFilter(Intent.ACTION_SCREEN_OFF));
     }
 
     @Override
@@ -135,6 +157,11 @@ public final class DNSService extends Service {
                     this.start();
                     break;
                 }
+                case ACTION_STOP_UNTIL_SCREEN_OFF: {
+                    this.stopUntilScreenOff = true;
+                    this.stop(-1);
+                    break;
+                }
                 default: {
                     Log.d(TAG, "unknown command");
                 }
@@ -146,24 +173,28 @@ public final class DNSService extends Service {
 
     private void start() {
         this.enabled = true;
+        this.stopUntilScreenOff = false;
         this.cancelTimer();
         this.update();
         Toast.makeText(this, this.getStartedMessage(), Toast.LENGTH_SHORT).show();
     }
 
     private void stop(int disableTime) {
+        Log.d(TAG, "stop disableTime:" + disableTime);
         this.enabled = false;
 
-        long startTime = System.currentTimeMillis() + disableTime;
-        this.disableTimeString = DateFormat.format(new Date(startTime));
+        if (disableTime >= 0) {
+            long startTime = System.currentTimeMillis() + disableTime;
+            this.disableTimeString = DateFormat.format(new Date(startTime));
 
-        this.cancelTimer();
+            this.cancelTimer();
 
-        Log.d(TAG, "set timer: " + this.disableTimeString);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
-        } else {
-            this.alarmManager.setExact(AlarmManager.RTC, startTime, this.startIntent);
+            Log.d(TAG, "set timer: " + this.disableTimeString);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
+            } else {
+                this.alarmManager.setExact(AlarmManager.RTC, startTime, this.startIntent);
+            }
         }
 
         this.update();
@@ -175,7 +206,8 @@ public final class DNSService extends Service {
     }
 
     private String getStoppedMessage() {
-        return String.format(this.getResources().getString(R.string.stop_toast_text), this.disableTimeString);
+        Resources res = this.getResources();
+        return this.stopUntilScreenOff ? res.getString(R.string.stop_until_screen_off) : String.format(res.getString(R.string.stop_toast_text), this.disableTimeString);
     }
 
     private void cancelTimer() {
@@ -230,6 +262,7 @@ public final class DNSService extends Service {
             return;
         }
 
+        Log.d(TAG, "set volume 0");
         this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
     }
 
