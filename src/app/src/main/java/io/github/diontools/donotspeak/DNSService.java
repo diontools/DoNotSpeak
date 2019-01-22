@@ -33,6 +33,14 @@ public final class DNSService extends Service {
         @Override
         public void run() {
             DNSService.this.update();
+            DNSService.this.updationDebouncer.update();
+        }
+    });
+    private final Debouncer updationDebouncer = new Debouncer(this.mainHandler, 1000, new Runnable() {
+        @Override
+        public void run() {
+            Log.d(TAG, "debounce");
+            DNSService.this.update();
         }
     });
 
