@@ -23,10 +23,19 @@ public final class DNSReceiver extends BroadcastReceiver {
             }
             case Intent.ACTION_BOOT_COMPLETED: {
                 Log.d(TAG, "ACTION_BOOT_COMPLETED");
-                Intent startIntent = new Intent(context, DNSService.class).setAction(DNSService.ACTION_START);
-                Compat.startForegroundService(context, startIntent);
+                this.startService(context);
+                break;
+            }
+            case Intent.ACTION_MY_PACKAGE_REPLACED: {
+                Log.d(TAG, "ACTION_MY_PACKAGE_REPLACED");
+                this.startService(context);
                 break;
             }
         }
+    }
+
+    private void startService(Context context) {
+        Intent startIntent = new Intent(context, DNSService.class).setAction(DNSService.ACTION_START);
+        Compat.startForegroundService(context, startIntent);
     }
 }
