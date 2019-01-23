@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.NumberPicker;
 
+import java.util.Objects;
+
 public final class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     public static final String ACTION_DISABLE_DIALOG = "DISABLE_DIALOG";
@@ -22,7 +24,7 @@ public final class MainActivity extends Activity {
         String action = this.getIntent().getAction();
         Log.d(TAG, action);
 
-        if (action == ACTION_DISABLE_DIALOG) {
+        if (Objects.equals(action, ACTION_DISABLE_DIALOG)) {
             View view = this.getLayoutInflater().inflate(R.layout.disable_dialog_layout, null);
             final NumberPicker numPicker = view.findViewById(R.id.numberPicker);
             String[] values = new String[24];

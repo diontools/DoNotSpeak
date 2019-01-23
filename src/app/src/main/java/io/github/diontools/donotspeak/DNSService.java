@@ -106,7 +106,7 @@ public final class DNSService extends Service {
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        if (intent.getAction() == Intent.ACTION_SCREEN_OFF) {
+                        if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_OFF)) {
                             if (DNSService.this.stopUntilScreenOff) {
                                 DNSService.this.start();
                             } else {
