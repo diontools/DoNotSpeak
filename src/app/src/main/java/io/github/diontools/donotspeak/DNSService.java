@@ -129,42 +129,43 @@ public final class DNSService extends Service {
         }
 
         if (command == null) {
-            Log.d(TAG, "command is null");
-        } else {
-            switch (command) {
-                case ACTION_START: {
+            Log.d(TAG, "command is null, force start");
+            command = ACTION_START; // for kill
+        }
+
+        switch (command) {
+            case ACTION_START: {
+                this.start();
+                break;
+            }
+            case ACTION_TOGGLE: {
+                if (this.enabled) {
+                    // to disable
+                    this.startActivity(this.disableIntent);
+                } else {
                     this.start();
-                    break;
                 }
-                case ACTION_TOGGLE: {
-                    if (this.enabled) {
-                        // to disable
-                        this.startActivity(this.disableIntent);
-                    } else {
-                        this.start();
-                    }
-                    break;
+                break;
+            }
+            case ACTION_STOP: {
+                int disableTime = intent.getIntExtra(DISABLE_TIME_NAME, 0);
+                if (disableTime > 0) {
+                    this.stop(disableTime);
                 }
-                case ACTION_STOP: {
-                    int disableTime = intent.getIntExtra(DISABLE_TIME_NAME, 0);
-                    if (disableTime > 0) {
-                        this.stop(disableTime);
-                    }
-                    break;
-                }
-                case ACTION_FORCE_MUTE: {
-                    this.mute(true);
-                    this.start();
-                    break;
-                }
-                case ACTION_STOP_UNTIL_SCREEN_OFF: {
-                    this.stopUntilScreenOff = true;
-                    this.stop(-1);
-                    break;
-                }
-                default: {
-                    Log.d(TAG, "unknown command");
-                }
+                break;
+            }
+            case ACTION_FORCE_MUTE: {
+                this.mute(true);
+                this.start();
+                break;
+            }
+            case ACTION_STOP_UNTIL_SCREEN_OFF: {
+                this.stopUntilScreenOff = true;
+                this.stop(-1);
+                break;
+            }
+            default: {
+                Log.d(TAG, "unknown command");
             }
         }
 
