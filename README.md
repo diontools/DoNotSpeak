@@ -2,6 +2,8 @@
 
 スピーカーで音楽を再生させないアプリ
 
+<a href='https://play.google.com/store/apps/details?id=io.github.diontools.donotspeak'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png' width="200"/></a>
+
 ## 動作環境
 
 Android 5.0 Lollipop 以降
