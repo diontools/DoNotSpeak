@@ -24,3 +24,8 @@ Android 5.0 Lollipop 以降
 - [x] 通知デザイン調整
 - [x] Bluetoothヘッドセット対応
 
+## 権利表記
+
+アプリのアイコンに[Megaphone](https://www.flaticon.com/free-icon/megaphone_262830)を使用しています
+
+Icons made by [Freepik](https://www.freepik.com/) from [www.flaticon.com](https://www.flaticon.com/) is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/)
