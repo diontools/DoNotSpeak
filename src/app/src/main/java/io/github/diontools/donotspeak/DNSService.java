@@ -100,7 +100,7 @@ public final class DNSService extends Service {
         this.audioManager = Compat.getSystemService(this, AudioManager.class);
         if (this.audioManager == null) throw new UnsupportedOperationException("AudioManager is null");
 
-        this.getApplicationContext().getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver);
+        this.getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver);
 
         this.registerReceiver(
                 new BroadcastReceiver() {
