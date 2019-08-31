@@ -10,4 +10,6 @@
     <string name="stop_toast_text">Speak until %1$s</string>
     <string name="stop_until_screen_off">Speak until screen off</string>
     <string name="notification_channel_name">DoNotSpeak</string>
+    <string name="shortcut_enableSpeakerUntilScreenOff">Enable Speaker</string>
+    <string name="shortcut_showMenu">Show Menu</string>
 </resources>

@@ -14,6 +14,7 @@ import java.util.Objects;
 public final class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     public static final String ACTION_DISABLE_DIALOG = "DISABLE_DIALOG";
+    public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +53,7 @@ public final class MainActivity extends Activity {
                             .setNeutralButton(R.string.disable_alert_untilScreenOffButton, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent =
-                                            new Intent(MainActivity.this, DNSService.class)
-                                                    .setAction(DNSService.ACTION_STOP_UNTIL_SCREEN_OFF);
-                                    MainActivity.this.startService(intent);
-                                    MainActivity.this.exit();
+                                    MainActivity.this.stopUntilScreenOff();
                                 }
                             })
                             .setNegativeButton(R.string.disable_alert_cancelButton, new DialogInterface.OnClickListener() {
@@ -73,6 +70,8 @@ public final class MainActivity extends Activity {
                             })
                             .create();
             dialog.show();
+        } else if (Objects.equals(action, ACTION_STOP_UNTIL_SCREEN_OFF)) {
+            this.stopUntilScreenOff();
         } else {
             Log.d(TAG, "start service!");
             Intent serviceIntent = new Intent(this, DNSService.class).setAction(DNSService.ACTION_START);
@@ -80,6 +79,14 @@ public final class MainActivity extends Activity {
 
             this.exit();
         }
+    }
+
+    private void stopUntilScreenOff() {
+        Intent intent =
+                new Intent(MainActivity.this, DNSService.class)
+                        .setAction(DNSService.ACTION_STOP_UNTIL_SCREEN_OFF);
+        MainActivity.this.startService(intent);
+        MainActivity.this.exit();
     }
 
     private void exit() {

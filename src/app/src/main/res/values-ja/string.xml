@@ -10,4 +10,6 @@
     <string name="stop_toast_text">%1$s まで有効</string>
     <string name="stop_until_screen_off">画面消灯まで有効</string>
     <string name="notification_channel_name">DoNotSpeak</string>
+    <string name="shortcut_enableSpeakerUntilScreenOff">スピーカー有効化</string>
+    <string name="shortcut_showMenu">メニュー</string>
 </resources>

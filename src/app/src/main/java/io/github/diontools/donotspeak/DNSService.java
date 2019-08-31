@@ -148,6 +148,7 @@ public final class DNSService extends Service {
                 break;
             }
             case ACTION_STOP: {
+                this.stopUntilScreenOff = false;
                 int disableTime = intent.getIntExtra(DISABLE_TIME_NAME, 0);
                 if (disableTime > 0) {
                     this.stop(disableTime);
