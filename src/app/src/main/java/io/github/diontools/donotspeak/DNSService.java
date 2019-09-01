@@ -21,7 +21,7 @@ import java.util.*;
 
 
 public final class DNSService extends Service {
-    private static final String NOTIFICATION_ID = "DoNotSpeak_Notification";
+    private static final String NOTIFICATION_ID = "DoNotSpeak_Status_Notification";
     private static final String TAG = "DNSService";
 
     public static final String ACTION_START = "START";
