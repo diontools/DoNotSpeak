@@ -28,18 +28,19 @@ public final class MainActivity extends Activity {
         //setContentView(R.layout.activity_main)
 
         // Allow show dialog on locked screen
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            setShowWhenLocked(true);
-            setTurnScreenOn(true);
-            KeyguardManager keyguardManager = Compat.getSystemService(this, KeyguardManager.class);
-            if (keyguardManager != null) {
+        KeyguardManager keyguardManager = Compat.getSystemService(this, KeyguardManager.class);
+        if (keyguardManager != null && keyguardManager.isKeyguardLocked()) {
+            Log.d(TAG, "show when locked");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                setShowWhenLocked(true);
+                setTurnScreenOn(true);
                 keyguardManager.requestDismissKeyguard(this, null);
+            } else {
+                this.getWindow().addFlags(
+                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                                | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             }
-        } else {
-            this.getWindow().addFlags(
-                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                    | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                    | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
 
         String action = this.getIntent().getAction();
