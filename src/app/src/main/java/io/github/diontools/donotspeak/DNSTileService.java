@@ -97,7 +97,11 @@ public final class DNSTileService extends TileService {
     }
 
     private void showDisableDialogAndCollapse() {
-        this.startActivityAndCollapse(new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_DISABLE_DIALOG));
+        this.startActivityAndCollapse(
+                new Intent(this, MainActivity.class)
+                        .setAction(MainActivity.ACTION_DISABLE_DIALOG)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        );
     }
 
     private void requestStateToService() {
