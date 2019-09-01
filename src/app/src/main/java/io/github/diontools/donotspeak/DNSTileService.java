@@ -109,7 +109,6 @@ public final class DNSTileService extends TileService {
         Tile tile = this.getQsTile();
         if (tile == null) {
             Log.d(TAG, "updateIcon: tile is null");
-            requestListeningState(this, new ComponentName(this, DNSTileService.class));
             return;
         }
 
