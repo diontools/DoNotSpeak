@@ -12,4 +12,7 @@
     <string name="notification_channel_name">DoNotSpeak</string>
     <string name="shortcut_enableSpeakerUntilScreenOff">Enable Speaker</string>
     <string name="shortcut_showMenu">Show Menu</string>
+    <string name="tile_label">Disabling Speaker</string>
+    <string name="tile_stop_text">Speak until %1$s</string>
+    <string name="tile_stop_until_screen_off">Speak until screen off</string>
 </resources>

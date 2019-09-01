@@ -26,6 +26,7 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
@@ -34,6 +35,19 @@
         </activity>
 
         <service android:name=".DNSService"/>
+
+        <service
+                android:name=".DNSTileService"
+                android:icon="@drawable/ic_volume_off_black_24dp"
+                android:label="@string/tile_label"
+                android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.service.quicksettings.ACTIVE_TILE"
+                    android:value="true" />
+        </service>
     </application>
 
 </manifest>

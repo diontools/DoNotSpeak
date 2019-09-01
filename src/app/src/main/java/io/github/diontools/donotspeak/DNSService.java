@@ -29,6 +29,7 @@ public final class DNSService extends Service {
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
+    public static final String ACTION_REQUEST_STATE_FROM_TILE = "REQUEST_STATE_FROM_TILE";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
@@ -165,6 +166,10 @@ public final class DNSService extends Service {
                 this.stop(-1);
                 break;
             }
+            case ACTION_REQUEST_STATE_FROM_TILE: {
+                this.responseStateToTile();
+                break;
+            }
             default: {
                 Log.d(TAG, "unknown command");
             }
@@ -223,6 +228,7 @@ public final class DNSService extends Service {
         }
 
         this.createNotification(NOTIFICATION_ID, this.enabled);
+        this.responseStateToTile();
     }
 
     private void createNotification(String id, boolean enabled) {
@@ -287,6 +293,18 @@ public final class DNSService extends Service {
             }
 
             return false;
+        }
+    }
+
+    private void responseStateToTile() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            this.startService(
+                    new Intent(this, DNSTileService.class)
+                            .setAction(DNSTileService.ACTION_RESPONSE_STATE)
+                            .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_ENABLED, this.enabled)
+                            .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_STOP_UNTIL_SCREEN_OFF, this.stopUntilScreenOff)
+                            .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_DISABLE_TIME, this.disableTimeString)
+            );
         }
     }
 
