@@ -92,7 +92,7 @@ public final class DNSTileService extends TileService {
         if (this.enabled) {
             this.showDisableDialogAndCollapse();
         } else {
-            Compat.startForegroundService(this, new Intent(this, DNSService.class).setAction(DNSService.ACTION_TOGGLE));
+            this.startAndCollapse();
         }
     }
 
@@ -100,6 +100,14 @@ public final class DNSTileService extends TileService {
         this.startActivityAndCollapse(
                 new Intent(this, MainActivity.class)
                         .setAction(MainActivity.ACTION_DISABLE_DIALOG)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        );
+    }
+
+    private void startAndCollapse() {
+        this.startActivityAndCollapse(
+                new Intent(this, MainActivity.class)
+                        .setAction("")
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         );
     }
