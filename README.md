@@ -16,6 +16,10 @@ Android 5.0 Lollipop 以降
 * 音量ボタンなどで音量を変更したとき
 * イヤホンとの接続を解除したとき
 
+## 変更履歴
+
+[CHANGELOG](./CHANGELOG.md)
+
 ## TODO
 
 - [x] 起動時自動ブート
