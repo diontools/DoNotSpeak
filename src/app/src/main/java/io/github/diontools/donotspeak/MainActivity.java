@@ -63,12 +63,7 @@ public final class MainActivity extends Activity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     int disableTime = (numPicker.getValue() + 1) * 5 * 60 * 1000;
-                                    Intent intent =
-                                            new Intent(MainActivity.this, DNSService.class)
-                                                    .setAction(DNSService.ACTION_STOP)
-                                                    .putExtra(DNSService.DISABLE_TIME_NAME, disableTime);
-                                    MainActivity.this.startService(intent);
-                                    MainActivity.this.exit();
+                                    MainActivity.this.stop(disableTime);
                                 }
                             })
                             .setNeutralButton(R.string.disable_alert_untilScreenOffButton, new DialogInterface.OnClickListener() {
@@ -104,12 +99,21 @@ public final class MainActivity extends Activity {
         }
     }
 
+    private void stop(int disableTime) {
+        Intent intent =
+                new Intent(MainActivity.this, DNSService.class)
+                        .setAction(DNSService.ACTION_STOP)
+                        .putExtra(DNSService.DISABLE_TIME_NAME, disableTime);
+        Compat.startForegroundService(this, intent);
+        this.exit();
+    }
+
     private void stopUntilScreenOff() {
         Intent intent =
                 new Intent(MainActivity.this, DNSService.class)
                         .setAction(DNSService.ACTION_STOP_UNTIL_SCREEN_OFF);
-        MainActivity.this.startService(intent);
-        MainActivity.this.exit();
+        Compat.startForegroundService(this, intent);
+        this.exit();
     }
 
     private void exit() {

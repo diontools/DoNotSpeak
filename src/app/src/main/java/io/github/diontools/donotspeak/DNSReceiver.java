@@ -18,7 +18,7 @@ public final class DNSReceiver extends BroadcastReceiver {
             case AudioManager.ACTION_AUDIO_BECOMING_NOISY: {
                 Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
                 Intent startIntent = new Intent(context, DNSService.class).setAction(DNSService.ACTION_FORCE_MUTE);
-                context.startService(startIntent);
+                Compat.startForegroundService(context, startIntent);
                 break;
             }
             case Intent.ACTION_BOOT_COMPLETED: {
