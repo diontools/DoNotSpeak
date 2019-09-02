@@ -298,13 +298,7 @@ public final class DNSService extends Service {
 
     private void responseStateToTile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            this.startService(
-                    new Intent(this, DNSTileService.class)
-                            .setAction(DNSTileService.ACTION_RESPONSE_STATE)
-                            .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_ENABLED, this.enabled)
-                            .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_STOP_UNTIL_SCREEN_OFF, this.stopUntilScreenOff)
-                            .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_DISABLE_TIME, this.disableTimeString)
-            );
+            IntentUtility.responseStateToTile(this, this.enabled, this.stopUntilScreenOff, this.disableTimeString);
         }
     }
 

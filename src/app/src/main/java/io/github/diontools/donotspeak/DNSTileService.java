@@ -1,9 +1,6 @@
 package io.github.diontools.donotspeak;
 
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Icon;
@@ -11,7 +8,6 @@ import android.os.Build;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.util.Log;
-import android.view.WindowManager;
 
 @TargetApi(Build.VERSION_CODES.N)
 public final class DNSTileService extends TileService {
@@ -34,13 +30,13 @@ public final class DNSTileService extends TileService {
     @Override
     public void onTileAdded() {
         Log.d(TAG, "onTileAdded");
-        this.requestStateToService();
+        IntentUtility.requestStateFromTile(this);
     }
 
     @Override
     public void onStartListening() {
         Log.d(TAG, "onStartListening");
-        this.requestStateToService();
+        IntentUtility.requestStateFromTile(this);
     }
 
     @Override
@@ -48,7 +44,7 @@ public final class DNSTileService extends TileService {
         Log.d(TAG, "onClick");
 
         this.state = STATE_TOGGLE;
-        this.requestStateToService();
+        IntentUtility.requestStateFromTile(this);
     }
 
     @Override
@@ -93,7 +89,7 @@ public final class DNSTileService extends TileService {
             this.showDisableDialogAndCollapse();
         } else {
             if (this.isLocked()) {
-                this.start();
+                IntentUtility.start(this);
             } else {
                 this.startAndCollapse();
             }
@@ -108,25 +104,12 @@ public final class DNSTileService extends TileService {
         );
     }
 
-    private void start() {
-        Compat.startForegroundService(
-                this,
-                new Intent(this, DNSService.class)
-                        .setAction(DNSService.ACTION_START)
-        );
-    }
-
     private void startAndCollapse() {
         this.startActivityAndCollapse(
                 new Intent(this, MainActivity.class)
                         .setAction("")
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         );
-    }
-
-    private void requestStateToService() {
-        Intent serviceIntent = new Intent(this, DNSService.class).setAction(DNSService.ACTION_REQUEST_STATE_FROM_TILE);
-        Compat.startForegroundService(this, serviceIntent);
     }
 
     private void updateIcon() {

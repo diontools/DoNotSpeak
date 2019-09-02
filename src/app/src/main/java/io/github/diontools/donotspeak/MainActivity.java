@@ -3,7 +3,6 @@ package io.github.diontools.donotspeak;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -63,7 +62,8 @@ public final class MainActivity extends Activity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     int disableTime = (numPicker.getValue() + 1) * 5 * 60 * 1000;
-                                    MainActivity.this.stop(disableTime);
+                                    IntentUtility.stop(MainActivity.this, disableTime);
+                                    MainActivity.this.exit();
                                 }
                             })
                             .setNeutralButton(R.string.disable_alert_untilScreenOffButton, new DialogInterface.OnClickListener() {
@@ -92,27 +92,13 @@ public final class MainActivity extends Activity {
             this.stopUntilScreenOff();
         } else {
             Log.d(TAG, "start service!");
-            Intent serviceIntent = new Intent(this, DNSService.class).setAction(DNSService.ACTION_START);
-            Compat.startForegroundService(this, serviceIntent);
-
+            IntentUtility.start(this);
             this.exit();
         }
     }
 
-    private void stop(int disableTime) {
-        Intent intent =
-                new Intent(MainActivity.this, DNSService.class)
-                        .setAction(DNSService.ACTION_STOP)
-                        .putExtra(DNSService.DISABLE_TIME_NAME, disableTime);
-        Compat.startForegroundService(this, intent);
-        this.exit();
-    }
-
     private void stopUntilScreenOff() {
-        Intent intent =
-                new Intent(MainActivity.this, DNSService.class)
-                        .setAction(DNSService.ACTION_STOP_UNTIL_SCREEN_OFF);
-        Compat.startForegroundService(this, intent);
+        IntentUtility.stopUntilScreenOff(this);
         this.exit();
     }
 
