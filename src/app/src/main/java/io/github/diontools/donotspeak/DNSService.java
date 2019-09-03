@@ -107,16 +107,24 @@ public final class DNSService extends Service {
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_OFF)) {
-                            if (DNSService.this.stopUntilScreenOff) {
-                                DNSService.this.start();
-                            } else {
-                                DNSService.this.update();
-                            }
+                        if (DNSService.this.stopUntilScreenOff) {
+                            DNSService.this.start();
+                        } else {
+                            DNSService.this.update();
                         }
                     }
                 },
                 new IntentFilter(Intent.ACTION_SCREEN_OFF));
+
+        this.registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        DNSService.this.mute(true);
+                        DNSService.this.start();
+                    }
+                },
+                new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
     }
 
     @Override

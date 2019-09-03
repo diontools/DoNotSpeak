@@ -15,11 +15,6 @@ public final class DNSReceiver extends BroadcastReceiver {
         if (action == null) return;
 
         switch (action) {
-            case AudioManager.ACTION_AUDIO_BECOMING_NOISY: {
-                Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
-                IntentUtility.forceMute(context);
-                break;
-            }
             case Intent.ACTION_BOOT_COMPLETED: {
                 Log.d(TAG, "ACTION_BOOT_COMPLETED");
                 IntentUtility.start(context);

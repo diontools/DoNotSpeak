@@ -32,14 +32,6 @@ final class IntentUtility {
         );
     }
 
-    static void forceMute(Context context) {
-        Compat.startForegroundService(
-                context,
-                new Intent(context, DNSService.class)
-                        .setAction(DNSService.ACTION_FORCE_MUTE)
-        );
-    }
-
     static void requestStateFromTile(Context context) {
         Compat.startForegroundService(
                 context,
