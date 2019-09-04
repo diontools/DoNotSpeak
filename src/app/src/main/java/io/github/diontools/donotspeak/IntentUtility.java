@@ -1,10 +1,8 @@
 package io.github.diontools.donotspeak;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.service.quicksettings.TileService;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
@@ -37,11 +35,11 @@ final class IntentUtility {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    static void setTileState(Context context, boolean enabled, boolean stopUntilScreenOff, String disableTimeString) {
+    static void setTileState(boolean enabled, boolean stopUntilScreenOff, String disableTimeString) {
         Log.d(TAG, "setTileState " + enabled + " " + stopUntilScreenOff + " " + disableTimeString);
         DNSTileService.enabled = enabled;
         DNSTileService.stopUntilScreenOff = stopUntilScreenOff;
         DNSTileService.disableTimeString = disableTimeString;
-        TileService.requestListeningState(context, new ComponentName(context, DNSTileService.class));
+        DNSTileService.requestUpdate();
     }
 }

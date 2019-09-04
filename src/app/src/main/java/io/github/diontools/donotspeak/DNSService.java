@@ -301,7 +301,7 @@ public final class DNSService extends Service {
 
     private void responseStateToTile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            IntentUtility.setTileState(this, this.enabled, this.stopUntilScreenOff, this.disableTimeString);
+            IntentUtility.setTileState(this.enabled, this.stopUntilScreenOff, this.disableTimeString);
         }
     }
 

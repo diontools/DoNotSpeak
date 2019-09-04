@@ -18,6 +18,15 @@ public final class DNSTileService extends TileService {
     public static boolean stopUntilScreenOff = false;
     public static String disableTimeString = "";
 
+    private static Runnable updateListener;
+
+    public static void requestUpdate() {
+        Runnable listener = updateListener;
+        if (listener != null) {
+            listener.run();
+        }
+    }
+
     @Override
     public void onTileAdded() {
         Log.d(TAG, "onTileAdded");
@@ -33,11 +42,18 @@ public final class DNSTileService extends TileService {
     public void onStartListening() {
         Log.d(TAG, "onStartListening");
         this.updateIcon();
+        updateListener = new Runnable() {
+            @Override
+            public void run() {
+                DNSTileService.this.updateIcon();
+            }
+        };
     }
 
     @Override
     public void onStopListening() {
         Log.d(TAG, "onStopListening");
+        updateListener = null;
     }
 
     @Override
