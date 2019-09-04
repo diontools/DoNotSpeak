@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.os.IBinder;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 import android.util.Log;
@@ -12,80 +13,65 @@ import android.util.Log;
 @TargetApi(Build.VERSION_CODES.N)
 public final class DNSTileService extends TileService {
     private static final String TAG = "DNSTileService";
-    public static final String ACTION_RESPONSE_STATE = "RESPONSE_STATE";
 
-    public static final  String RESPONSE_STATE_EXTRA_ENABLED = "ENABLED";
-    public static final  String RESPONSE_STATE_EXTRA_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
-    public static final  String RESPONSE_STATE_EXTRA_DISABLE_TIME = "DISABLE_TIME";
-
-    private static final int STATE_IDLE = 0;
-    private static final int STATE_TOGGLE = 1;
-
-    private boolean enabled = false;
-    private boolean stopUntilScreenOff = false;
-    private String disableTimeString = "";
-
-    private int state = STATE_IDLE;
+    public static boolean enabled = true;
+    public static boolean stopUntilScreenOff = false;
+    public static String disableTimeString = "";
 
     @Override
     public void onTileAdded() {
         Log.d(TAG, "onTileAdded");
-        IntentUtility.requestStateFromTile(this);
+        this.updateIcon();
+    }
+
+    @Override
+    public void onTileRemoved() {
+        Log.d(TAG, "onTileRemoved");
     }
 
     @Override
     public void onStartListening() {
         Log.d(TAG, "onStartListening");
-        IntentUtility.requestStateFromTile(this);
+        this.updateIcon();
+    }
+
+    @Override
+    public void onStopListening() {
+        Log.d(TAG, "onStopListening");
     }
 
     @Override
     public void onClick() {
         Log.d(TAG, "onClick");
-
-        this.state = STATE_TOGGLE;
-        IntentUtility.requestStateFromTile(this);
+        this.toggle();
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "started! flags:" + flags + " id:" + startId);
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "onCreate");
+    }
 
-        if (intent != null) {
-            String command = intent.getAction();
-            Log.d(TAG, "command:" + command);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+    }
 
-            if (command == null) {
-                Log.d(TAG, "command is null");
-                command = ""; // skip
-            }
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.d(TAG, "onBind");
+        return super.onBind(intent);
+    }
 
-            switch (command) {
-                case ACTION_RESPONSE_STATE: {
-                    this.enabled = intent.getBooleanExtra(RESPONSE_STATE_EXTRA_ENABLED, false);
-                    this.stopUntilScreenOff = intent.getBooleanExtra(RESPONSE_STATE_EXTRA_STOP_UNTIL_SCREEN_OFF, false);
-                    this.disableTimeString = intent.getStringExtra(RESPONSE_STATE_EXTRA_DISABLE_TIME);
-                    switch (this.state) {
-                        case STATE_TOGGLE: {
-                            this.state = STATE_IDLE;
-                            this.toggle();
-                            break;
-                        }
-                    }
-                    this.updateIcon();
-                    break;
-                }
-                default: {
-                    Log.d(TAG, "unknown command");
-                }
-            }
-        }
-
-        return super.onStartCommand(intent, flags, startId);
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.d(TAG, "onUnbind");
+        return super.onUnbind(intent);
     }
 
     private void toggle() {
-        if (this.enabled) {
+        if (enabled) {
             this.showDisableDialogAndCollapse();
         } else {
             if (this.isLocked()) {
@@ -119,16 +105,16 @@ public final class DNSTileService extends TileService {
             return;
         }
 
-        Log.d(TAG, "updateIcon:" + this.enabled + " untilSF:" + this.stopUntilScreenOff + " time:" + this.disableTimeString);
+        Log.d(TAG, "updateIcon:" + enabled + " untilSF:" + stopUntilScreenOff + " time:" + disableTimeString);
 
-        tile.setIcon(Icon.createWithResource(this, this.enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp));
-        tile.setLabel(this.enabled ? this.getString(R.string.app_name) : this.getStoppedMessage());
-        tile.setState(this.enabled ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+        tile.setIcon(Icon.createWithResource(this, enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp));
+        tile.setLabel(enabled ? this.getString(R.string.app_name) : this.getStoppedMessage());
+        tile.setState(enabled ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
         tile.updateTile();
     }
 
     private String getStoppedMessage() {
         Resources res = this.getResources();
-        return this.stopUntilScreenOff ? res.getString(R.string.tile_stop_until_screen_off) : String.format(res.getString(R.string.tile_stop_text), this.disableTimeString);
+        return stopUntilScreenOff ? res.getString(R.string.tile_stop_until_screen_off) : String.format(res.getString(R.string.tile_stop_text), disableTimeString);
     }
 }

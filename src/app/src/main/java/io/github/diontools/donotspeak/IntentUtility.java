@@ -1,12 +1,16 @@
 package io.github.diontools.donotspeak;
 
-import android.annotation.TargetApi;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.service.quicksettings.TileService;
 import android.support.annotation.RequiresApi;
+import android.util.Log;
 
 final class IntentUtility {
+    private static final String TAG = "IntentUtility";
+
     static void start(Context context) {
         Compat.startForegroundService(
                 context,
@@ -32,22 +36,12 @@ final class IntentUtility {
         );
     }
 
-    static void requestStateFromTile(Context context) {
-        Compat.startForegroundService(
-                context,
-                new Intent(context, DNSService.class)
-                        .setAction(DNSService.ACTION_REQUEST_STATE_FROM_TILE)
-        );
-    }
-
     @RequiresApi(Build.VERSION_CODES.N)
-    static void responseStateToTile(Context context, boolean enabled, boolean stopUntilScreenOff, String disableTimeString) {
-        context.startService(
-                new Intent(context, DNSTileService.class)
-                        .setAction(DNSTileService.ACTION_RESPONSE_STATE)
-                        .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_ENABLED, enabled)
-                        .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_STOP_UNTIL_SCREEN_OFF, stopUntilScreenOff)
-                        .putExtra(DNSTileService.RESPONSE_STATE_EXTRA_DISABLE_TIME, disableTimeString)
-        );
+    static void setTileState(Context context, boolean enabled, boolean stopUntilScreenOff, String disableTimeString) {
+        Log.d(TAG, "setTileState " + enabled + " " + stopUntilScreenOff + " " + disableTimeString);
+        DNSTileService.enabled = enabled;
+        DNSTileService.stopUntilScreenOff = stopUntilScreenOff;
+        DNSTileService.disableTimeString = disableTimeString;
+        TileService.requestListeningState(context, new ComponentName(context, DNSTileService.class));
     }
 }

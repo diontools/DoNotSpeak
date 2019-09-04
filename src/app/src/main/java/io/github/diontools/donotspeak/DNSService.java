@@ -29,7 +29,6 @@ public final class DNSService extends Service {
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
-    public static final String ACTION_REQUEST_STATE_FROM_TILE = "REQUEST_STATE_FROM_TILE";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
@@ -174,10 +173,6 @@ public final class DNSService extends Service {
                 this.stop(-1);
                 break;
             }
-            case ACTION_REQUEST_STATE_FROM_TILE: {
-                this.responseStateToTile();
-                break;
-            }
             default: {
                 Log.d(TAG, "unknown command");
             }
@@ -306,7 +301,7 @@ public final class DNSService extends Service {
 
     private void responseStateToTile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            IntentUtility.responseStateToTile(this, this.enabled, this.stopUntilScreenOff, this.disableTimeString);
+            IntentUtility.setTileState(this, this.enabled, this.stopUntilScreenOff, this.disableTimeString);
         }
     }
 

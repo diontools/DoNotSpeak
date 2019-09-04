@@ -3,7 +3,6 @@ package io.github.diontools.donotspeak;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.util.Log;
 
 public final class DNSReceiver extends BroadcastReceiver {
