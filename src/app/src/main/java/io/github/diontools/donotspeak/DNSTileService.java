@@ -14,7 +14,7 @@ import android.util.Log;
 public final class DNSTileService extends TileService {
     private static final String TAG = "DNSTileService";
 
-    public static boolean enabled = true;
+    public static boolean enabled = false;
     public static boolean stopUntilScreenOff = false;
     public static String disableTimeString = "";
 
