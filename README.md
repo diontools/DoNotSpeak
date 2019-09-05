@@ -20,16 +20,6 @@ Android 5.0 Lollipop 以降
 
 [CHANGELOG](./CHANGELOG.md)
 
-## TODO
-
-- [x] 起動時自動ブート
-- [x] ボリューム変更チェック
-- [x] ACTION_AUDIO_BECOMING_NOISYでチェック
-- [x] ヘッドホン付けている時はミュートしない
-- [x] 通知領域でオンオフ
-- [x] 通知デザイン調整
-- [x] Bluetoothヘッドセット対応
-
 ## 権利表記
 
 アプリのアイコンに[Megaphone](https://www.flaticon.com/free-icon/megaphone_262830)を使用しています
