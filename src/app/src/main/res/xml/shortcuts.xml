@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+            android:shortcutId="show_menu"
+            android:icon="@drawable/ic_launcher_round"
+            android:shortcutShortLabel="@string/shortcut_showMenu"
+            android:shortcutLongLabel="@string/shortcut_showMenu"
+    >
+        <intent
+                android:action="DISABLE_DIALOG"
+                android:targetPackage="io.github.diontools.donotspeak"
+                android:targetClass="io.github.diontools.donotspeak.MainActivity"
+        />
+    </shortcut>
+    <shortcut
+            android:shortcutId="enable_speaker_until_screen_off"
+            android:icon="@drawable/ic_noisy"
+            android:shortcutShortLabel="@string/shortcut_enableSpeakerUntilScreenOff"
+            android:shortcutLongLabel="@string/shortcut_enableSpeakerUntilScreenOff"
+    >
+        <intent
+                android:action="STOP_UNTIL_SCREEN_OFF"
+                android:targetPackage="io.github.diontools.donotspeak"
+                android:targetClass="io.github.diontools.donotspeak.MainActivity"
+        />
+    </shortcut>
+</shortcuts>

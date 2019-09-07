@@ -21,13 +21,12 @@ import java.util.*;
 
 
 public final class DNSService extends Service {
-    private static final String NOTIFICATION_ID = "DoNotSpeak_Notification";
+    private static final String NOTIFICATION_ID = "DoNotSpeak_Status_Notification";
     private static final String TAG = "DNSService";
 
     public static final String ACTION_START = "START";
     public static final String ACTION_TOGGLE = "TOGGLE";
     public static final String ACTION_STOP = "STOP";
-    public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
@@ -106,16 +105,37 @@ public final class DNSService extends Service {
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_OFF)) {
-                            if (DNSService.this.stopUntilScreenOff) {
-                                DNSService.this.start();
-                            } else {
-                                DNSService.this.update();
-                            }
+                        if (DNSService.this.stopUntilScreenOff) {
+                            DNSService.this.start();
+                        } else {
+                            DNSService.this.update();
                         }
                     }
                 },
                 new IntentFilter(Intent.ACTION_SCREEN_OFF));
+
+        this.registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
+                        DNSService.this.update(true);
+                    }
+                },
+                new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+
+        this.registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (intent.getIntExtra("state", -1) == 0) {
+                            Log.d(TAG, "unplugged");
+                            DNSService.this.update();
+                        }
+                    }
+                },
+                new IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        );
     }
 
     @Override
@@ -148,15 +168,11 @@ public final class DNSService extends Service {
                 break;
             }
             case ACTION_STOP: {
+                this.stopUntilScreenOff = false;
                 int disableTime = intent.getIntExtra(DISABLE_TIME_NAME, 0);
                 if (disableTime > 0) {
                     this.stop(disableTime);
                 }
-                break;
-            }
-            case ACTION_FORCE_MUTE: {
-                this.mute(true);
-                this.start();
                 break;
             }
             case ACTION_STOP_UNTIL_SCREEN_OFF: {
@@ -217,11 +233,16 @@ public final class DNSService extends Service {
     }
 
     private void update() {
+        this.update(false);
+    }
+
+    private void update(boolean forceMute) {
         if (this.enabled) {
-            this.mute(false);
+            this.mute(forceMute);
         }
 
         this.createNotification(NOTIFICATION_ID, this.enabled);
+        this.responseStateToTile();
     }
 
     private void createNotification(String id, boolean enabled) {
@@ -230,7 +251,7 @@ public final class DNSService extends Service {
         }
 
         RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
-        remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher : R.drawable.ic_noisy);
+        remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher_round : R.drawable.ic_noisy);
         remoteViews.setTextViewText(R.id.textView, enabled ? this.getStartedMessage() : this.getStoppedMessage());
 
         Notification notification =
@@ -286,6 +307,12 @@ public final class DNSService extends Service {
             }
 
             return false;
+        }
+    }
+
+    private void responseStateToTile() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            IntentUtility.setTileState(this.enabled, this.stopUntilScreenOff, this.disableTimeString);
         }
     }
 

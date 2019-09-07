@@ -16,15 +16,9 @@ Android 5.0 Lollipop 以降
 * 音量ボタンなどで音量を変更したとき
 * イヤホンとの接続を解除したとき
 
-## TODO
+## 変更履歴
 
-- [x] 起動時自動ブート
-- [x] ボリューム変更チェック
-- [x] ACTION_AUDIO_BECOMING_NOISYでチェック
-- [x] ヘッドホン付けている時はミュートしない
-- [x] 通知領域でオンオフ
-- [x] 通知デザイン調整
-- [x] Bluetoothヘッドセット対応
+[CHANGELOG](./CHANGELOG.md)
 
 ## 権利表記
 

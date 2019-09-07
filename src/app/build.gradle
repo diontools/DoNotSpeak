@@ -4,14 +4,25 @@ apply plugin: 'com.android.application'
 
 //apply plugin: 'kotlin-android-extensions'
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
 android {
+    signingConfigs {
+        release {
+            storeFile file(properties.getProperty('KEYSTORE'))
+            storePassword properties.getProperty('STORE_PASSWORD')
+            keyAlias properties.getProperty('KEY_ALIAS')
+            keyPassword properties.getProperty('KEY_PASSWORD')
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "io.github.diontools.donotspeak"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 8
-        versionName "1.0.2"
+        versionCode 23
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resConfigs "en", "ja"
     }
@@ -20,6 +31,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
