@@ -15,7 +15,7 @@
         <ImageView
                 android:id="@+id/imageView"
                 android:layout_weight="1"
-                android:src="@drawable/ic_launcher"
+                android:src="@drawable/ic_launcher_round"
                 android:layout_height="match_parent"
                 android:scaleType="fitCenter"
                 android:layout_width="64dp"

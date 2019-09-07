@@ -240,7 +240,7 @@ public final class DNSService extends Service {
         }
 
         RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
-        remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher : R.drawable.ic_noisy);
+        remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher_round : R.drawable.ic_noisy);
         remoteViews.setTextViewText(R.id.textView, enabled ? this.getStartedMessage() : this.getStoppedMessage());
 
         Notification notification =
