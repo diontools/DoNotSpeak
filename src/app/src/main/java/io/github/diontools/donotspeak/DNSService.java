@@ -27,7 +27,6 @@ public final class DNSService extends Service {
     public static final String ACTION_START = "START";
     public static final String ACTION_TOGGLE = "TOGGLE";
     public static final String ACTION_STOP = "STOP";
-    public static final String ACTION_FORCE_MUTE = "FORCE_MUTE";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
@@ -161,11 +160,6 @@ public final class DNSService extends Service {
                 if (disableTime > 0) {
                     this.stop(disableTime);
                 }
-                break;
-            }
-            case ACTION_FORCE_MUTE: {
-                this.mute(true);
-                this.start();
                 break;
             }
             case ACTION_STOP_UNTIL_SCREEN_OFF: {
