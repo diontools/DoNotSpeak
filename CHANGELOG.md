@@ -17,6 +17,8 @@
 * 通知のチャンネル名を`DoNotSpeak`から`ステータス`に変更
 * `startForegroundService`を使用していない問題を修正
 * Android 8.0 以降で`ACTION_AUDIO_BECOMING_NOISY`が処理されていない問題を修正
+* スピーカー有効状態のとき`ACTION_AUDIO_BECOMING_NOISY`でミュートにしないように修正
+* `ACTION_HEADSET_PLUG`でミュート処理をするように変更
 
 ## v1.0.2 2019/01/30
 
