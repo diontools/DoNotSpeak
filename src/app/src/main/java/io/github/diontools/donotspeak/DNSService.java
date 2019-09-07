@@ -119,8 +119,8 @@ public final class DNSService extends Service {
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        DNSService.this.mute(true);
-                        DNSService.this.start();
+                        Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
+                        DNSService.this.update(true);
                     }
                 },
                 new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
@@ -226,8 +226,12 @@ public final class DNSService extends Service {
     }
 
     private void update() {
+        this.update(false);
+    }
+
+    private void update(boolean forceMute) {
         if (this.enabled) {
-            this.mute(false);
+            this.mute(forceMute);
         }
 
         this.createNotification(NOTIFICATION_ID, this.enabled);
