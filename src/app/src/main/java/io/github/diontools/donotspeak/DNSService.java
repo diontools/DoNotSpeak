@@ -123,6 +123,19 @@ public final class DNSService extends Service {
                     }
                 },
                 new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
+
+        this.registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        if (intent.getIntExtra("state", -1) == 0) {
+                            Log.d(TAG, "unplugged");
+                            DNSService.this.update();
+                        }
+                    }
+                },
+                new IntentFilter(Intent.ACTION_HEADSET_PLUG)
+        );
     }
 
     @Override
