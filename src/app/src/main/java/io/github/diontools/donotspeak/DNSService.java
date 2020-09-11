@@ -34,6 +34,7 @@ public final class DNSService extends Service {
 
     private boolean enabled = false;
     private boolean stopUntilScreenOff = false;
+    private int beforeVolume = -1;
 
     private final Handler mainHandler = new Handler();
     private final DNSContentObserver contentObserver = new DNSContentObserver(this.mainHandler, new Runnable() {
@@ -199,6 +200,11 @@ public final class DNSService extends Service {
     }
 
     private void start() {
+        if (!this.enabled) {
+            this.beforeVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            Log.d(TAG, "volume: " + this.beforeVolume);
+        }
+
         this.enabled = true;
         this.stopUntilScreenOff = false;
         this.cancelTimer();
@@ -249,6 +255,8 @@ public final class DNSService extends Service {
     private void update(boolean forceMute) {
         if (this.enabled) {
             this.mute(forceMute);
+        } else {
+            this.unmute();
         }
 
         this.createNotification(NOTIFICATION_ID, this.enabled);
@@ -296,6 +304,14 @@ public final class DNSService extends Service {
 
         Log.d(TAG, "set volume 0");
         this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+    }
+
+    private void unmute() {
+        if (this.beforeVolume >= 0) {
+            Log.d(TAG, "set volume " + this.beforeVolume);
+            this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, this.beforeVolume, 0);
+            this.beforeVolume = -1;
+        }
     }
 
     private boolean isHeadsetConnected() {
