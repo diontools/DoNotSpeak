@@ -309,7 +309,7 @@ public final class DNSService extends Service {
     private void unmute() {
         if (DNSSetting.getRestoreVolume(this) && this.beforeVolume >= 0) {
             Log.d(TAG, "set volume " + this.beforeVolume);
-            this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, this.beforeVolume, 0);
+            this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, this.beforeVolume, AudioManager.FLAG_SHOW_UI);
             this.beforeVolume = -1;
         }
     }
