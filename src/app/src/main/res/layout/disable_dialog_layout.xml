@@ -23,4 +23,11 @@
                 android:text="@string/disable_alert_time_unit"
                 android:textSize="18sp" />
     </LinearLayout>
+
+    <Switch
+            android:id="@+id/restoreVolumeSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/disable_alert_restore_volume" />
 </LinearLayout>

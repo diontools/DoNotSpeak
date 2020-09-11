@@ -307,7 +307,7 @@ public final class DNSService extends Service {
     }
 
     private void unmute() {
-        if (this.beforeVolume >= 0) {
+        if (DNSSetting.getRestoreVolume(this) && this.beforeVolume >= 0) {
             Log.d(TAG, "set volume " + this.beforeVolume);
             this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, this.beforeVolume, 0);
             this.beforeVolume = -1;

@@ -10,7 +10,9 @@ import android.service.quicksettings.TileService;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
 import android.widget.NumberPicker;
+import android.widget.Switch;
 
 import java.util.Objects;
 
@@ -52,6 +54,15 @@ public final class MainActivity extends Activity {
             numPicker.setMinValue(0);
             numPicker.setMaxValue(values.length - 1);
             numPicker.setDisplayedValues(values);
+
+            final Switch restoreVolumeSwitch = view.findViewById(R.id.restoreVolumeSwitch);
+            restoreVolumeSwitch.setChecked(DNSSetting.getRestoreVolume(this));
+            restoreVolumeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    DNSSetting.setRestoreVolume(MainActivity.this, isChecked);
+                }
+            });
 
             AlertDialog dialog =
                     new AlertDialog.Builder(this)
