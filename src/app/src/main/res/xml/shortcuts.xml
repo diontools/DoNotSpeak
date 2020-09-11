@@ -24,4 +24,16 @@
                 android:targetClass="io.github.diontools.donotspeak.MainActivity"
         />
     </shortcut>
+    <shortcut
+            android:shortcutId="switch"
+            android:icon="@drawable/ic_launcher_round"
+            android:shortcutShortLabel="@string/shortcut_switch"
+            android:shortcutLongLabel="@string/shortcut_switch"
+            >
+        <intent
+                android:action="SWITCH"
+                android:targetPackage="io.github.diontools.donotspeak"
+                android:targetClass="io.github.diontools.donotspeak.MainActivity"
+                />
+    </shortcut>
 </shortcuts>

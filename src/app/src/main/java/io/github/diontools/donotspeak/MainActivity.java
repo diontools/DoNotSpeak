@@ -89,6 +89,9 @@ public final class MainActivity extends Activity {
             this.stopUntilScreenOff();
         } else if (Objects.equals(action, TileService.ACTION_QS_TILE_PREFERENCES)) {
             this.stopUntilScreenOff();
+        } else if (Objects.equals(action, DNSService.ACTION_SWITCH)) {
+            IntentUtility.switching(this);
+            this.exit();
         } else {
             Log.d(TAG, "start service!");
             IntentUtility.start(this);

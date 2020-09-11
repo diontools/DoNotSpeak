@@ -26,6 +26,7 @@ public final class DNSService extends Service {
 
     public static final String ACTION_START = "START";
     public static final String ACTION_TOGGLE = "TOGGLE";
+    public static final String ACTION_SWITCH = "SWITCH";
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
 
@@ -162,6 +163,15 @@ public final class DNSService extends Service {
                 if (this.enabled) {
                     // to disable
                     this.startActivity(this.disableIntent);
+                } else {
+                    this.start();
+                }
+                break;
+            }
+            case ACTION_SWITCH: {
+                if (this.enabled) {
+                    this.stopUntilScreenOff = true;
+                    this.stop(-1);
                 } else {
                     this.start();
                 }

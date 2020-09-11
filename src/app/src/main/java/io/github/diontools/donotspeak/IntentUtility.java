@@ -34,6 +34,14 @@ final class IntentUtility {
         );
     }
 
+    static void switching(Context context) {
+        Compat.startForegroundService(
+                context,
+                new Intent(context, DNSService.class)
+                        .setAction(DNSService.ACTION_SWITCH)
+        );
+    }
+
     @RequiresApi(Build.VERSION_CODES.N)
     static void setTileState(boolean enabled, boolean stopUntilScreenOff, String disableTimeString) {
         Log.d(TAG, "setTileState " + enabled + " " + stopUntilScreenOff + " " + disableTimeString);
