@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.DeviceDefault">
+    <style name="AppTheme" parent="android:Theme.DeviceDefault.DayNight">
         <!-- Customize your theme here. -->
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -11,7 +11,7 @@
         <!--<item name="colorAccent">@color/colorAccent</item>-->
     </style>
 
-    <!-- White notification theme for Android 9 and before. -->
-    <style name="AppNotificationTheme" parent="android:Theme.DeviceDefault.Light">
+    <!-- Notification theme for Android 10 and later. -->
+    <style name="AppNotificationTheme" parent="android:Theme.DeviceDefault.DayNight">
     </style>
 </resources>
