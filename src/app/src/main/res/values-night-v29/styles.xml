@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Disable animation for dark mode. -->
+    <style name="DisableAnimationDialogTheme" parent="android:Theme.DeviceDefault.Dialog.Alert">
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>

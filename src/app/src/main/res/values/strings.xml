@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">DoNotSpeak</string>
     <string name="disable_alert_title">Enable Speaker?</string>
+    <string name="disable_alert_menu_button">Show menu</string>
+    <string name="disable_alert_menu_stop_app">Stop this app</string>
     <string name="disable_alert_message">Time to enable speaker</string>
     <string name="disable_alert_time_unit">min</string>
     <string name="disable_alert_restore_volume">Restore volume</string>
@@ -17,4 +19,8 @@
     <string name="tile_label">Disabling Speaker</string>
     <string name="tile_stop_text">Speak until %1$s</string>
     <string name="tile_stop_until_screen_off">Speak until screen off</string>
+    <string name="tile_is_not_live">Unlimited</string>
+    <string name="stop_app_alert_title">Stop this app?</string>
+    <string name="stop_app_alert_message">If you stop this app, the volume will not be limited until you start the app again or restart your device.</string>
+    <string name="stop_app_alert_ok">Stop this app</string>
 </resources>

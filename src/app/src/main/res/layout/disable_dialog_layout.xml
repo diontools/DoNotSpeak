@@ -1,11 +1,40 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent" android:orientation="vertical">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="16dp"
+            android:paddingRight="8dp"
+            android:paddingLeft="8dp">
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center"
+                android:textAlignment="center"
+                android:text="@string/disable_alert_title"
+                android:textSize="16sp"
+                android:textColor="?android:textColorPrimary"/>
+        <ImageButton
+                android:id="@+id/menu_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:minHeight="32dp"
+                android:minWidth="32dp"
+                android:src="@drawable/ic_menu"
+                android:background="?android:selectableItemBackgroundBorderless"
+                android:contentDescription="@string/disable_alert_menu_button"/>
+    </LinearLayout>
+
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textSize="18sp"
+            android:textSize="14sp"
             android:text="@string/disable_alert_message"/>
     <LinearLayout
             android:layout_width="wrap_content"

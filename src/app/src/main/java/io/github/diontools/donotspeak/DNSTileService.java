@@ -81,8 +81,12 @@ public final class DNSTileService extends TileService {
         return super.onUnbind(intent);
     }
 
+    private boolean isWorking() {
+        return enabled && DNSService.IsLive;
+    }
+
     private void toggle() {
-        if (enabled) {
+        if (this.isWorking()) {
             this.showDisableDialogAndCollapse();
         } else {
             if (this.isLocked()) {
@@ -116,16 +120,18 @@ public final class DNSTileService extends TileService {
             return;
         }
 
-        Log.d(TAG, "updateIcon:" + enabled + " untilSF:" + stopUntilScreenOff + " time:" + disableTimeString);
+        Log.d(TAG, "updateIcon:" + enabled + " untilSF:" + stopUntilScreenOff + " time:" + disableTimeString + " isLive: " + DNSService.IsLive);
 
-        tile.setIcon(Icon.createWithResource(this, enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp));
-        tile.setLabel(enabled ? this.getString(R.string.app_name) : this.getStoppedMessage());
-        tile.setState(enabled ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+        boolean isWorking = this.isWorking();
+        tile.setIcon(Icon.createWithResource(this, isWorking ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp));
+        tile.setLabel(isWorking ? this.getString(R.string.app_name) : this.getStoppedMessage());
+        tile.setState(isWorking ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
         tile.updateTile();
     }
 
     private String getStoppedMessage() {
         Resources res = this.getResources();
+        if (!DNSService.IsLive) return res.getString(R.string.tile_is_not_live);
         return stopUntilScreenOff ? res.getString(R.string.tile_stop_until_screen_off) : String.format(res.getString(R.string.tile_stop_text), disableTimeString);
     }
 }

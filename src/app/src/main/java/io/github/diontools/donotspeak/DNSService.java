@@ -29,8 +29,11 @@ public final class DNSService extends Service {
     public static final String ACTION_SWITCH = "SWITCH";
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
+    public static final String ACTION_SHUTDOWN = "SHUTDOWN";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
+
+    public static boolean IsLive = false;
 
     private boolean enabled = false;
     private boolean stopUntilScreenOff = false;
@@ -62,6 +65,8 @@ public final class DNSService extends Service {
     private AlarmManager alarmManager;
     private NotificationManager notificationManager;
     private AudioManager audioManager;
+
+    private BroadcastReceiver broadcastReceiver;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -103,46 +108,48 @@ public final class DNSService extends Service {
 
         this.getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver);
 
-        this.registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
+        this.broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action == null) return;
+
+                switch (action) {
+                    case Intent.ACTION_SCREEN_OFF:
+                        Log.d(TAG, "ACTION_SCREEN_OFF");
                         if (DNSService.this.stopUntilScreenOff) {
                             DNSService.this.start();
                         } else {
                             DNSService.this.update();
                         }
-                    }
-                },
-                new IntentFilter(Intent.ACTION_SCREEN_OFF));
-
-        this.registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
+                        break;
+                    case AudioManager.ACTION_AUDIO_BECOMING_NOISY:
                         Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
                         DNSService.this.update(true);
-                    }
-                },
-                new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
-
-        this.registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
+                        break;
+                    case Intent.ACTION_HEADSET_PLUG:
                         if (intent.getIntExtra("state", -1) == 0) {
                             Log.d(TAG, "unplugged");
                             DNSService.this.update();
                         }
-                    }
-                },
-                new IntentFilter(Intent.ACTION_HEADSET_PLUG)
-        );
+                        break;
+                }
+            }
+        };
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+
+        this.registerReceiver(this.broadcastReceiver, intentFilter);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "started! flags:" + flags + " id:" + startId);
+
+        IsLive = true;
 
         String command = null;
         if (intent != null) {
@@ -190,6 +197,10 @@ public final class DNSService extends Service {
                 this.stopUntilScreenOff = true;
                 this.stop(-1);
                 break;
+            }
+            case ACTION_SHUTDOWN: {
+                this.stopSelf();
+                IsLive = false;
             }
             default: {
                 Log.d(TAG, "unknown command");
@@ -346,5 +357,10 @@ public final class DNSService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy!");
+        this.getContentResolver().unregisterContentObserver(this.contentObserver);
+        if (this.broadcastReceiver != null) {
+            this.unregisterReceiver(this.broadcastReceiver);
+            this.broadcastReceiver = null;
+        }
     }
 }

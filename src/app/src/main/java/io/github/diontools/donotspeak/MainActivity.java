@@ -8,10 +8,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.service.quicksettings.TileService;
 import android.util.Log;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.NumberPicker;
+import android.widget.PopupMenu;
 import android.widget.Switch;
 
 import java.util.Objects;
@@ -20,6 +24,8 @@ public final class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
     public static final String ACTION_DISABLE_DIALOG = "DISABLE_DIALOG";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
+
+    private AlertDialog mainDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +54,15 @@ public final class MainActivity extends Activity {
 
         if (Objects.equals(action, ACTION_DISABLE_DIALOG)) {
             View view = this.getLayoutInflater().inflate(R.layout.disable_dialog_layout, null);
+
+            final ImageButton menuButton = view.findViewById(R.id.menu_button);
+            menuButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MainActivity.this.showPopupMenu(v);
+                }
+            });
+
             final NumberPicker numPicker = view.findViewById(R.id.numberPicker);
             String[] values = new String[24];
             for (int i = 0; i < values.length; i++) values[i] = String.valueOf((i + 1) * 5);
@@ -64,9 +79,8 @@ public final class MainActivity extends Activity {
                 }
             });
 
-            AlertDialog dialog =
+            this.mainDialog =
                     new AlertDialog.Builder(this)
-                            .setTitle(R.string.disable_alert_title)
                             .setView(view)
                             .setPositiveButton(R.string.disable_alert_okButton, new DialogInterface.OnClickListener() {
                                 @Override
@@ -95,7 +109,7 @@ public final class MainActivity extends Activity {
                                 }
                             })
                             .create();
-            dialog.show();
+            this.mainDialog.show();
         } else if (Objects.equals(action, ACTION_STOP_UNTIL_SCREEN_OFF)) {
             this.stopUntilScreenOff();
         } else if (Objects.equals(action, TileService.ACTION_QS_TILE_PREFERENCES)) {
@@ -118,5 +132,54 @@ public final class MainActivity extends Activity {
     private void exit() {
         this.finishAndRemoveTask();
         this.overridePendingTransition(0, 0);
+    }
+
+    private void requestStopApp() {
+        AlertDialog dialog =
+                new AlertDialog.Builder(this, R.style.DisableAnimationDialogTheme)
+                .setTitle(R.string.stop_app_alert_title)
+                .setMessage(R.string.stop_app_alert_message)
+                .setPositiveButton(R.string.stop_app_alert_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity.this.stopApp();
+                    }
+                })
+                .setNegativeButton(R.string.disable_alert_cancelButton, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .create();
+        dialog.show();
+    }
+
+    private void stopApp() {
+        if (this.mainDialog.isShowing()) {
+            this.mainDialog.dismiss();
+        }
+        IntentUtility.shutdown(this);
+        this.exit();
+        this.finish();
+    }
+
+    private void showPopupMenu(View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.disable_alert_menu, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.stop_app:
+                        MainActivity.this.requestStopApp();
+                        return true;
+                }
+                return false;
+            }
+        });
+
+        popup.show();
     }
 }
