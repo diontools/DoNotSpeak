@@ -179,7 +179,7 @@ public final class DNSService extends Service {
             case ACTION_SWITCH: {
                 if (this.enabled) {
                     this.stopUntilScreenOff = true;
-                    this.stop(-1);
+                    this.stop(new Date(0));
                 } else {
                     this.start();
                 }
@@ -187,15 +187,15 @@ public final class DNSService extends Service {
             }
             case ACTION_STOP: {
                 this.stopUntilScreenOff = false;
-                int disableTime = intent.getIntExtra(DISABLE_TIME_NAME, 0);
+                long disableTime = intent.getLongExtra(DISABLE_TIME_NAME, 0);
                 if (disableTime > 0) {
-                    this.stop(disableTime);
+                    this.stop(new Date(disableTime));
                 }
                 break;
             }
             case ACTION_STOP_UNTIL_SCREEN_OFF: {
                 this.stopUntilScreenOff = true;
-                this.stop(-1);
+                this.stop(new Date(0));
                 break;
             }
             case ACTION_SHUTDOWN: {
@@ -223,13 +223,13 @@ public final class DNSService extends Service {
         Toast.makeText(this, this.getStartedMessage(), Toast.LENGTH_SHORT).show();
     }
 
-    private void stop(int disableTime) {
+    private void stop(Date disableTime) {
         Log.d(TAG, "stop disableTime:" + disableTime);
         this.enabled = false;
 
-        if (disableTime >= 0) {
-            long startTime = System.currentTimeMillis() + disableTime;
-            this.disableTimeString = DateFormat.format(new Date(startTime));
+        if (disableTime.getTime() > 0) {
+            long startTime = disableTime.getTime();
+            this.disableTimeString = DateFormat.format(disableTime);
 
             this.cancelTimer();
 

@@ -6,6 +6,8 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
+import java.util.Date;
+
 final class IntentUtility {
     private static final String TAG = "IntentUtility";
 
@@ -17,12 +19,12 @@ final class IntentUtility {
         );
     }
 
-    static void stop(Context context, int disableTime) {
+    static void stop(Context context, Date disableTime) {
         Compat.startForegroundService(
                 context,
                 new Intent(context, DNSService.class)
                         .setAction(DNSService.ACTION_STOP)
-                        .putExtra(DNSService.DISABLE_TIME_NAME, disableTime)
+                        .putExtra(DNSService.DISABLE_TIME_NAME, disableTime.getTime())
         );
     }
 

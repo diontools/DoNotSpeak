@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.quicksettings.TileService;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,10 +15,16 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.PopupMenu;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Switch;
+import android.widget.TimePicker;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Objects;
 
 public final class MainActivity extends Activity {
@@ -64,11 +71,35 @@ public final class MainActivity extends Activity {
             });
 
             final NumberPicker numPicker = view.findViewById(R.id.numberPicker);
-            String[] values = new String[24];
+            final String[] values = new String[24];
             for (int i = 0; i < values.length; i++) values[i] = String.valueOf((i + 1) * 5);
             numPicker.setMinValue(0);
             numPicker.setMaxValue(values.length - 1);
             numPicker.setDisplayedValues(values);
+
+            final TimePicker timePicker = view.findViewById(R.id.timePicker);
+            timePicker.setIs24HourView(DateFormat.is24HourFormat(this));
+
+            final RadioGroup periodRadioGroup = view.findViewById(R.id.periodRadioGroup);
+            final View minutesView = view.findViewById(R.id.minutesView);
+            final View timeOfDayView = view.findViewById(R.id.timeOfDayView);
+            periodRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    minutesView.setVisibility(checkedId == R.id.minutesRadioButton ? View.VISIBLE : View.GONE);
+                    timeOfDayView.setVisibility(checkedId == R.id.timeOfDayRadioButton ? View.VISIBLE : View.GONE);
+
+                    // init time by selected number picker value
+                    if (checkedId == R.id.timeOfDayRadioButton) {
+                        final Calendar calendar = Calendar.getInstance();
+                        int totalMinutes = (numPicker.getValue() + 1) * 5;
+                        calendar.add(Calendar.MINUTE, totalMinutes);
+                        timePicker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
+                        timePicker.setCurrentMinute(calendar.get(Calendar.MINUTE));
+                    }
+                }
+            });
+            periodRadioGroup.check(R.id.minutesRadioButton);
 
             final Switch restoreVolumeSwitch = view.findViewById(R.id.restoreVolumeSwitch);
             restoreVolumeSwitch.setChecked(DNSSetting.getRestoreVolume(this));
@@ -85,7 +116,32 @@ public final class MainActivity extends Activity {
                             .setPositiveButton(R.string.disable_alert_okButton, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    int disableTime = (numPicker.getValue() + 1) * 5 * 60 * 1000;
+                                    boolean useMinutes = periodRadioGroup.getCheckedRadioButtonId() == R.id.minutesRadioButton;
+                                    Date disableTime;
+                                    if (useMinutes) {
+                                        int minutes = (numPicker.getValue() + 1) * 5;
+                                        Calendar calendar = Calendar.getInstance();
+                                        calendar.add(Calendar.MINUTE, minutes);
+                                        disableTime = calendar.getTime();
+                                    } else {
+                                        Calendar currentCalendar = Calendar.getInstance();
+                                        Calendar disableTimeCalender = Calendar.getInstance();
+                                        disableTimeCalender.clear();
+                                        disableTimeCalender.set(
+                                                currentCalendar.get(Calendar.YEAR),
+                                                currentCalendar.get(Calendar.MONTH),
+                                                currentCalendar.get(Calendar.DATE),
+                                                timePicker.getCurrentHour(),
+                                                timePicker.getCurrentMinute());
+
+                                        // add one day when disableTime < now
+                                        if (disableTimeCalender.before(currentCalendar)) {
+                                            disableTimeCalender.add(Calendar.DATE, 1);
+                                        }
+
+                                        disableTime = disableTimeCalender.getTime();
+                                    }
+
                                     IntentUtility.stop(MainActivity.this, disableTime);
                                     MainActivity.this.exit();
                                 }

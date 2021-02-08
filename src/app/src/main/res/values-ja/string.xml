@@ -3,7 +3,11 @@
     <string name="disable_alert_title">スピーカーを有効にしますか？</string>
     <string name="disable_alert_menu_button">メニューを表示</string>
     <string name="disable_alert_menu_stop_app">このアプリを停止する</string>
-    <string name="disable_alert_message">スピーカーを有効にする時間</string>
+    <string name="disable_alert_period">期間:</string>
+    <string name="disable_alert_period_minutes">分指定</string>
+    <string name="disable_alert_period_timeOfDay">時刻指定</string>
+    <string name="disable_alert_message_for_minutes">スピーカーを有効にする時間:</string>
+    <string name="disable_alert_message_for_timesOfDay">下記時刻までスピーカーを有効にする:</string>
     <string name="disable_alert_time_unit">分</string>
     <string name="disable_alert_restore_volume">音量を復元する</string>
     <string name="disable_alert_okButton">有効化</string>

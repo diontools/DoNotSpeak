@@ -1,62 +1,136 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent" android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:paddingLeft="8dp"
             android:paddingTop="16dp"
-            android:paddingRight="8dp"
-            android:paddingLeft="8dp">
+            android:paddingRight="8dp">
+
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_gravity="center"
-                android:textAlignment="center"
+                android:layout_weight="1"
                 android:text="@string/disable_alert_title"
-                android:textSize="16sp"
-                android:textColor="?android:textColorPrimary"/>
+                android:textAlignment="center"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="16sp" />
+
         <ImageButton
                 android:id="@+id/menu_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:minHeight="32dp"
-                android:minWidth="32dp"
-                android:src="@drawable/ic_menu"
                 android:background="?android:selectableItemBackgroundBorderless"
-                android:contentDescription="@string/disable_alert_menu_button"/>
+                android:contentDescription="@string/disable_alert_menu_button"
+                android:minWidth="32dp"
+                android:minHeight="32dp"
+                android:src="@drawable/ic_menu" />
     </LinearLayout>
 
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:textSize="14sp"
-            android:text="@string/disable_alert_message"/>
-    <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
-        <NumberPicker
-                android:id="@+id/numberPicker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center" />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="@string/disable_alert_time_unit"
-                android:textSize="18sp" />
-    </LinearLayout>
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <Switch
-            android:id="@+id/restoreVolumeSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/disable_alert_restore_volume" />
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="vertical">
+
+            <RadioGroup
+                    android:id="@+id/periodRadioGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/disable_alert_period" />
+
+                <RadioButton
+                        android:id="@+id/minutesRadioButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="@string/disable_alert_period_minutes" />
+
+                <RadioButton
+                        android:id="@+id/timeOfDayRadioButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="@string/disable_alert_period_timeOfDay" />
+            </RadioGroup>
+
+            <LinearLayout
+                    android:id="@+id/minutesView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/disable_alert_message_for_minutes"
+                        android:textSize="14sp" />
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal">
+
+                    <NumberPicker
+                            android:id="@+id/numberPicker"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center" />
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:text="@string/disable_alert_time_unit"
+                            android:textSize="18sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/timeOfDayView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/disable_alert_message_for_timesOfDay"
+                        android:textSize="14sp" />
+
+                <TimePicker
+                        android:id="@+id/timePicker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:timePickerMode="spinner" />
+            </LinearLayout>
+
+            <Switch
+                    android:id="@+id/restoreVolumeSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/disable_alert_restore_volume" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

@@ -3,7 +3,11 @@
     <string name="disable_alert_title">Enable Speaker?</string>
     <string name="disable_alert_menu_button">Show menu</string>
     <string name="disable_alert_menu_stop_app">Stop this app</string>
-    <string name="disable_alert_message">Time to enable speaker</string>
+    <string name="disable_alert_period">a period:</string>
+    <string name="disable_alert_period_minutes">Minutes</string>
+    <string name="disable_alert_period_timeOfDay">Time of Day</string>
+    <string name="disable_alert_message_for_minutes">Enable speaker for:</string>
+    <string name="disable_alert_message_for_timesOfDay">Enable speaker until:</string>
     <string name="disable_alert_time_unit">min</string>
     <string name="disable_alert_restore_volume">Restore volume</string>
     <string name="disable_alert_okButton">Enable</string>
