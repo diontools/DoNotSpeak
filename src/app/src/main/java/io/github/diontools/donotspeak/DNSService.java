@@ -33,27 +33,13 @@ public final class DNSService extends Service {
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
+    private static final String ANDROID_MEDIA_VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION";
+
     public static boolean IsLive = false;
 
     private boolean enabled = false;
     private boolean stopUntilScreenOff = false;
     private int beforeVolume = -1;
-
-    private final Handler mainHandler = new Handler();
-    private final DNSContentObserver contentObserver = new DNSContentObserver(this.mainHandler, new Runnable() {
-        @Override
-        public void run() {
-            DNSService.this.update();
-            DNSService.this.updationDebouncer.update();
-        }
-    });
-    private final Debouncer updationDebouncer = new Debouncer(this.mainHandler, 1000, new Runnable() {
-        @Override
-        public void run() {
-            Log.d(TAG, "debounce");
-            DNSService.this.update();
-        }
-    });
 
     private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private String disableTimeString = "";
@@ -106,8 +92,6 @@ public final class DNSService extends Service {
         this.audioManager = Compat.getSystemService(this, AudioManager.class);
         if (this.audioManager == null) throw new UnsupportedOperationException("AudioManager is null");
 
-        this.getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor("volume_music_speaker"), true, this.contentObserver);
-
         this.broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -115,6 +99,10 @@ public final class DNSService extends Service {
                 if (action == null) return;
 
                 switch (action) {
+                    case ANDROID_MEDIA_VOLUME_CHANGED_ACTION:
+                        Log.d(TAG, "VOLUME_CHANGED_ACTION");
+                        DNSService.this.update();
+                        break;
                     case Intent.ACTION_SCREEN_OFF:
                         Log.d(TAG, "ACTION_SCREEN_OFF");
                         if (DNSService.this.stopUntilScreenOff) {
@@ -138,6 +126,7 @@ public final class DNSService extends Service {
         };
 
         IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ANDROID_MEDIA_VOLUME_CHANGED_ACTION);
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
         intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
@@ -357,7 +346,6 @@ public final class DNSService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy!");
-        this.getContentResolver().unregisterContentObserver(this.contentObserver);
         if (this.broadcastReceiver != null) {
             this.unregisterReceiver(this.broadcastReceiver);
             this.broadcastReceiver = null;
