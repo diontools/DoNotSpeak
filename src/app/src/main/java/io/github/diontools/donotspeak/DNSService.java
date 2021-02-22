@@ -34,6 +34,7 @@ public final class DNSService extends Service {
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
     private static final String ANDROID_MEDIA_VOLUME_CHANGED_ACTION = "android.media.VOLUME_CHANGED_ACTION";
+    private static final String ANDROID_MEDIA_EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 
     public static boolean IsLive = false;
 
@@ -99,10 +100,18 @@ public final class DNSService extends Service {
                 if (action == null) return;
 
                 switch (action) {
-                    case ANDROID_MEDIA_VOLUME_CHANGED_ACTION:
-                        Log.d(TAG, "VOLUME_CHANGED_ACTION");
-                        DNSService.this.update();
+                    case ANDROID_MEDIA_VOLUME_CHANGED_ACTION: {
+                        int streamType = intent.getIntExtra(ANDROID_MEDIA_EXTRA_VOLUME_STREAM_TYPE, -1);
+                        if (streamType == AudioManager.STREAM_MUSIC) {
+                            Log.d(TAG,
+                                "VOLUME_CHANGED_ACTION "
+                                        + intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1)
+                                        + " -> "
+                                        + intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1));
+                            DNSService.this.update();
+                        }
                         break;
+                    }
                     case Intent.ACTION_SCREEN_OFF:
                         Log.d(TAG, "ACTION_SCREEN_OFF");
                         if (DNSService.this.stopUntilScreenOff) {
