@@ -1,0 +1,16 @@
+v1.4.0 2021/02/21
+Change the volume change detection method
+
+v1.3.0 2021/02/11
+Use device theme (Android 10 or later)
+Use light theme on notification (Android 9 or earlier)
+Add "Stop this app" menu
+Add "Times of Day" specification feature
+
+v1.2.0 2020/09/11
+Add Switch shortcut (Android 7.0 or above)
+* Toggle "Enable speaker until screen off" and "Disable speaker"
+Add Restore Volume option
+Support Android 11
+
+Details (japanese): https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md

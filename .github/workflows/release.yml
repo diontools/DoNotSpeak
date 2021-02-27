@@ -1,0 +1,87 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*"
+
+defaults:
+  run:
+    working-directory: src
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v1
+
+      - name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Generate local.properties
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+          echo "sdk.dir=$ANDROID_HOME" >> local.properties
+          echo "KEYSTORE=../release.keystore" >> local.properties
+          echo "STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
+          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> local.properties
+          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> local.properties
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # - name: Run Android Lint
+      #   run: ./gradlew lintDebug
+
+      # - name: Run Unit Test
+      #   run: ./gradlew testDebug
+
+      - name: Build with Gradle
+        run: ./gradlew bundleRelease
+
+      - name: Upload aab file
+        uses: actions/upload-artifact@v1
+        with:
+          name: app-release.aab
+          path: ./src/app/build/outputs/bundle/release/app-release.aab
+
+
+  upload:
+    name: Upload
+    needs: build
+    if: github.event.push.tags != false # only tagged
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v1
+
+      - name: Download aab file
+        uses: actions/download-artifact@v2
+        with:
+          name: app-release.aab
+          path: ./src/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+
+      - name: Install packages
+        run: npm install
+        working-directory: publisher
+
+      - name: Generate credentials
+        run: echo "${{ secrets.PUBLISHER_CREDENTIALS_BASE64 }}" | base64 -d > credentials.json
+        working-directory: publisher
+
+      - name: Upload to Google Play
+        run: npm run upload
+        working-directory: publisher
