@@ -3,17 +3,18 @@
         xmlns:tools="http://schemas.android.com/tools"
         package="io.github.diontools.donotspeak">
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
             android:allowBackup="true"
+            android:fullBackupContent="true"
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
-            android:fullBackupContent="true"
             tools:ignore="GoogleAppIndexingWarning">
+
         <receiver
                 android:name=".DNSReceiver"
                 android:enabled="true"
@@ -24,18 +25,29 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".MainActivity">
+        <activity
+                android:name=".MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+            <meta-data
+                    android:name="android.app.shortcuts"
+                    android:resource="@xml/shortcuts" />
         </activity>
 
-        <service android:name=".DNSService"/>
+        <activity
+                android:name=".DiagnosticsActivity"
+                android:theme="@style/ActivityTheme"
+                android:launchMode="singleInstance"
+                android:alwaysRetainTaskState="true"
+                android:autoRemoveFromRecents="true"
+                android:taskAffinity="${applicationId}.diagnostics" />
+
+        <service android:name=".DNSService" />
 
         <service
                 android:name=".DNSTileService"
@@ -46,6 +58,13 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+        
+        <provider
+                android:name=".DiagnosticsContentProvider"
+                android:authorities="${applicationId}"
+                android:exported="false"
+                android:grantUriPermissions="true"
+                />
     </application>
 
 </manifest>

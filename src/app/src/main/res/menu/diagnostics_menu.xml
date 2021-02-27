@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+            android:id="@+id/send_mail"
+            android:title="@string/diagnostics_tool_menu_send_mail"
+            android:showAsAction="always"
+            tools:ignore="AppCompatResource" />
+</menu>

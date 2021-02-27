@@ -9,9 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 import android.media.AudioDeviceInfo;
@@ -37,6 +35,7 @@ public final class DNSService extends Service {
     private static final String ANDROID_MEDIA_EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
 
     public static boolean IsLive = false;
+    public static DiagnosticsLogger Logger;
 
     private boolean enabled = false;
     private boolean stopUntilScreenOff = false;
@@ -63,7 +62,14 @@ public final class DNSService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate");
+
+        // set debug logger
+        if (BuildConfig.DEBUG) {
+            Logger = DiagnosticsLogger.Instance;
+        }
+
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "onCreate");
 
         this.disableIntent =
                 new Intent(this, MainActivity.class)
@@ -96,6 +102,8 @@ public final class DNSService extends Service {
         this.broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                DiagnosticsLogger logger = Logger;
+
                 String action = intent.getAction();
                 if (action == null) return;
 
@@ -103,17 +111,19 @@ public final class DNSService extends Service {
                     case ANDROID_MEDIA_VOLUME_CHANGED_ACTION: {
                         int streamType = intent.getIntExtra(ANDROID_MEDIA_EXTRA_VOLUME_STREAM_TYPE, -1);
                         if (streamType == AudioManager.STREAM_MUSIC) {
-                            Log.d(TAG,
-                                "VOLUME_CHANGED_ACTION "
-                                        + intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1)
-                                        + " -> "
-                                        + intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1));
+                            if (logger != null) {
+                                logger.Log(TAG,
+                                        "VOLUME_CHANGED_ACTION "
+                                                + intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1)
+                                                + " -> "
+                                                + intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1));
+                            }
                             DNSService.this.update();
                         }
                         break;
                     }
                     case Intent.ACTION_SCREEN_OFF:
-                        Log.d(TAG, "ACTION_SCREEN_OFF");
+                        if (logger != null) logger.Log(TAG, "ACTION_SCREEN_OFF");
                         if (DNSService.this.stopUntilScreenOff) {
                             DNSService.this.start();
                         } else {
@@ -121,12 +131,13 @@ public final class DNSService extends Service {
                         }
                         break;
                     case AudioManager.ACTION_AUDIO_BECOMING_NOISY:
-                        Log.d(TAG, "ACTION_AUDIO_BECOMING_NOISY");
+                        if (logger != null) logger.Log(TAG, "ACTION_AUDIO_BECOMING_NOISY");
                         DNSService.this.update(true);
                         break;
                     case Intent.ACTION_HEADSET_PLUG:
+                        if (logger != null) logger.Log(TAG, "ACTION_HEADSET_PLUG");
                         if (intent.getIntExtra("state", -1) == 0) {
-                            Log.d(TAG, "unplugged");
+                            if (logger != null) logger.Log(TAG, "unplugged");
                             DNSService.this.update();
                         }
                         break;
@@ -145,18 +156,19 @@ public final class DNSService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "started! flags:" + flags + " id:" + startId);
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "onStartCommand flags:" + flags + " id:" + startId);
 
         IsLive = true;
 
         String command = null;
         if (intent != null) {
             command = intent.getAction();
-            Log.d(TAG, "command:" + command);
+            if (logger != null) logger.Log(TAG, "command:" + command);
         }
 
         if (command == null) {
-            Log.d(TAG, "command is null, force start");
+            if (logger != null) logger.Log(TAG, "command is null, force start");
             command = ACTION_START; // for kill
         }
 
@@ -201,7 +213,7 @@ public final class DNSService extends Service {
                 IsLive = false;
             }
             default: {
-                Log.d(TAG, "unknown command");
+                if (logger != null) logger.Log(TAG, "unknown command");
             }
         }
 
@@ -209,9 +221,11 @@ public final class DNSService extends Service {
     }
 
     private void start() {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "start");
         if (!this.enabled) {
             this.beforeVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            Log.d(TAG, "volume: " + this.beforeVolume);
+            if (logger != null) logger.Log(TAG, "beforeVolume: " + this.beforeVolume);
         }
 
         this.enabled = true;
@@ -222,7 +236,8 @@ public final class DNSService extends Service {
     }
 
     private void stop(Date disableTime) {
-        Log.d(TAG, "stop disableTime:" + disableTime);
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "stop disableTime:" + disableTime);
         this.enabled = false;
 
         if (disableTime.getTime() > 0) {
@@ -231,7 +246,7 @@ public final class DNSService extends Service {
 
             this.cancelTimer();
 
-            Log.d(TAG, "set timer: " + this.disableTimeString);
+            if (logger != null) logger.Log(TAG, "set timer: " + this.disableTimeString);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
             } else {
@@ -253,7 +268,8 @@ public final class DNSService extends Service {
     }
 
     private void cancelTimer() {
-        Log.d(TAG, "cancel timer");
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "cancel timer");
         this.alarmManager.cancel(this.startIntent);
     }
 
@@ -262,6 +278,9 @@ public final class DNSService extends Service {
     }
 
     private void update(boolean forceMute) {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "update forceMute:" + forceMute);
+
         if (this.enabled) {
             this.mute(forceMute);
         } else {
@@ -306,32 +325,43 @@ public final class DNSService extends Service {
     }
 
     private void mute(boolean force) {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "mute force:" + force);
+
         if (!force && this.isHeadsetConnected()) {
-            Log.d(TAG, "Headset connected!");
+            if (logger != null) logger.Log(TAG, "Headset connected");
             return;
         }
 
-        Log.d(TAG, "set volume 0");
+        if (logger != null) logger.Log(TAG, "set volume 0");
         this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+
+        if (logger != null) logger.Log(TAG, "volume: " + this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
     }
 
     private void unmute() {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "unmute");
+
         if (DNSSetting.getRestoreVolume(this) && this.beforeVolume >= 0) {
-            Log.d(TAG, "set volume " + this.beforeVolume);
+            if (logger != null) logger.Log(TAG, "restore volume: " + this.beforeVolume);
             this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, this.beforeVolume, AudioManager.FLAG_SHOW_UI);
             this.beforeVolume = -1;
         }
     }
 
     private boolean isHeadsetConnected() {
+        DiagnosticsLogger logger = Logger;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            if (logger != null) logger.Log(TAG, "isWiredHeadsetOn:" + this.audioManager.isWiredHeadsetOn() + " isBluetoothScoOn:" + this.audioManager.isBluetoothScoOn() + " isBluetoothA2dpOn:" + this.audioManager.isBluetoothA2dpOn());
             return this.audioManager.isWiredHeadsetOn() || this.audioManager.isBluetoothScoOn() || this.audioManager.isBluetoothA2dpOn();
         } else {
             AudioDeviceInfo[] devices = this.audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-            for (int i = 0; i < devices.length; i++) {
-                AudioDeviceInfo device = devices[i];
-
+            for (AudioDeviceInfo device : devices) {
                 int type = device.getType();
+                if (logger != null)
+                    logger.Log(TAG, "device:" + device.toString() + " type:" + type);
+
                 if (type == AudioDeviceInfo.TYPE_WIRED_HEADSET
                         || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
                         || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
@@ -354,7 +384,8 @@ public final class DNSService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy!");
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "onDestroy!");
         if (this.broadcastReceiver != null) {
             this.unregisterReceiver(this.broadcastReceiver);
             this.broadcastReceiver = null;

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.quicksettings.TileService;
@@ -15,10 +16,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.PopupMenu;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TimePicker;
@@ -37,6 +36,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
 
         //setContentView(R.layout.activity_main)
 
@@ -180,12 +180,23 @@ public final class MainActivity extends Activity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+        this.exit();
+    }
+
     private void stopUntilScreenOff() {
         IntentUtility.stopUntilScreenOff(this);
         this.exit();
     }
 
     private void exit() {
+        Log.d(TAG, "exit");
+        if (this.mainDialog != null && this.mainDialog.isShowing()) {
+            this.mainDialog.dismiss();
+        }
         this.finishAndRemoveTask();
         this.overridePendingTransition(0, 0);
     }
@@ -211,9 +222,6 @@ public final class MainActivity extends Activity {
     }
 
     private void stopApp() {
-        if (this.mainDialog.isShowing()) {
-            this.mainDialog.dismiss();
-        }
         IntentUtility.shutdown(this);
         this.exit();
         this.finish();
@@ -227,10 +235,14 @@ public final class MainActivity extends Activity {
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.stop_app:
-                        MainActivity.this.requestStopApp();
-                        return true;
+                int itemId = item.getItemId();
+                if (itemId == R.id.stop_app) {
+                    MainActivity.this.requestStopApp();
+                    return true;
+                } else if (itemId == R.id.diagnostics) {
+                    MainActivity.this.startActivity(new Intent(MainActivity.this, DiagnosticsActivity.class));
+                    MainActivity.this.exit();
+                    return true;
                 }
                 return false;
             }

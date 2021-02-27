@@ -3,6 +3,7 @@
     <string name="disable_alert_title">Enable Speaker?</string>
     <string name="disable_alert_menu_button">Show menu</string>
     <string name="disable_alert_menu_stop_app">Stop this app</string>
+    <string name="disable_alert_menu_diagnostics_tool">Diagnostics Tool</string>
     <string name="disable_alert_period">a period:</string>
     <string name="disable_alert_period_minutes">Minutes</string>
     <string name="disable_alert_period_timeOfDay">Time of Day</string>
@@ -27,4 +28,11 @@
     <string name="stop_app_alert_title">Stop this app?</string>
     <string name="stop_app_alert_message">If you stop this app, the volume will not be limited until you start the app again or restart your device.</string>
     <string name="stop_app_alert_ok">Stop this app</string>
+    <string name="diagnostics_tool_title">Diagnostics Tool</string>
+    <string name="diagnostics_tool_message">While this screen is open, the operation of the service will be logged.</string>
+    <string name="diagnostics_tool_menu_send_mail">Send e-mail to developer</string>
+    <string name="diagnostics_tool_mail_subject">DoNotSpeak Diagnostics Report</string>
+    <string name="diagnostics_tool_mail_text">Please enter details of the problematic behavior:</string>
+    <string name="diagnostics_tool_mail_title">Send an e-mail with the log as an attachment.</string>
+    <string name="diagnostics_tool_mail_chooser_title">Select the mailer you want to use for sending.</string>
 </resources>

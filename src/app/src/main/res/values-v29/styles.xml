@@ -6,6 +6,9 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
+    <style name="ActivityTheme" parent="android:Theme.DeviceDefault.DayNight">
+    </style>
+
     <!-- Notification theme for Android 10 and later. -->
     <style name="AppNotificationTheme" parent="android:Theme.DeviceDefault.DayNight">
     </style>
