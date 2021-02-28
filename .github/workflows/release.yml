@@ -2,8 +2,6 @@ name: Android CI
 
 on:
   push:
-    branches:
-      - master
     tags:
       - "v*"
 
@@ -48,23 +46,6 @@ jobs:
 
       - name: Upload aab file
         uses: actions/upload-artifact@v1
-        with:
-          name: app-release.aab
-          path: ./src/app/build/outputs/bundle/release/app-release.aab
-
-
-  upload:
-    name: Upload
-    needs: build
-    if: github.event.push.tags != false # only tagged
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out
-        uses: actions/checkout@v1
-
-      - name: Download aab file
-        uses: actions/download-artifact@v2
         with:
           name: app-release.aab
           path: ./src/app/build/outputs/bundle/release/app-release.aab
