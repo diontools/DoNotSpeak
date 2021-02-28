@@ -1,5 +1,6 @@
 v1.5.0 2021/03/xx
 Add Diagnostics Tool
+Fix volume Change loop (Android 5.0)
 
 v1.4.0 2021/02/21
 Change the volume change detection method
