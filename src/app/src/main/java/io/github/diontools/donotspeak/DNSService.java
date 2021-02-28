@@ -111,14 +111,12 @@ public final class DNSService extends Service {
                     case ANDROID_MEDIA_VOLUME_CHANGED_ACTION: {
                         int streamType = intent.getIntExtra(ANDROID_MEDIA_EXTRA_VOLUME_STREAM_TYPE, -1);
                         if (streamType == AudioManager.STREAM_MUSIC) {
-                            if (logger != null) {
-                                logger.Log(TAG,
-                                        "VOLUME_CHANGED_ACTION "
-                                                + intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1)
-                                                + " -> "
-                                                + intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1));
+                            int prevVolume = intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
+                            int volume = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1);
+                            if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume);
+                            if (volume != 0 || prevVolume != volume) {
+                                DNSService.this.update();
                             }
-                            DNSService.this.update();
                         }
                         break;
                     }
