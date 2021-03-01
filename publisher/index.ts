@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as crypto from 'crypto'
 import * as google from 'googleapis'
 
 console.log('publishing started')
@@ -10,6 +11,7 @@ interface Settings {
     track: string
     releaseFilePath: string
     releaseNotesDir: string
+    versionCodeFile: string
 }
 
 const runner = async () => {
@@ -39,6 +41,8 @@ const runner = async () => {
     // resoleve aab file
     const releaseFilePath = path.resolve(__dirname, settings.releaseFilePath)
     if (!fs.existsSync(releaseFilePath)) throw `releaseFilePath '${releaseFilePath}' not found.`
+    const releaseFileHash = crypto.createHash('sha256').update(fs.readFileSync(releaseFilePath)).digest('hex')
+    console.log(releaseFilePath, releaseFileHash)
 
     // read all release notes
     const releaseNotesDir = path.resolve(__dirname, settings.releaseNotesDir)
@@ -58,6 +62,14 @@ const runner = async () => {
             });
     releaseNotes.forEach(note => console.log('releaseNote', note.language))
 
+    // get version code
+    const versionCodeFile = path.resolve(__dirname, settings.versionCodeFile)
+    if (!fs.existsSync(versionCodeFile)) throw `versionCodeFile '${versionCodeFile}' not found.`
+    const versionCodeString = /versionCode (\d+)/i.exec(fs.readFileSync(versionCodeFile).toString())?.[1]
+    if (!versionCodeString) throw 'versionCode not found.'
+    const currentVersionCode = parseInt(versionCodeString)
+    console.log('currentVersionCode', currentVersionCode)
+
     // start edit
     console.log('start edit')
     const appEdit = await publisher.edits.insert({
@@ -72,42 +84,81 @@ const runner = async () => {
         editId: appEditId,
         packageName: settings.applicationId,
     })).data.tracks
-    if (!trackList || !trackList.find(track => track.track === settings.track)) {
+    trackList?.forEach(t => console.log(JSON.stringify(t, undefined, 4)))
+    const targetTrack = trackList?.find(track => track.track === settings.track)
+    if (!targetTrack) {
         throw 'unknown track: ' + settings.track
     }
 
-    // upload aab file
-    console.log('upload aab file')
-    const bundle = (await publisher.edits.bundles.upload({
-        packageName: settings.applicationId,
+    // get uploaded file
+    console.log('get uploaded bundle list')
+    const bundleList = (await publisher.edits.bundles.list({
         editId: appEditId,
-        media: {
-            mimeType: 'application/octet-stream',
-            body: fs.createReadStream(releaseFilePath),
-        }
+        packageName: settings.applicationId,
     })).data
+    const uploadedBundle = bundleList.bundles?.find(bundle => bundle.versionCode === currentVersionCode)
+    console.log('uploadedBundle', uploadedBundle)
 
-    // get version code
-    const versionCode = bundle.versionCode!
-    console.log('versionCode', versionCode)
+    if (uploadedBundle) {
+        // file hash check
+        if (uploadedBundle.sha256 !== releaseFileHash) {
+            throw `file hash change detected. uploadedFileHash: ${uploadedBundle.sha256}, releaseFileHash: ${releaseFileHash}`
+        }
 
-    // update track
-    console.log('update track')
-    const updatedTrack = (await publisher.edits.tracks.update({
-        editId: appEditId,
-        packageName: settings.applicationId,
-        track: settings.track,
-        requestBody: {
+        // patch track
+        console.log('patch track')
+        const patchedTrack = (await publisher.edits.tracks.patch({
+            editId: appEditId,
+            packageName: settings.applicationId,
             track: settings.track,
-            releases: [
-                {
-                    status: 'draft',
-                    versionCodes: [versionCode.toString()],
-                    releaseNotes: releaseNotes,
-                }
-            ]
+            requestBody: {
+                track: settings.track,
+                releases: [
+                    {
+                        status: 'draft',
+                        versionCodes: [currentVersionCode.toString()],
+                        releaseNotes: releaseNotes,
+                    }
+                ]
+            }
+        })).data
+    } else {
+        // upload aab file
+        console.log('upload aab file')
+        const bundle = (await publisher.edits.bundles.upload({
+            packageName: settings.applicationId,
+            editId: appEditId,
+            media: {
+                mimeType: 'application/octet-stream',
+                body: fs.createReadStream(releaseFilePath),
+            }
+        })).data
+
+        // version code check
+        const versionCode = bundle.versionCode!
+        console.log('versionCode', versionCode)
+        if (versionCode !== currentVersionCode) {
+            throw `invalid versioncode ${versionCode} !== ${currentVersionCode}`
         }
-    })).data
+
+        // update track
+        console.log('update track')
+        const updatedTrack = (await publisher.edits.tracks.update({
+            editId: appEditId,
+            packageName: settings.applicationId,
+            track: settings.track,
+            requestBody: {
+                track: settings.track,
+                releases: [
+                    {
+                        status: 'draft',
+                        versionCodes: [currentVersionCode.toString()],
+                        releaseNotes: releaseNotes,
+                    }
+                ]
+            }
+        })).data
+    }
 
     // commit
     console.log('commit')
