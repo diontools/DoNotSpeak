@@ -1,6 +1,8 @@
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as childProcess from 'child_process'
+import fetch from 'node-fetch'
 import * as crypto from 'crypto'
 import * as google from 'googleapis'
 
@@ -28,16 +30,6 @@ const runner = async () => {
     const credentials = JSON.parse(credentialsJson)
     console.log('credentials.type', credentials.type)
 
-    // create android publisher
-    const auth = new google.Auth.GoogleAuth({
-        credentials: credentials,
-        scopes: 'https://www.googleapis.com/auth/androidpublisher'
-    })
-    const authClient = await auth.getClient()
-    const publisher = new google.androidpublisher_v3.Androidpublisher({
-        auth: authClient,
-    })
-
     // resoleve aab file
     const releaseFilePath = path.resolve(__dirname, settings.releaseFilePath)
     if (!fs.existsSync(releaseFilePath)) throw `releaseFilePath '${releaseFilePath}' not found.`
@@ -62,19 +54,31 @@ const runner = async () => {
             });
     releaseNotes.forEach(note => console.log('releaseNote', note.language))
 
+    // download bundletool
+    console.log('download bundletool')
+    const bundleToolResponse = await fetch("https://github.com/google/bundletool/releases/download/1.5.0/bundletool-all-1.5.0.jar")
+    if (!bundleToolResponse.ok) throw `bundletool download failed. status: ${bundleToolResponse.statusText}`
+    const bundleToolBinary = await bundleToolResponse.arrayBuffer()
+    const bundleToolPath = path.join(__dirname, 'bundletool.jar')
+    fs.writeFileSync(bundleToolPath, Buffer.from(bundleToolBinary))
+
     // get version code / version name
-    const versionCodeFile = path.resolve(__dirname, settings.versionCodeFile)
-    if (!fs.existsSync(versionCodeFile)) throw `versionCodeFile '${versionCodeFile}' not found.`
-    const versionCodeFileContent = fs.readFileSync(versionCodeFile).toString()
-    const versionCodeString = /versionCode (\d+)/i.exec(versionCodeFileContent)?.[1]
-    const versionName = /versionName "([\d\w\.\-]+)"/i.exec(versionCodeFileContent)?.[1]
-    if (!versionCodeString) throw 'versionCode not found.'
-    if (!versionName) throw 'versionName not found.'
-    const currentVersionCode = parseInt(versionCodeString)
+    const currentVersionCode = parseInt(childProcess.execSync(`java -jar "${bundleToolPath}" dump manifest --bundle "${releaseFilePath}" --xpath /manifest/@android:versionCode`).toString())
+    const versionName = childProcess.execSync(`java -jar "${bundleToolPath}" dump manifest --bundle "${releaseFilePath}" --xpath /manifest/@android:versionName`).toString().trim()
     const releaseName = `vc${currentVersionCode} (${versionName})`
     console.log('currentVersionCode', currentVersionCode)
     console.log('versionName', versionName)
     console.log('releaseName', releaseName)
+
+    // create android publisher
+    const auth = new google.Auth.GoogleAuth({
+        credentials: credentials,
+        scopes: 'https://www.googleapis.com/auth/androidpublisher'
+    })
+    const authClient = await auth.getClient()
+    const publisher = new google.androidpublisher_v3.Androidpublisher({
+        auth: authClient,
+    })
 
     // start edit
     console.log('start edit')

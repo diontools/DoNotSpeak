@@ -2,6 +2,5 @@
     "applicationId": "io.github.diontools.donotspeak",
     "track": "internal",
     "releaseFilePath": "../src/app/build/outputs/bundle/release/app-release.aab",
-    "releaseNotesDir": "../release-notes",
-    "versionCodeFile": "../src/app/build.gradle"
+    "releaseNotesDir": "../release-notes"
 }
