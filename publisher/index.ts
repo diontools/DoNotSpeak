@@ -62,13 +62,19 @@ const runner = async () => {
             });
     releaseNotes.forEach(note => console.log('releaseNote', note.language))
 
-    // get version code
+    // get version code / version name
     const versionCodeFile = path.resolve(__dirname, settings.versionCodeFile)
     if (!fs.existsSync(versionCodeFile)) throw `versionCodeFile '${versionCodeFile}' not found.`
-    const versionCodeString = /versionCode (\d+)/i.exec(fs.readFileSync(versionCodeFile).toString())?.[1]
+    const versionCodeFileContent = fs.readFileSync(versionCodeFile).toString()
+    const versionCodeString = /versionCode (\d+)/i.exec(versionCodeFileContent)?.[1]
+    const versionName = /versionName "([\d\w\.\-]+)"/i.exec(versionCodeFileContent)?.[1]
     if (!versionCodeString) throw 'versionCode not found.'
+    if (!versionName) throw 'versionName not found.'
     const currentVersionCode = parseInt(versionCodeString)
+    const releaseName = `vc${currentVersionCode} (${versionName})`
     console.log('currentVersionCode', currentVersionCode)
+    console.log('versionName', versionName)
+    console.log('releaseName', releaseName)
 
     // start edit
     console.log('start edit')
@@ -106,7 +112,8 @@ const runner = async () => {
         }
 
         // patch track
-        console.log('patch track')
+        const status = targetTrack.releases?.[0].status || 'draft'
+        console.log('patch track', `status: ${status}`)
         const patchedTrack = (await publisher.edits.tracks.patch({
             editId: appEditId,
             packageName: settings.applicationId,
@@ -115,7 +122,8 @@ const runner = async () => {
                 track: settings.track,
                 releases: [
                     {
-                        status: 'draft',
+                        name: releaseName,
+                        status: status,
                         versionCodes: [currentVersionCode.toString()],
                         releaseNotes: releaseNotes,
                     }
@@ -151,6 +159,7 @@ const runner = async () => {
                 track: settings.track,
                 releases: [
                     {
+                        name: releaseName,
                         status: 'draft',
                         versionCodes: [currentVersionCode.toString()],
                         releaseNotes: releaseNotes,
