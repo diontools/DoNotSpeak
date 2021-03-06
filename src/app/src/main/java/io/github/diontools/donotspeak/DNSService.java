@@ -1,13 +1,21 @@
 package io.github.diontools.donotspeak;
 
 import android.app.*;
+import android.bluetooth.BluetoothA2dp;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.media.AudioAttributes;
+import android.media.AudioDeviceCallback;
 import android.media.AudioManager;
+import android.media.AudioPlaybackConfiguration;
 import android.os.Build;
 import android.os.IBinder;
 import android.widget.RemoteViews;
@@ -18,7 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public final class DNSService extends Service {
+public final class DNSService extends Service implements BluetoothProfile.ServiceListener {
     private static final String NOTIFICATION_ID = "DoNotSpeak_Status_Notification";
     private static final String TAG = "DNSService";
 
@@ -28,6 +36,7 @@ public final class DNSService extends Service {
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
     public static final String ACTION_SHUTDOWN = "SHUTDOWN";
+    public static final String ACTION_APPLY_SETTINGS = "APPLY_SETTINGS";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
@@ -51,8 +60,15 @@ public final class DNSService extends Service {
     private AlarmManager alarmManager;
     private NotificationManager notificationManager;
     private AudioManager audioManager;
+    private AudioDeviceCallback audioDeviceCallback;
+    private AudioManager.AudioPlaybackCallback audioPlaybackCallback;
 
     private BroadcastReceiver broadcastReceiver;
+
+    private Set<String> bluetoothHeadsetAddresses;
+    private BluetoothAdapter bluetoothAdapter;
+    private BluetoothHeadset bluetoothHeadset;
+    private BluetoothA2dp bluetoothA2dp;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -70,6 +86,8 @@ public final class DNSService extends Service {
 
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "onCreate");
+
+        this.applySettings();
 
         this.disableIntent =
                 new Intent(this, MainActivity.class)
@@ -139,6 +157,22 @@ public final class DNSService extends Service {
                             DNSService.this.update();
                         }
                         break;
+                    case BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED:
+                        if (logger != null) logger.Log(TAG, "A2dp.ACTION_PLAYING_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
+                        DNSService.this.update();
+                        break;
+                    case BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED:
+                        if (logger != null) logger.Log(TAG, "A2dp.ACTION_CONNECTION_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
+                        DNSService.this.update();
+                        break;
+                    case BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED:
+                        if (logger != null) logger.Log(TAG, "Headset.ACTION_AUDIO_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
+                        DNSService.this.update();
+                        break;
+                    case BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED:
+                        if (logger != null) logger.Log(TAG, "Headset.ACTION_CONNECTION_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
+                        DNSService.this.update();
+                        break;
                 }
             }
         };
@@ -148,8 +182,103 @@ public final class DNSService extends Service {
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         intentFilter.addAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
         intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+        intentFilter.addAction(BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED);
+        intentFilter.addAction(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED);
+        intentFilter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
+        intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
 
         this.registerReceiver(this.broadcastReceiver, intentFilter);
+
+        this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
+        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (this.bluetoothAdapter == null) {
+            if (logger != null) logger.Log(TAG, "bluetooth not supported.");
+        } else {
+            this.bluetoothAdapter.getProfileProxy(this, this, BluetoothProfile.HEADSET);
+            this.bluetoothAdapter.getProfileProxy(this, this, BluetoothProfile.A2DP);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            this.audioDeviceCallback = new AudioDeviceCallback() {
+                @Override
+                public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
+                    DiagnosticsLogger logger = Logger;
+                    if (logger != null) {
+                        for (AudioDeviceInfo device : addedDevices) {
+                            logger.Log(TAG, "added device: " + device.toString() + " type: " + device.getType());
+                        }
+                    }
+                    DNSService.this.update();
+                }
+
+                @Override
+                public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
+                    DiagnosticsLogger logger = Logger;
+                    if (logger != null) {
+                        for (AudioDeviceInfo device : removedDevices) {
+                            logger.Log(TAG, "removed device: " + device.toString() + " type: " + device.getType());
+                        }
+                    }
+                    DNSService.this.update();
+                }
+            };
+            this.audioManager.registerAudioDeviceCallback(this.audioDeviceCallback, null);
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.audioPlaybackCallback = new AudioManager.AudioPlaybackCallback() {
+                @Override
+                public void onPlaybackConfigChanged(List<AudioPlaybackConfiguration> configs) {
+                    DiagnosticsLogger logger = Logger;
+                    if (logger != null) {
+                        for (AudioPlaybackConfiguration config : configs) {
+                            AudioAttributes audioAttributes = config.getAudioAttributes();
+                            logger.Log(TAG, "playback: " + config.toString() + " content-type: " + audioAttributes.getContentType() + " usage: " + audioAttributes.getUsage());
+                        }
+                    }
+                    DNSService.this.update();
+                }
+            };
+            this.audioManager.registerAudioPlaybackCallback(this.audioPlaybackCallback, null);
+        }
+    }
+
+    private void applySettings() {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "applySettings");
+        this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
+    }
+
+    // BluetoothProfile.ServiceListener
+    @Override
+    public void onServiceConnected(int profile, BluetoothProfile proxy) {
+        DiagnosticsLogger logger = Logger;
+        switch (profile) {
+            case BluetoothProfile.HEADSET:
+                if (logger != null) logger.Log(TAG, "HEADSET connected.");
+                this.bluetoothHeadset = (BluetoothHeadset)proxy;
+                break;
+            case BluetoothProfile.A2DP:
+                if (logger != null) logger.Log(TAG, "A2DP connected.");
+                this.bluetoothA2dp = (BluetoothA2dp)proxy;
+                break;
+        }
+    }
+
+    // BluetoothProfile.ServiceListener
+    @Override
+    public void onServiceDisconnected(int profile) {
+        DiagnosticsLogger logger = Logger;
+        switch (profile) {
+            case BluetoothProfile.HEADSET:
+                if (logger != null) logger.Log(TAG, "HEADSET disconnected.");
+                this.bluetoothHeadset = null;
+                break;
+            case BluetoothProfile.A2DP:
+                if (logger != null) logger.Log(TAG, "A2DP disconnected.");
+                this.bluetoothA2dp = null;
+                break;
+        }
     }
 
     @Override
@@ -209,6 +338,12 @@ public final class DNSService extends Service {
             case ACTION_SHUTDOWN: {
                 this.stopSelf();
                 IsLive = false;
+                break;
+            }
+            case ACTION_APPLY_SETTINGS: {
+                this.applySettings();
+                this.update();
+                break;
             }
             default: {
                 if (logger != null) logger.Log(TAG, "unknown command");
@@ -349,7 +484,7 @@ public final class DNSService extends Service {
     }
 
     private boolean isHeadsetConnected() {
-        DiagnosticsLogger logger = Logger;
+        final DiagnosticsLogger logger = Logger;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             if (logger != null) logger.Log(TAG, "isWiredHeadsetOn:" + this.audioManager.isWiredHeadsetOn() + " isBluetoothScoOn:" + this.audioManager.isBluetoothScoOn() + " isBluetoothA2dpOn:" + this.audioManager.isBluetoothA2dpOn());
             return this.audioManager.isWiredHeadsetOn() || this.audioManager.isBluetoothScoOn() || this.audioManager.isBluetoothA2dpOn();
@@ -357,20 +492,67 @@ public final class DNSService extends Service {
             AudioDeviceInfo[] devices = this.audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
             for (AudioDeviceInfo device : devices) {
                 int type = device.getType();
-                if (logger != null)
-                    logger.Log(TAG, "device:" + device.toString() + " type:" + type);
+                if (logger != null) logger.Log(TAG, "device:" + device.toString() + " type:" + type);
 
                 if (type == AudioDeviceInfo.TYPE_WIRED_HEADSET
                         || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
-                        || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
-                        || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
                 ) {
                     return true;
+                }
+
+                if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+                        || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                ) {
+                    if (this.isBluetoothHeadsetConnected()) {
+                        return true;
+                    }
                 }
             }
 
             return false;
         }
+    }
+
+    private boolean isBluetoothHeadsetConnected() {
+        DiagnosticsLogger logger = Logger;
+        boolean isConnectedWithoutAudio = false;
+        boolean isAudioPlaying = false;
+
+        if (this.bluetoothHeadset != null) {
+            List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
+            for (BluetoothDevice device : devices) {
+                boolean isAudioConnected = this.bluetoothHeadset.isAudioConnected(device);
+                if (logger != null) logger.Log(TAG, "headset: " + device.getName() + " " + device.getAddress() + " isAudioConnected: " + isAudioConnected);
+                if (isAudioConnected) isAudioPlaying = true;
+                if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                    if (isAudioConnected) {
+                        if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                        return true;
+                    }
+                    isConnectedWithoutAudio = true;
+                }
+            }
+        }
+
+        if (this.bluetoothA2dp != null) {
+            List<BluetoothDevice> devices = this.bluetoothA2dp.getConnectedDevices();
+            for (BluetoothDevice device : devices) {
+                boolean isA2dpPlaying = this.bluetoothA2dp.isA2dpPlaying(device);
+                if (logger != null) logger.Log(TAG, "a2dp: " + device.getName() + " " + device.getAddress() + " isA2dpPlaying: " + isA2dpPlaying);
+                if (isA2dpPlaying) isAudioPlaying = true;
+                if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                    if (isA2dpPlaying) {
+                        if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                        return true;
+                    }
+                    isConnectedWithoutAudio = true;
+                }
+            }
+        }
+
+        if (logger != null) logger.Log(TAG, "isConnectedWithoutAudio: " + isConnectedWithoutAudio + " isAudioPlaying: " + isAudioPlaying);
+
+        return isConnectedWithoutAudio && !isAudioPlaying;
     }
 
     private void responseStateToTile() {
@@ -383,10 +565,24 @@ public final class DNSService extends Service {
     public void onDestroy() {
         super.onDestroy();
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "onDestroy!");
+        if (logger != null) logger.Log(TAG, "onDestroy");
         if (this.broadcastReceiver != null) {
             this.unregisterReceiver(this.broadcastReceiver);
             this.broadcastReceiver = null;
+        }
+        if (this.bluetoothHeadset != null) {
+            this.bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, this.bluetoothHeadset);
+            this.bluetoothHeadset = null;
+        }
+        if (this.bluetoothA2dp != null) {
+            this.bluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, this.bluetoothA2dp);
+            this.bluetoothA2dp = null;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            this.audioManager.unregisterAudioDeviceCallback(this.audioDeviceCallback);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.audioManager.unregisterAudioPlaybackCallback(this.audioPlaybackCallback);
         }
     }
 }

@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
             android:allowBackup="true"
@@ -25,8 +26,7 @@
             </intent-filter>
         </receiver>
 
-        <activity
-                android:name=".MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
@@ -38,17 +38,18 @@
                     android:name="android.app.shortcuts"
                     android:resource="@xml/shortcuts" />
         </activity>
-
         <activity
                 android:name=".DiagnosticsActivity"
-                android:theme="@style/ActivityTheme"
-                android:launchMode="singleInstance"
                 android:alwaysRetainTaskState="true"
                 android:autoRemoveFromRecents="true"
-                android:taskAffinity="${applicationId}.diagnostics" />
+                android:launchMode="singleInstance"
+                android:taskAffinity="${applicationId}.diagnostics"
+                android:theme="@style/ActivityTheme" />
+        <activity
+                android:name=".SettingActivity"
+                android:theme="@style/ActivityTheme" />
 
         <service android:name=".DNSService" />
-
         <service
                 android:name=".DNSTileService"
                 android:icon="@drawable/ic_volume_off_black_24dp"
@@ -58,13 +59,12 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
-        
+
         <provider
                 android:name=".DiagnosticsContentProvider"
                 android:authorities="${applicationId}"
                 android:exported="false"
-                android:grantUriPermissions="true"
-                />
+                android:grantUriPermissions="true" />
     </application>
 
 </manifest>

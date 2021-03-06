@@ -4,6 +4,7 @@
     <string name="disable_alert_menu_button">メニューを表示</string>
     <string name="disable_alert_menu_stop_app">このアプリを停止する</string>
     <string name="disable_alert_menu_diagnostics_tool">診断ツール</string>
+    <string name="disable_alert_menu_settings">Bluetooth設定</string>
     <string name="disable_alert_period">期間:</string>
     <string name="disable_alert_period_minutes">分指定</string>
     <string name="disable_alert_period_timeOfDay">時刻指定</string>
@@ -35,4 +36,6 @@
     <string name="diagnostics_tool_mail_text">問題のある動作の詳細を入力してください：</string>
     <string name="diagnostics_tool_mail_title">ログを添付してメールを送信します。</string>
     <string name="diagnostics_tool_mail_chooser_title">送信に使用するメーラーを選択してください。</string>
+    <string name="settings_title">Bluetooth設定</string>
+    <string name="settings_message">イヤホンとして扱うデバイスを選択してください。</string>
 </resources>

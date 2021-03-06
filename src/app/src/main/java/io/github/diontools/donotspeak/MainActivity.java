@@ -243,6 +243,9 @@ public final class MainActivity extends Activity {
                     MainActivity.this.startActivity(new Intent(MainActivity.this, DiagnosticsActivity.class));
                     MainActivity.this.exit();
                     return true;
+                } else if (itemId == R.id.setting) {
+                    MainActivity.this.startActivity(new Intent(MainActivity.this, SettingActivity.class));
+                    return true;
                 }
                 return false;
             }

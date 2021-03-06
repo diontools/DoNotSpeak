@@ -6,4 +6,7 @@
     <item
         android:id="@+id/diagnostics"
         android:title="@string/disable_alert_menu_diagnostics_tool" />
+    <item
+        android:id="@+id/setting"
+        android:title="@string/disable_alert_menu_settings" />
 </menu>
