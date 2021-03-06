@@ -1,14 +1,13 @@
+v1.6.0 2021/03/xx
+Changed to strictly detect Bluetooth earphones
+* If you are using Bluetooth earphones, please go to Bluetooth settings in the menu at the top right of the screen
+
+Set the volume to 0 in the following events
+* Change device connection
+* Start playing audio
+
 v1.5.0 2021/03/01
 Add Diagnostics Tool
 Fix volume change loop (Android 5.0)
-
-v1.4.0 2021/02/21
-Change the volume change detection method
-
-v1.3.0 2021/02/11
-Use device theme (Android 10 or later)
-Use light theme on notification (Android 9 or earlier)
-Add "Stop this app" menu
-Add "Times of Day" specification feature
 
 Details (japanese): https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md
