@@ -1,13 +1,11 @@
 v1.6.0 2021/03/xx
-Changed to strictly detect Bluetooth earphones
+Changed to strictly detect Bluetooth earphones (Android 6.0 or later)
 * If you are using Bluetooth earphones, please go to Bluetooth settings in the menu at the top right of the screen
 
 Set the volume to 0 in the following events
-* Change device connection
-* Start playing audio
+* Change device connection (Android 6.0 or later)
+* Start playing audio (Android 9 or later)
 
-v1.5.0 2021/03/01
-Add Diagnostics Tool
-Fix volume change loop (Android 5.0)
+Add BLUETOOTH permission to get Bluetooth device information
 
 Details (japanese): https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md

@@ -11,11 +11,12 @@
 * `android.bluetooth.headset.profile.action.AUDIO_STATE_CHANGED`ブロードキャストに対応
 * `android.bluetooth.headset.profile.action.CONNECTION_STATE_CHANGED`ブロードキャストに対応
 * `android.media.AudioDeviceCallback`に対応（Android 6.0以降）
-* `android.media.AudioManager.AudioPlaybackCallback`に対応（Android 9.0以降）
+* `android.media.AudioManager.AudioPlaybackCallback`に対応（Android 9以降）
 
 ### 変更
 
 * Bluetooth設定で選択したデバイスのMACアドレスを使用して、厳密にBluetoothイヤホンを検出
+* `android.permission.BLUETOOTH`パーミッションを追加
 
 ## v1.5.0 2021/03/01
 
