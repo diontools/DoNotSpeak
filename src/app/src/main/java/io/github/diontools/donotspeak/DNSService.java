@@ -204,6 +204,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
                 public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
                     DiagnosticsLogger logger = Logger;
                     if (logger != null) {
+                        logger.Log(TAG, "onAudioDevicesAdded");
                         for (AudioDeviceInfo device : addedDevices) {
                             logger.Log(TAG, "added device: " + device.toString() + " type: " + device.getType());
                         }
@@ -215,6 +216,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
                 public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
                     DiagnosticsLogger logger = Logger;
                     if (logger != null) {
+                        logger.Log(TAG, "onAudioDevicesRemoved");
                         for (AudioDeviceInfo device : removedDevices) {
                             logger.Log(TAG, "removed device: " + device.toString() + " type: " + device.getType());
                         }
@@ -231,6 +233,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
                 public void onPlaybackConfigChanged(List<AudioPlaybackConfiguration> configs) {
                     DiagnosticsLogger logger = Logger;
                     if (logger != null) {
+                        logger.Log(TAG, "onPlaybackConfigChanged");
                         for (AudioPlaybackConfiguration config : configs) {
                             AudioAttributes audioAttributes = config.getAudioAttributes();
                             logger.Log(TAG, "playback: " + config.toString() + " content-type: " + audioAttributes.getContentType() + " usage: " + audioAttributes.getUsage());
