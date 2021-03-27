@@ -21,6 +21,7 @@ import android.widget.PopupMenu;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -244,7 +245,11 @@ public final class MainActivity extends Activity {
                     MainActivity.this.exit();
                     return true;
                 } else if (itemId == R.id.setting) {
-                    MainActivity.this.startActivity(new Intent(MainActivity.this, SettingActivity.class));
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                        Toast.makeText(MainActivity.this, R.string.disable_alert_menu_settings_not_supported_message, Toast.LENGTH_SHORT).show();
+                    } else {
+                        MainActivity.this.startActivity(new Intent(MainActivity.this, SettingActivity.class));
+                    }
                     return true;
                 }
                 return false;
