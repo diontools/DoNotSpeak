@@ -1,4 +1,4 @@
-v1.6.0 2021/03/xx
+v1.6.0 2021/03/27
 Changed to strictly detect Bluetooth earphones (Android 6.0 or later)
 * If you are using Bluetooth earphones, please go to Bluetooth settings in the menu at the top right of the screen
 

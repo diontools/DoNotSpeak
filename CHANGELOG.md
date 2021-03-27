@@ -1,10 +1,10 @@
 # CHANGELOG
 
-## v1.6.0 2021/03/xx
+## v1.6.0 2021/03/27
 
 ### 新機能
 
-* Bluetooth設定を追加
+* Bluetooth設定を追加 (Android 6.0以降)
   * ペアリングされたBluetoothデバイスのリストからイヤホンとして扱うデバイスを選択
 * `android.bluetooth.a2dp.profile.action.PLAYING_STATE_CHANGED`ブロードキャストに対応
 * `android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED`ブロードキャストに対応
@@ -15,7 +15,7 @@
 
 ### 変更
 
-* Bluetooth設定で選択したデバイスのMACアドレスを使用して、厳密にBluetoothイヤホンを検出
+* Bluetooth設定で選択したデバイスのMACアドレスを使用して、厳密にBluetoothイヤホンを検出 (Android 6.0以降)
 * `android.permission.BLUETOOTH`パーミッションを追加
 
 ## v1.5.0 2021/03/01
