@@ -21,8 +21,8 @@ android {
         applicationId "io.github.diontools.donotspeak"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 44
-        versionName "1.6.0"
+        versionCode 45
+        versionName "1.6.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         resConfigs "en", "ja"
     }

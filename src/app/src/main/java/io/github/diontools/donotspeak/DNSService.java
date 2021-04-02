@@ -499,6 +499,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
 
                 if (type == AudioDeviceInfo.TYPE_WIRED_HEADSET
                         || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+                        || type == AudioDeviceInfo.TYPE_USB_HEADSET
                 ) {
                     return true;
                 }

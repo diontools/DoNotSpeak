@@ -1,10 +1,9 @@
+v1.6.1 2021/04/02
+Support for USB Headset
+
 v1.6.0 2021/03/27
 Changed to strictly detect Bluetooth earphones (Android 6.0 or later)
 * If you are using Bluetooth earphones, please go to Bluetooth settings in the menu at the top right of the screen
-
-Set the volume to 0 in the following events
-* Change device connection (Android 6.0 or later)
-* Start playing audio (Android 9 or later)
 
 Add BLUETOOTH permission to get Bluetooth device information
 

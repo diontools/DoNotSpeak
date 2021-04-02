@@ -1,3 +1,6 @@
+v1.6.1 2021/04/02
+USBヘッドセットに対応
+
 v1.6.0 2021/03/27
 厳密にBluetoothイヤホンを検出するように変更（Android 6.0以降）
 * Bluetoothイヤホンをご利用の方は、画面右上のメニューにあるBluetooth設定を行ってください
@@ -11,8 +14,5 @@ Bluetoothデバイス情報を取得するためにBLUETOOTHパーミッショ�
 v1.5.0 2021/03/01
 診断ツールを追加
 ボリューム変更がループしてしまう問題を修正 (Android 5.0)
-
-v1.4.0 2021/02/21
-音量変更の検出方法を変更
 
 詳細：https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md
