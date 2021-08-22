@@ -266,6 +266,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
                 this.bluetoothA2dp = (BluetoothA2dp)proxy;
                 break;
         }
+        this.update();
     }
 
     // BluetoothProfile.ServiceListener
@@ -464,6 +465,11 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "mute force:" + force);
 
+        if (!force && !this.isBluetoothInitialized()) {
+            if (logger != null) logger.Log(TAG, "Bluetooth not initialized");
+            return;
+        }
+
         if (!force && this.isHeadsetConnected()) {
             if (logger != null) logger.Log(TAG, "Headset connected");
             return;
@@ -557,6 +563,23 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         if (logger != null) logger.Log(TAG, "isConnectedWithoutAudio: " + isConnectedWithoutAudio + " isAudioPlaying: " + isAudioPlaying);
 
         return isConnectedWithoutAudio && !isAudioPlaying;
+    }
+
+    private boolean isBluetoothInitialized() {
+        DiagnosticsLogger logger = Logger;
+
+        BluetoothAdapter adapter = this.bluetoothAdapter;
+        if (adapter == null) {
+            if (logger != null) logger.Log(TAG, "Bluetooth not supported");
+        } else if (!adapter.isEnabled()) {
+            if (logger != null) logger.Log(TAG, "Bluetooth disabled");
+        } else if (this.bluetoothHeadset == null || this.bluetoothA2dp == null) {
+            if (logger != null) logger.Log(TAG, "Bluetooth initialized: false");
+            return false;
+        }
+
+        if (logger != null) logger.Log(TAG, "Bluetooth initialized: true");
+        return true;
     }
 
     private void responseStateToTile() {
