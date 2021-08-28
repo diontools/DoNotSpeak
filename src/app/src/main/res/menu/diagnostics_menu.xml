@@ -4,6 +4,12 @@
     <item
             android:id="@+id/send_mail"
             android:title="@string/diagnostics_tool_menu_send_mail"
-            android:showAsAction="always"
+            android:showAsAction="ifRoom"
+            tools:ignore="AppCompatResource" />
+    <item
+            android:id="@+id/log_file"
+            android:title="@string/diagnostics_tool_menu_log_file"
+            android:showAsAction="never"
+            android:checkable="true"
             tools:ignore="AppCompatResource" />
 </menu>

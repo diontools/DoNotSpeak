@@ -33,6 +33,7 @@
     <string name="diagnostics_tool_title">診断ツール</string>
     <string name="diagnostics_tool_message">この画面を開いている間、サービスの動作がログに記録されます。</string>
     <string name="diagnostics_tool_menu_send_mail">開発者にメール送信</string>
+    <string name="diagnostics_tool_menu_log_file">常時ファイルに記録する</string>
     <string name="diagnostics_tool_mail_subject">DoNotSpeak 診断レポート</string>
     <string name="diagnostics_tool_mail_text">問題のある動作の詳細を入力してください：</string>
     <string name="diagnostics_tool_mail_title">ログを添付してメールを送信します。</string>

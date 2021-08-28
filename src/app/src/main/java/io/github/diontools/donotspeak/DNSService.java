@@ -80,8 +80,12 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         super.onCreate();
 
         // set debug logger
-        if (BuildConfig.DEBUG) {
-            Logger = DiagnosticsLogger.Instance;
+        if (BuildConfig.DEBUG || DNSSetting.getDiagnosticsFileLog(this)) {
+            DiagnosticsLogger initLogger = Logger;
+            if (initLogger == null) {
+                Logger = initLogger = DiagnosticsLogger.Instance;
+                initLogger.setFileDir(this, true);
+            }
         }
 
         DiagnosticsLogger logger = Logger;

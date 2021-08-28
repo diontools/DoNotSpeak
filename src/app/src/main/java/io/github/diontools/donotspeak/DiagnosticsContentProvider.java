@@ -34,14 +34,6 @@ public class DiagnosticsContentProvider extends ContentProvider {
         }
     }
 
-    public static void writeLogFileInExternal(Context context, String logText) throws IOException {
-        Log.d(TAG, "writeLogFileInExternal");
-        File logFile = new File(context.getExternalCacheDir(), LOGS_FILE_NAME);
-        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(logFile, false), StandardCharsets.UTF_8)) {
-            writer.write(logText);
-        }
-    }
-
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         Log.d(TAG, "openFile " + uri);

@@ -11,6 +11,7 @@ final class DNSSetting {
 
     private static final String KEY_RESTORE_VOLUME = "RESTORE_VOLUME";
     private static final String KEY_BLUETOOTH_HEADSET_ADDRESSES = "BLUETOOTH_HEADSET_ADDRESSES";
+    private static final String KEY_DIAGNOSTICS_FILE_LOG = "DIAGNOSTICS_FILE_LOG";
 
     private static SharedPreferences getPref(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -38,6 +39,18 @@ final class DNSSetting {
         getPref(context)
                 .edit()
                 .putStringSet(KEY_BLUETOOTH_HEADSET_ADDRESSES, value)
+                .apply();
+    }
+
+
+    public static boolean getDiagnosticsFileLog(Context context) {
+        return getPref(context).getBoolean(KEY_DIAGNOSTICS_FILE_LOG, false);
+    }
+
+    public static void setDiagnosticsFileLog(Context context, boolean value) {
+        getPref(context)
+                .edit()
+                .putBoolean(KEY_DIAGNOSTICS_FILE_LOG, value)
                 .apply();
     }
 }

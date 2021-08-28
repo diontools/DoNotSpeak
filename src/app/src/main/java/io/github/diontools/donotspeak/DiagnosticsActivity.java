@@ -20,8 +20,6 @@ public class DiagnosticsActivity extends Activity {
 
     private final ArrayList<String> logs = new ArrayList<>();
 
-    private Thread.UncaughtExceptionHandler backupDefaultUncaughtExceptionHandler;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,26 +60,14 @@ public class DiagnosticsActivity extends Activity {
             }
         });
 
-        this.backupDefaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                try {
-                    Log.e(TAG, e.toString());
-                    DiagnosticsContentProvider.writeLogFileInExternal(DiagnosticsActivity.this, e.toString() + "\r\n" + TextUtils.join("\r\n", e.getStackTrace()));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                DiagnosticsActivity.this.backupDefaultUncaughtExceptionHandler.uncaughtException(t, e);
-            }
-        });
-
         DNSService.Logger = logger;
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         this.getMenuInflater().inflate(R.menu.diagnostics_menu, menu);
+        MenuItem logFileMenuItem = menu.findItem(R.id.log_file);
+        logFileMenuItem.setChecked(DNSSetting.getDiagnosticsFileLog(this));
         return true;
     }
 
@@ -105,6 +91,11 @@ public class DiagnosticsActivity extends Activity {
                 intent.setSelector(new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:")));
                 Log.d(TAG, "send email");
                 this.startActivity(Intent.createChooser(intent, this.getResources().getString(R.string.diagnostics_tool_mail_chooser_title)));
+            } else if (itemId == R.id.log_file) {
+                boolean useFileLog = !DNSSetting.getDiagnosticsFileLog(this);
+                DNSSetting.setDiagnosticsFileLog(this, useFileLog);
+                item.setChecked(useFileLog);
+                DiagnosticsLogger.Instance.setFileDir(this, useFileLog);
             }
         } catch (Exception ex) {
             Log.e(TAG, ex.toString());
@@ -148,9 +139,8 @@ public class DiagnosticsActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
-        Thread.setDefaultUncaughtExceptionHandler(this.backupDefaultUncaughtExceptionHandler);
         DiagnosticsLogger.Instance.setCallback(null);
-        if (!BuildConfig.DEBUG) {
+        if (!BuildConfig.DEBUG && !DNSSetting.getDiagnosticsFileLog(this)) {
             DNSService.Logger = null;
         }
     }

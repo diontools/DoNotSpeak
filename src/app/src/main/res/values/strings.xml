@@ -33,6 +33,7 @@
     <string name="diagnostics_tool_title">Diagnostics Tool</string>
     <string name="diagnostics_tool_message">While this screen is open, the operation of the service will be logged.</string>
     <string name="diagnostics_tool_menu_send_mail">Send e-mail to developer</string>
+    <string name="diagnostics_tool_menu_log_file">Always log to file</string>
     <string name="diagnostics_tool_mail_subject">DoNotSpeak Diagnostics Report</string>
     <string name="diagnostics_tool_mail_text">Please enter details of the problematic behavior:</string>
     <string name="diagnostics_tool_mail_title">Send an e-mail with the log as an attachment.</string>
