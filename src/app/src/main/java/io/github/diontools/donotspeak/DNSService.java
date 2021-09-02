@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -37,6 +38,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
     public static final String ACTION_SHUTDOWN = "SHUTDOWN";
     public static final String ACTION_APPLY_SETTINGS = "APPLY_SETTINGS";
+    public static final String ACTION_REBOOT = "REBOOT";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
@@ -46,11 +48,14 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
     public static boolean IsLive = false;
     public static DiagnosticsLogger Logger;
 
+    private SharedPreferences statePreferences;
+
     private boolean enabled = false;
     private boolean stopUntilScreenOff = false;
     private int beforeVolume = -1;
 
     private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+    private long disableTime;
     private String disableTimeString = "";
 
     private Intent disableIntent;
@@ -90,6 +95,8 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
 
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "onCreate");
+
+        this.statePreferences = this.getSharedPreferences("dns_service_state", MODE_PRIVATE);
 
         this.applySettings();
 
@@ -303,8 +310,8 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         }
 
         if (command == null) {
-            if (logger != null) logger.Log(TAG, "command is null, force start");
-            command = ACTION_START; // for kill
+            if (logger != null) logger.Log(TAG, "command is null, reboot");
+            command = ACTION_REBOOT; // for kill
         }
 
         switch (command) {
@@ -323,24 +330,19 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
             }
             case ACTION_SWITCH: {
                 if (this.enabled) {
-                    this.stopUntilScreenOff = true;
-                    this.stop(new Date(0));
+                    this.stop(new Date(0), true);
                 } else {
                     this.start();
                 }
                 break;
             }
             case ACTION_STOP: {
-                this.stopUntilScreenOff = false;
                 long disableTime = intent.getLongExtra(DISABLE_TIME_NAME, 0);
-                if (disableTime > 0) {
-                    this.stop(new Date(disableTime));
-                }
+                this.stop(new Date(disableTime), false);
                 break;
             }
             case ACTION_STOP_UNTIL_SCREEN_OFF: {
-                this.stopUntilScreenOff = true;
-                this.stop(new Date(0));
+                this.stop(new Date(0), true);
                 break;
             }
             case ACTION_SHUTDOWN: {
@@ -353,12 +355,38 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
                 this.update();
                 break;
             }
+            case ACTION_REBOOT: {
+                this.restoreState();
+                this.update();
+                break;
+            }
             default: {
                 if (logger != null) logger.Log(TAG, "unknown command");
             }
         }
 
         return START_STICKY;
+    }
+
+    private void backupState() {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "backup state: " + this.enabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
+
+        this.statePreferences
+            .edit()
+            .putBoolean("enabled", this.enabled)
+            .putBoolean("stopUntilScreenOff", this.stopUntilScreenOff)
+            .putLong("disableTime", this.disableTime)
+            .apply();
+    }
+
+    private void restoreState() {
+        this.enabled = this.statePreferences.getBoolean("enabled", false);
+        this.stopUntilScreenOff = this.statePreferences.getBoolean("stopUntilScreenOff", false);
+        this.setDisableTime(new Date(this.statePreferences.getLong("disableTime", 0)));
+
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "restore state: " + this.enabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
     }
 
     private void start() {
@@ -371,32 +399,29 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
 
         this.enabled = true;
         this.stopUntilScreenOff = false;
-        this.cancelTimer();
+        this.setDisableTime(new Date(0));
+        this.backupState();
+
         this.update();
         Toast.makeText(this, this.getStartedMessage(), Toast.LENGTH_SHORT).show();
     }
 
-    private void stop(Date disableTime) {
+    private void stop(Date disableTime, boolean stopUntilScreenOff) {
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "stop disableTime:" + disableTime);
+        if (logger != null) logger.Log(TAG, "stop disableTime:" + disableTime + " stopUntilScreenOff: " + stopUntilScreenOff);
+
         this.enabled = false;
-
-        if (disableTime.getTime() > 0) {
-            long startTime = disableTime.getTime();
-            this.disableTimeString = DateFormat.format(disableTime);
-
-            this.cancelTimer();
-
-            if (logger != null) logger.Log(TAG, "set timer: " + this.disableTimeString);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
-            } else {
-                this.alarmManager.setExact(AlarmManager.RTC, startTime, this.startIntent);
-            }
-        }
+        this.stopUntilScreenOff = stopUntilScreenOff;
+        this.setDisableTime(disableTime);
+        this.backupState();
 
         this.update();
         Toast.makeText(this, this.getStoppedMessage(), Toast.LENGTH_SHORT).show();
+    }
+
+    private void setDisableTime(Date disableTime) {
+        this.disableTime = disableTime.getTime();
+        this.disableTimeString = this.disableTime > 0 ? DateFormat.format(disableTime) : "";
     }
 
     private String getStartedMessage() {
@@ -426,6 +451,18 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
             this.mute(forceMute);
         } else {
             this.unmute();
+        }
+
+        this.cancelTimer();
+
+        long startTime = this.disableTime;
+        if (startTime > 0) {
+            if (logger != null) logger.Log(TAG, "set timer: " + this.disableTimeString);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
+            } else {
+                this.alarmManager.setExact(AlarmManager.RTC, startTime, this.startIntent);
+            }
         }
 
         this.createNotification(NOTIFICATION_ID, this.enabled);
