@@ -593,6 +593,14 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
     }
 
     @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "onTaskRemoved");
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         DiagnosticsLogger logger = Logger;
