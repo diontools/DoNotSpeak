@@ -389,6 +389,13 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         if (logger != null) logger.Log(TAG, "restore state: " + this.enabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
     }
 
+    private void clearState() {
+        this.statePreferences
+            .edit()
+            .clear()
+            .apply();
+    }
+
     private void start() {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "start");
@@ -642,6 +649,9 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         super.onDestroy();
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "onDestroy");
+
+        this.clearState();
+
         if (this.broadcastReceiver != null) {
             this.unregisterReceiver(this.broadcastReceiver);
             this.broadcastReceiver = null;
