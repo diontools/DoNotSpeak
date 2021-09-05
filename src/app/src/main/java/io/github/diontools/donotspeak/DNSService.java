@@ -53,6 +53,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
     private boolean enabled = false;
     private boolean stopUntilScreenOff = false;
     private int beforeVolume = -1;
+    private boolean useAdjustVolume = false;
 
     private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private long disableTime;
@@ -261,6 +262,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "applySettings");
         this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
+        this.useAdjustVolume = DNSSetting.getUseAdjustVolume(this);
     }
 
     // BluetoothProfile.ServiceListener
@@ -523,10 +525,20 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
             return;
         }
 
-        if (logger != null) logger.Log(TAG, "set volume 0");
-        this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+        int currentVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        if (logger != null) logger.Log(TAG, "currentVolume: " + currentVolume);
 
-        if (logger != null) logger.Log(TAG, "volume: " + this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+        if (currentVolume > 0) {
+            if (useAdjustVolume) {
+                if (logger != null) logger.Log(TAG, "adjust lower volume");
+                this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, 0);
+            } else {
+                if (logger != null) logger.Log(TAG, "set volume 0");
+                this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
+            }
+
+            if (logger != null) logger.Log(TAG, "volume: " + this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+        }
     }
 
     private void unmute() {

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SettingActivity extends Activity implements AdapterView.OnItemClickListener {
+public class SettingActivity extends Activity implements AdapterView.OnItemClickListener, CompoundButton.OnCheckedChangeListener {
     private ArrayList<Item> items;
     private ItemAdapter itemAdapter;
 
@@ -25,6 +26,10 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         super.onCreate(savedInstanceState);
         this.setTitle(R.string.settings_title);
         this.setContentView(R.layout.activity_setting);
+
+        CheckBox useAdjustVolumeCheckBox = this.findViewById(R.id.use_adjust_volume_check_box);
+        useAdjustVolumeCheckBox.setChecked(DNSSetting.getUseAdjustVolume(this));
+        useAdjustVolumeCheckBox.setOnCheckedChangeListener(this);
 
         this.items = new ArrayList<>();
         Set<String> addresses = DNSSetting.getBluetoothHeadsetAddresses(this);
@@ -59,6 +64,16 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         ListView listView = this.findViewById(R.id.device_list_view);
         listView.setAdapter(this.itemAdapter);
         listView.setOnItemClickListener(this);
+    }
+
+    // CompoundButton.OnCheckedChangeListener
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        final int id = buttonView.getId();
+        if (id == R.id.use_adjust_volume_check_box) {
+            DNSSetting.setUseAdjustVolume(this, isChecked);
+            IntentUtility.applySettings(this);
+        }
     }
 
     // AdapterView.OnItemClickListener

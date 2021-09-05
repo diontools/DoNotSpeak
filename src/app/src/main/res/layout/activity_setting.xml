@@ -5,6 +5,28 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+    <CheckBox
+            android:id="@+id/use_adjust_volume_check_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/settings_use_adjust_volume" />
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/settings_use_adjust_volume_description" />
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:textStyle="bold"
+            android:text="@string/settings_bluetooth_settings" />
+
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

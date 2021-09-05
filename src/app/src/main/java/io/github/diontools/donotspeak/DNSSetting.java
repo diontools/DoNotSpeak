@@ -13,6 +13,7 @@ final class DNSSetting {
         RESTORE_VOLUME,
         BLUETOOTH_HEADSET_ADDRESSES,
         DIAGNOSTICS_FILE_LOG,
+        USE_ADJUST_VOLUME,
     }
 
     private static SharedPreferences getPref(Context context) {
@@ -53,6 +54,18 @@ final class DNSSetting {
         getPref(context)
                 .edit()
                 .putBoolean(Keys.DIAGNOSTICS_FILE_LOG.name(), value)
+                .apply();
+    }
+
+
+    public static boolean getUseAdjustVolume(Context context) {
+        return getPref(context).getBoolean(Keys.USE_ADJUST_VOLUME.name(), false);
+    }
+
+    public static void setUseAdjustVolume(Context context, boolean value) {
+        getPref(context)
+                .edit()
+                .putBoolean(Keys.USE_ADJUST_VOLUME.name(), value)
                 .apply();
     }
 }

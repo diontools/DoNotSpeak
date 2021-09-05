@@ -4,7 +4,7 @@
     <string name="disable_alert_menu_button">Show menu</string>
     <string name="disable_alert_menu_stop_app">Stop this app</string>
     <string name="disable_alert_menu_diagnostics_tool">Diagnostics Tool</string>
-    <string name="disable_alert_menu_settings">Bluetooth Settings</string>
+    <string name="disable_alert_menu_settings">Settings</string>
     <string name="disable_alert_menu_settings_not_supported_message">Bluetooth Settings is available for Android 6.0 or later.</string>
     <string name="disable_alert_period">a period:</string>
     <string name="disable_alert_period_minutes">Minutes</string>
@@ -38,6 +38,9 @@
     <string name="diagnostics_tool_mail_text">Please enter details of the problematic behavior:</string>
     <string name="diagnostics_tool_mail_title">Send an e-mail with the log as an attachment.</string>
     <string name="diagnostics_tool_mail_chooser_title">Select the mailer you want to use for sending.</string>
-    <string name="settings_title">Bluetooth Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_use_adjust_volume">Use Adjust Volume API</string>
+    <string name="settings_use_adjust_volume_description">Workaround for ColorOS (OPPO / Realme device) limitation</string>
+    <string name="settings_bluetooth_settings">Bluetooth Settings</string>
     <string name="settings_message">Select the device you want to treat as an earphone.</string>
 </resources>
