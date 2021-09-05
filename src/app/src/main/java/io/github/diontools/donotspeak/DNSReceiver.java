@@ -21,7 +21,7 @@ public final class DNSReceiver extends BroadcastReceiver {
             }
             case Intent.ACTION_MY_PACKAGE_REPLACED: {
                 Log.d(TAG, "ACTION_MY_PACKAGE_REPLACED");
-                IntentUtility.start(context);
+                IntentUtility.reboot(context);
                 break;
             }
         }
