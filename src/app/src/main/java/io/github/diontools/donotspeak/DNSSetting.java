@@ -9,9 +9,11 @@ import java.util.Set;
 final class DNSSetting {
     private static final String PREF_NAME = "donotspeak_pref.xml";
 
-    private static final String KEY_RESTORE_VOLUME = "RESTORE_VOLUME";
-    private static final String KEY_BLUETOOTH_HEADSET_ADDRESSES = "BLUETOOTH_HEADSET_ADDRESSES";
-    private static final String KEY_DIAGNOSTICS_FILE_LOG = "DIAGNOSTICS_FILE_LOG";
+    private enum Keys {
+        RESTORE_VOLUME,
+        BLUETOOTH_HEADSET_ADDRESSES,
+        DIAGNOSTICS_FILE_LOG,
+    }
 
     private static SharedPreferences getPref(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -19,38 +21,38 @@ final class DNSSetting {
 
 
     public static boolean getRestoreVolume(Context context) {
-        return getPref(context).getBoolean(KEY_RESTORE_VOLUME, false);
+        return getPref(context).getBoolean(Keys.RESTORE_VOLUME.name(), false);
     }
 
     public static void setRestoreVolume(Context context, boolean value) {
         getPref(context)
                 .edit()
-                .putBoolean(KEY_RESTORE_VOLUME, value)
+                .putBoolean(Keys.RESTORE_VOLUME.name(), value)
                 .apply();
     }
 
 
     public static Set<String> getBluetoothHeadsetAddresses(Context context) {
-        Set<String> value = getPref(context).getStringSet(KEY_BLUETOOTH_HEADSET_ADDRESSES, null);
+        Set<String> value = getPref(context).getStringSet(Keys.BLUETOOTH_HEADSET_ADDRESSES.name(), null);
         return value != null ? value : new HashSet<String>();
     }
 
     public static void setBlueToothHeadsetAddresses(Context context, Set<String> value) {
         getPref(context)
                 .edit()
-                .putStringSet(KEY_BLUETOOTH_HEADSET_ADDRESSES, value)
+                .putStringSet(Keys.BLUETOOTH_HEADSET_ADDRESSES.name(), value)
                 .apply();
     }
 
 
     public static boolean getDiagnosticsFileLog(Context context) {
-        return getPref(context).getBoolean(KEY_DIAGNOSTICS_FILE_LOG, false);
+        return getPref(context).getBoolean(Keys.DIAGNOSTICS_FILE_LOG.name(), false);
     }
 
     public static void setDiagnosticsFileLog(Context context, boolean value) {
         getPref(context)
                 .edit()
-                .putBoolean(KEY_DIAGNOSTICS_FILE_LOG, value)
+                .putBoolean(Keys.DIAGNOSTICS_FILE_LOG.name(), value)
                 .apply();
     }
 }
