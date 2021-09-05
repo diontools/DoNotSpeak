@@ -1,6 +1,7 @@
-v1.6.2 BETA 2021/09/04
+v1.6.2 BETA 2021/09/05
 サービス復帰時、終了前の状態に戻すように改善
 アプリ起動時にBluetoothイヤホンを使用していてもミュートされてしまう問題を解消
+ColorOS (OPPO / Realme デバイス) のための設定を追加
 
 v1.6.1 2021/04/02
 USBヘッドセットに対応
@@ -14,9 +15,5 @@ v1.6.0 2021/03/27
 * オーディオの再生開始（Android 9以降）
 
 Bluetoothデバイス情報を取得するためにBLUETOOTHパーミッションを追加
-
-v1.5.0 2021/03/01
-診断ツールを追加
-ボリューム変更がループしてしまう問題を修正 (Android 5.0)
 
 詳細：https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md
