@@ -382,7 +382,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
     }
 
     private void restoreState() {
-        this.enabled = this.statePreferences.getBoolean("enabled", false);
+        this.enabled = this.statePreferences.getBoolean("enabled", true);
         this.stopUntilScreenOff = this.statePreferences.getBoolean("stopUntilScreenOff", false);
         this.setDisableTime(new Date(this.statePreferences.getLong("disableTime", 0)));
 
