@@ -524,20 +524,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
             return;
         }
 
-        int currentVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        if (logger != null) logger.Log(TAG, "currentVolume: " + currentVolume);
-
-        if (currentVolume > 0) {
-            if (useAdjustVolume) {
-                if (logger != null) logger.Log(TAG, "adjust lower volume");
-                this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, 0);
-            } else {
-                if (logger != null) logger.Log(TAG, "set volume 0");
-                this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
-            }
-
-            if (logger != null) logger.Log(TAG, "volume: " + this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
-        }
+        this.setVolumeTo(0, 0);
     }
 
     private void unmute() {
@@ -546,8 +533,35 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
 
         if (DNSSetting.getRestoreVolume(this) && this.beforeVolume >= 0) {
             if (logger != null) logger.Log(TAG, "restore volume: " + this.beforeVolume);
-            this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, this.beforeVolume, AudioManager.FLAG_SHOW_UI);
+            this.setVolumeTo(this.beforeVolume, AudioManager.FLAG_SHOW_UI);
             this.beforeVolume = -1;
+        }
+    }
+
+    private void setVolumeTo(int targetVolume, int flags) {
+        DiagnosticsLogger logger = Logger;
+
+        if (useAdjustVolume) {
+            int failSafeLoopCount = 0;
+            while (true) {
+                int currentVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                if (logger != null) logger.Log(TAG, "volume current: " + currentVolume + " target: " + targetVolume);
+                if (currentVolume == targetVolume || failSafeLoopCount++ > 50) {
+                    break;
+                }
+
+                if (currentVolume > targetVolume) {
+                    if (logger != null) logger.Log(TAG, "adjust lower volume");
+                    this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, flags);
+                } else {
+                    if (logger != null) logger.Log(TAG, "adjust raise volume");
+                    this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, flags);
+                }
+            }
+        } else {
+            if (logger != null) logger.Log(TAG, "set volume: " + targetVolume);
+            this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, flags);
+            if (logger != null) logger.Log(TAG, "volume: " + this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
         }
     }
 
