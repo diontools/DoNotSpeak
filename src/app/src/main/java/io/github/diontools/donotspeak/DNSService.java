@@ -201,7 +201,6 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
 
         this.registerReceiver(this.broadcastReceiver, intentFilter);
 
-        this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (this.bluetoothAdapter == null) {
             if (logger != null) logger.Log(TAG, "bluetooth not supported.");
