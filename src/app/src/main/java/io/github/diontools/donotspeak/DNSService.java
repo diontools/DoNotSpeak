@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public final class DNSService extends Service implements BluetoothProfile.ServiceListener {
+public final class DNSService extends Service {
     private static final String NOTIFICATION_ID = "DoNotSpeak_Status_Notification";
     private static final String TAG = "DNSService";
 
@@ -73,6 +73,7 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
 
     private Set<String> bluetoothHeadsetAddresses;
     private BluetoothAdapter bluetoothAdapter;
+    private BluetoothProfile.ServiceListener bluetoothServiceListener;
     private BluetoothHeadset bluetoothHeadset;
     private BluetoothA2dp bluetoothA2dp;
 
@@ -205,8 +206,41 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         if (this.bluetoothAdapter == null) {
             if (logger != null) logger.Log(TAG, "bluetooth not supported.");
         } else {
-            this.bluetoothAdapter.getProfileProxy(this, this, BluetoothProfile.HEADSET);
-            this.bluetoothAdapter.getProfileProxy(this, this, BluetoothProfile.A2DP);
+            this.bluetoothServiceListener = new BluetoothProfile.ServiceListener() {
+                @Override
+                public void onServiceConnected(int profile, BluetoothProfile proxy) {
+                    DiagnosticsLogger logger = Logger;
+                    switch (profile) {
+                        case BluetoothProfile.HEADSET:
+                            if (logger != null) logger.Log(TAG, "HEADSET connected.");
+                            DNSService.this.bluetoothHeadset = (BluetoothHeadset)proxy;
+                            break;
+                        case BluetoothProfile.A2DP:
+                            if (logger != null) logger.Log(TAG, "A2DP connected.");
+                            DNSService.this.bluetoothA2dp = (BluetoothA2dp)proxy;
+                            break;
+                    }
+                    DNSService.this.update();
+                }
+
+                @Override
+                public void onServiceDisconnected(int profile) {
+                    DiagnosticsLogger logger = Logger;
+                    switch (profile) {
+                        case BluetoothProfile.HEADSET:
+                            if (logger != null) logger.Log(TAG, "HEADSET disconnected.");
+                            DNSService.this.bluetoothHeadset = null;
+                            break;
+                        case BluetoothProfile.A2DP:
+                            if (logger != null) logger.Log(TAG, "A2DP disconnected.");
+                            DNSService.this.bluetoothA2dp = null;
+                            break;
+                    }
+                }
+            };
+
+            this.bluetoothAdapter.getProfileProxy(this.getApplicationContext(), this.bluetoothServiceListener, BluetoothProfile.HEADSET);
+            this.bluetoothAdapter.getProfileProxy(this.getApplicationContext(), this.bluetoothServiceListener, BluetoothProfile.A2DP);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -262,39 +296,6 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         if (logger != null) logger.Log(TAG, "applySettings");
         this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
         this.useAdjustVolume = DNSSetting.getUseAdjustVolume(this);
-    }
-
-    // BluetoothProfile.ServiceListener
-    @Override
-    public void onServiceConnected(int profile, BluetoothProfile proxy) {
-        DiagnosticsLogger logger = Logger;
-        switch (profile) {
-            case BluetoothProfile.HEADSET:
-                if (logger != null) logger.Log(TAG, "HEADSET connected.");
-                this.bluetoothHeadset = (BluetoothHeadset)proxy;
-                break;
-            case BluetoothProfile.A2DP:
-                if (logger != null) logger.Log(TAG, "A2DP connected.");
-                this.bluetoothA2dp = (BluetoothA2dp)proxy;
-                break;
-        }
-        this.update();
-    }
-
-    // BluetoothProfile.ServiceListener
-    @Override
-    public void onServiceDisconnected(int profile) {
-        DiagnosticsLogger logger = Logger;
-        switch (profile) {
-            case BluetoothProfile.HEADSET:
-                if (logger != null) logger.Log(TAG, "HEADSET disconnected.");
-                this.bluetoothHeadset = null;
-                break;
-            case BluetoothProfile.A2DP:
-                if (logger != null) logger.Log(TAG, "A2DP disconnected.");
-                this.bluetoothA2dp = null;
-                break;
-        }
     }
 
     @Override
@@ -688,6 +689,9 @@ public final class DNSService extends Service implements BluetoothProfile.Servic
         if (this.bluetoothA2dp != null) {
             this.bluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, this.bluetoothA2dp);
             this.bluetoothA2dp = null;
+        }
+        if (this.bluetoothServiceListener != null) {
+            this.bluetoothServiceListener = null;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             this.audioManager.unregisterAudioDeviceCallback(this.audioDeviceCallback);
