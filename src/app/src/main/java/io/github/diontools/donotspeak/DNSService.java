@@ -62,6 +62,7 @@ public final class DNSService extends Service {
     private Intent disableIntent;
     private PendingIntent toggleIntent;
     private PendingIntent startIntent;
+    private PendingIntent rebootIntent;
 
     private AlarmManager alarmManager;
     private NotificationManager notificationManager;
@@ -119,6 +120,13 @@ public final class DNSService extends Service {
                         this,
                         0,
                         new Intent(this, DNSService.class).setAction(ACTION_START),
+                        PendingIntent.FLAG_CANCEL_CURRENT);
+
+        this.rebootIntent =
+                PendingIntent.getBroadcast(
+                        this,
+                        0,
+                        new Intent(this, DNSReceiver.class).setAction(ACTION_REBOOT),
                         PendingIntent.FLAG_CANCEL_CURRENT);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
@@ -367,6 +375,12 @@ public final class DNSService extends Service {
             }
         }
 
+        if (IsLive) {
+            this.setRebootTimer();
+        } else {
+            this.cancelRebootTimer();
+        }
+
         return START_STICKY;
     }
 
@@ -446,6 +460,18 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "cancel timer");
         this.alarmManager.cancel(this.startIntent);
+    }
+
+    private void setRebootTimer() {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "setRebootTimer");
+        this.alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), this.rebootIntent);
+    }
+
+    private void cancelRebootTimer() {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "clearRebootTimer");
+        this.alarmManager.cancel(this.rebootIntent);
     }
 
     private void update() {

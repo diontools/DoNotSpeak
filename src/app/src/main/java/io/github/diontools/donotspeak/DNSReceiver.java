@@ -24,6 +24,11 @@ public final class DNSReceiver extends BroadcastReceiver {
                 IntentUtility.reboot(context);
                 break;
             }
+            case DNSService.ACTION_REBOOT: {
+                Log.d(TAG, "ACTION_REBOOT");
+                IntentUtility.reboot(context);
+                break;
+            }
         }
     }
 }
