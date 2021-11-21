@@ -464,8 +464,9 @@ public final class DNSService extends Service {
 
     private void setRebootTimer() {
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "setRebootTimer");
-        this.alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), this.rebootIntent);
+        long nextTime = System.currentTimeMillis() + 60 * 60 * 1000;
+        if (logger != null) logger.Log(TAG, "setRebootTimer " + DateFormat.format(new Date(nextTime)));
+        this.alarmManager.set(AlarmManager.RTC_WAKEUP, nextTime, this.rebootIntent);
     }
 
     private void cancelRebootTimer() {
