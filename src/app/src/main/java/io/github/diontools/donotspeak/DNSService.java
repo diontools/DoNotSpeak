@@ -104,29 +104,29 @@ public final class DNSService extends Service {
         this.applySettings();
 
         this.disableIntent =
-                new Intent(this, MainActivity.class)
+                new Intent(this.getApplicationContext(), MainActivity.class)
                         .setAction(MainActivity.ACTION_DISABLE_DIALOG)
                         .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         this.toggleIntent =
                 PendingIntent.getService(
-                        this,
+                        this.getApplicationContext(),
                         0,
-                        new Intent(this, DNSService.class).setAction(ACTION_TOGGLE),
+                        new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_TOGGLE),
                         PendingIntent.FLAG_CANCEL_CURRENT);
 
         this.startIntent =
                 PendingIntent.getService(
-                        this,
+                        this.getApplicationContext(),
                         0,
-                        new Intent(this, DNSService.class).setAction(ACTION_START),
+                        new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_START),
                         PendingIntent.FLAG_CANCEL_CURRENT);
 
         this.rebootIntent =
                 PendingIntent.getBroadcast(
-                        this,
+                        this.getApplicationContext(),
                         0,
-                        new Intent(this, DNSReceiver.class).setAction(ACTION_REBOOT),
+                        new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(ACTION_REBOOT),
                         PendingIntent.FLAG_CANCEL_CURRENT);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
