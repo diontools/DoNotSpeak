@@ -126,7 +126,7 @@ public final class DNSService extends Service {
                 PendingIntent.getBroadcast(
                         this.getApplicationContext(),
                         0,
-                        new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(ACTION_REBOOT),
+                        new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(DNSReceiver.ACTION_REBOOT),
                         PendingIntent.FLAG_CANCEL_CURRENT);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);

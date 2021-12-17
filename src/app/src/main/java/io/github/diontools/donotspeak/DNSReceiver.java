@@ -8,9 +8,12 @@ import android.util.Log;
 public final class DNSReceiver extends BroadcastReceiver {
     private static final String TAG = "DNSReceiver";
 
+    public static final  String ACTION_REBOOT = BuildConfig.APPLICATION_ID + ".REBOOT";
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
+        Log.d(TAG, intent != null ? intent.toString() : "null");
+        String action = intent != null ? intent.getAction() : null;
         if (action == null) return;
 
         switch (action) {
@@ -24,7 +27,7 @@ public final class DNSReceiver extends BroadcastReceiver {
                 IntentUtility.reboot(context);
                 break;
             }
-            case DNSService.ACTION_REBOOT: {
+            case ACTION_REBOOT: {
                 Log.d(TAG, "ACTION_REBOOT");
                 IntentUtility.reboot(context);
                 break;
