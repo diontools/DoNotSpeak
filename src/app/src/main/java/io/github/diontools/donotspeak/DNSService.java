@@ -127,7 +127,7 @@ public final class DNSService extends Service {
                         this.getApplicationContext(),
                         0,
                         new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(DNSReceiver.ACTION_REBOOT),
-                        PendingIntent.FLAG_CANCEL_CURRENT);
+                        0);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
         if (this.notificationManager == null) throw new UnsupportedOperationException("NotificationManager is null");
