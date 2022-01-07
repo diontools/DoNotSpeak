@@ -1,19 +1,7 @@
-v1.6.2 BETA 2021/09/05
+v1.7.0 2022/01/09
 サービス復帰時、終了前の状態に戻すように改善
 アプリ起動時にBluetoothイヤホンを使用していてもミュートされてしまう問題を解消
 ColorOS (OPPO / Realme デバイス) のための設定を追加
-
-v1.6.1 2021/04/02
-USBヘッドセットに対応
-
-v1.6.0 2021/03/27
-厳密にBluetoothイヤホンを検出するように変更（Android 6.0以降）
-* Bluetoothイヤホンをご利用の方は、画面右上のメニューにあるBluetooth設定を行ってください
-
-下記のイベントで音量を0に設定
-* デバイスの接続変更（Android 6.0以降）
-* オーディオの再生開始（Android 9以降）
-
-Bluetoothデバイス情報を取得するためにBLUETOOTHパーミッションを追加
+OSによる停止を回避するために1時間毎に起動を確認する
 
 詳細：https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md
