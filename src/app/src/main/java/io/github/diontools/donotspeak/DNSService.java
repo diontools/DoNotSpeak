@@ -426,6 +426,11 @@ public final class DNSService extends Service {
         this.backupState();
 
         this.update();
+
+        if (DNSSetting.getRequestToStopPlayback(this)) {
+            AudioFocusUtility.request(this.audioManager, logger);
+        }
+
         Toast.makeText(this, this.getStartedMessage(), Toast.LENGTH_SHORT).show();
     }
 

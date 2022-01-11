@@ -111,6 +111,15 @@ public final class MainActivity extends Activity {
                 }
             });
 
+            final Switch requestToStopPlaybackSwitch = view.findViewById(R.id.requestToStopPlaybackSwitch);
+            requestToStopPlaybackSwitch.setChecked(DNSSetting.getRequestToStopPlayback(this));
+            requestToStopPlaybackSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    DNSSetting.setRequestToStopPlayback(MainActivity.this, isChecked);
+                }
+            });
+
             this.mainDialog =
                     new AlertDialog.Builder(this)
                             .setView(view)
