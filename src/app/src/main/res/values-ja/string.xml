@@ -13,6 +13,7 @@
     <string name="disable_alert_message_for_timesOfDay">下記時刻までスピーカーを有効にする:</string>
     <string name="disable_alert_time_unit">分</string>
     <string name="disable_alert_restore_volume">音量を復元する</string>
+    <string name="disable_alert_request_to_stop_playback">再生停止を要求する</string>
     <string name="disable_alert_okButton">有効化</string>
     <string name="disable_alert_cancelButton">キャンセル</string>
     <string name="disable_alert_untilScreenOffButton">画面消灯まで</string>

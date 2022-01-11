@@ -13,6 +13,7 @@
     <string name="disable_alert_message_for_timesOfDay">Enable speaker until:</string>
     <string name="disable_alert_time_unit">min</string>
     <string name="disable_alert_restore_volume">Restore volume</string>
+    <string name="disable_alert_request_to_stop_playback">Request to stop playback</string>
     <string name="disable_alert_okButton">Enable</string>
     <string name="disable_alert_cancelButton">Cancel</string>
     <string name="disable_alert_untilScreenOffButton">Until Screen Off</string>

@@ -11,6 +11,7 @@ final class DNSSetting {
 
     private enum Keys {
         RESTORE_VOLUME,
+        REQUEST_TO_STOP_PLAYBACK,
         BLUETOOTH_HEADSET_ADDRESSES,
         DIAGNOSTICS_FILE_LOG,
         USE_ADJUST_VOLUME,
@@ -29,6 +30,18 @@ final class DNSSetting {
         getPref(context)
                 .edit()
                 .putBoolean(Keys.RESTORE_VOLUME.name(), value)
+                .apply();
+    }
+
+
+    public static boolean getRequestToStopPlayback(Context context) {
+        return getPref(context).getBoolean(Keys.REQUEST_TO_STOP_PLAYBACK.name(), false);
+    }
+
+    public static void setRequestToStopPlayback(Context context, boolean value) {
+        getPref(context)
+                .edit()
+                .putBoolean(Keys.REQUEST_TO_STOP_PLAYBACK.name(), value)
                 .apply();
     }
 
