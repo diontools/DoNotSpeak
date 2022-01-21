@@ -138,6 +138,13 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="@string/disable_alert_request_to_stop_playback" />
+
+            <Switch
+                    android:id="@+id/keepScreenOnSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/disable_alert_keep_screen_on" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

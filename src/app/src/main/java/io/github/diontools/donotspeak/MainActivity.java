@@ -120,6 +120,16 @@ public final class MainActivity extends Activity {
                 }
             });
 
+            final Switch keepScreenOnSwitch = view.findViewById(R.id.keepScreenOnSwitch);
+            keepScreenOnSwitch.setChecked(DNSSetting.getKeepScreenOn(this));
+            keepScreenOnSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    DNSSetting.setKeepScreenOn(MainActivity.this, isChecked);
+                    IntentUtility.applySettings(MainActivity.this);
+                }
+            });
+
             this.mainDialog =
                     new AlertDialog.Builder(this)
                             .setView(view)

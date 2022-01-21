@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Build;
+import android.os.PowerManager;
 
 final class Compat {
     static void startForegroundService(Context context, Intent intent) {
@@ -36,6 +37,7 @@ final class Compat {
         if (serviceClass == NotificationManager.class) return Context.NOTIFICATION_SERVICE;
         if (serviceClass == AlarmManager.class) return Context.ALARM_SERVICE;
         if (serviceClass == KeyguardManager.class) return Context.KEYGUARD_SERVICE;
+        if (serviceClass == PowerManager.class) return Context.POWER_SERVICE;
         throw new Resources.NotFoundException();
     }
 
