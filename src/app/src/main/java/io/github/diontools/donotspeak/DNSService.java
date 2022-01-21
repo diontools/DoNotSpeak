@@ -19,6 +19,7 @@ import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 import android.media.AudioDeviceInfo;
@@ -54,6 +55,7 @@ public final class DNSService extends Service {
     private boolean stopUntilScreenOff = false;
     private int beforeVolume = -1;
     private boolean useAdjustVolume = false;
+    private boolean keepScreenOn = false;
 
     private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private long disableTime;
@@ -69,6 +71,7 @@ public final class DNSService extends Service {
     private AudioManager audioManager;
     private AudioDeviceCallback audioDeviceCallback;
     private AudioManager.AudioPlaybackCallback audioPlaybackCallback;
+    private PowerManager.WakeLock wakeLock;
 
     private BroadcastReceiver broadcastReceiver;
 
@@ -137,6 +140,11 @@ public final class DNSService extends Service {
 
         this.audioManager = Compat.getSystemService(this, AudioManager.class);
         if (this.audioManager == null) throw new UnsupportedOperationException("AudioManager is null");
+
+        final PowerManager powerManager = Compat.getSystemService(this, PowerManager.class);
+        if (powerManager == null) throw new UnsupportedOperationException("PowerManager is null");
+        this.wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "DNSService::WakeLock");
+        this.wakeLock.setReferenceCounted(false);
 
         this.broadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -304,6 +312,7 @@ public final class DNSService extends Service {
         if (logger != null) logger.Log(TAG, "applySettings");
         this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
         this.useAdjustVolume = DNSSetting.getUseAdjustVolume(this);
+        this.keepScreenOn = DNSSetting.getKeepScreenOn(this);
     }
 
     @Override
@@ -490,8 +499,16 @@ public final class DNSService extends Service {
 
         if (this.enabled) {
             this.mute(forceMute);
+            if (this.wakeLock.isHeld()) {
+                if (logger != null) logger.Log(TAG, "release wake lock");
+                this.wakeLock.release();
+            }
         } else {
             this.unmute();
+            if (this.keepScreenOn && !this.wakeLock.isHeld()) {
+                if (logger != null) logger.Log(TAG, "acquire wake lock");
+                this.wakeLock.acquire();
+            }
         }
 
         this.cancelTimer();
@@ -730,6 +747,9 @@ public final class DNSService extends Service {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.audioManager.unregisterAudioPlaybackCallback(this.audioPlaybackCallback);
+        }
+        if (this.wakeLock != null && this.wakeLock.isHeld()) {
+            this.wakeLock.release();
         }
     }
 }

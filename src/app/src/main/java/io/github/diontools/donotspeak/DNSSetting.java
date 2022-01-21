@@ -12,6 +12,7 @@ final class DNSSetting {
     private enum Keys {
         RESTORE_VOLUME,
         REQUEST_TO_STOP_PLAYBACK,
+        KEEP_SCREEN_ON,
         BLUETOOTH_HEADSET_ADDRESSES,
         DIAGNOSTICS_FILE_LOG,
         USE_ADJUST_VOLUME,
@@ -42,6 +43,18 @@ final class DNSSetting {
         getPref(context)
                 .edit()
                 .putBoolean(Keys.REQUEST_TO_STOP_PLAYBACK.name(), value)
+                .apply();
+    }
+
+
+    public static boolean getKeepScreenOn(Context context) {
+        return getPref(context).getBoolean(Keys.KEEP_SCREEN_ON.name(), false);
+    }
+
+    public static void setKeepScreenOn(Context context, boolean value) {
+        getPref(context)
+                .edit()
+                .putBoolean(Keys.KEEP_SCREEN_ON.name(), value)
                 .apply();
     }
 
