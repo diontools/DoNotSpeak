@@ -24,7 +24,7 @@ android {
         versionCode 64
         versionName "1.7.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        resConfigs "en", "ja"
+        resConfigs 'en', 'ja'
     }
     buildTypes {
         release {
@@ -37,6 +37,7 @@ android {
             applicationIdSuffix = ".debug"
         }
     }
+    namespace 'io.github.diontools.donotspeak'
 }
 
 dependencies {
