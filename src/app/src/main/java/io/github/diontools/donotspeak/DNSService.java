@@ -520,9 +520,9 @@ public final class DNSService extends Service {
         if (startTime > 0) {
             if (logger != null) logger.Log(TAG, "set timer: " + this.disableTimeString);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
+                this.alarmManager.setAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
             } else {
-                this.alarmManager.setExact(AlarmManager.RTC, startTime, this.startIntent);
+                this.alarmManager.set(AlarmManager.RTC, startTime, this.startIntent);
             }
         }
 
