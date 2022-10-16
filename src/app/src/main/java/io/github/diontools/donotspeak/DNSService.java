@@ -106,6 +106,9 @@ public final class DNSService extends Service {
 
         this.applySettings();
 
+        // Targeting S+ (version 31 and above) requires that one of FLAG_IMMUTABLE or FLAG_MUTABLE be specified when creating a PendingIntent.
+        final int immutableFlag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0;
+
         this.disableIntent =
                 new Intent(this.getApplicationContext(), MainActivity.class)
                         .setAction(MainActivity.ACTION_DISABLE_DIALOG)
@@ -116,21 +119,21 @@ public final class DNSService extends Service {
                         this.getApplicationContext(),
                         0,
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_TOGGLE),
-                        PendingIntent.FLAG_CANCEL_CURRENT);
+                        PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
 
         this.startIntent =
                 PendingIntent.getService(
                         this.getApplicationContext(),
                         0,
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_START),
-                        PendingIntent.FLAG_CANCEL_CURRENT);
+                        PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
 
         this.rebootIntent =
                 PendingIntent.getBroadcast(
                         this.getApplicationContext(),
                         0,
                         new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(DNSReceiver.ACTION_REBOOT),
-                        0);
+                        immutableFlag);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
         if (this.notificationManager == null) throw new UnsupportedOperationException("NotificationManager is null");
