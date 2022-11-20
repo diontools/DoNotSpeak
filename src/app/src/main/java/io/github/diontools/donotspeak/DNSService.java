@@ -1,7 +1,6 @@
 package io.github.diontools.donotspeak;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.*;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
@@ -23,7 +22,6 @@ import android.media.AudioPlaybackConfiguration;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 import android.media.AudioDeviceInfo;
 
@@ -66,6 +64,7 @@ public final class DNSService extends Service {
 
     private PendingIntent disableIntent;
     private PendingIntent startIntent;
+    private PendingIntent stopUntilScreenOffIntent;
     private PendingIntent rebootIntent;
 
     private AlarmManager alarmManager;
@@ -117,6 +116,14 @@ public final class DNSService extends Service {
                         0,
                         new Intent(this.getApplicationContext(), MainActivity.class)
                                 .setAction(MainActivity.ACTION_DISABLE_DIALOG),
+                        immutableFlag);
+
+        this.stopUntilScreenOffIntent =
+                PendingIntent.getActivity(
+                        this.getApplicationContext(),
+                        0,
+                        new Intent(this.getApplicationContext(), MainActivity.class)
+                                .setAction(MainActivity.ACTION_STOP_UNTIL_SCREEN_OFF),
                         immutableFlag);
 
         this.startIntent =
@@ -527,18 +534,19 @@ public final class DNSService extends Service {
             this.createNotificationChannel(id, this.getResources().getString(R.string.notification_channel_name));
         }
 
-        RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
-        remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher_round : R.drawable.ic_noisy);
-        remoteViews.setTextViewText(R.id.textView, enabled ? this.getStartedMessage() : this.getStoppedMessage());
-
         Notification.Builder builder =
                 Compat.createNotificationBuilder(this, id)
                         .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
-                        .setContent(remoteViews)
+                        .setContentTitle(enabled ? this.getStartedMessage() : this.getStoppedMessage())
+                        .setColor(enabled ? 0x1976D2 : 0xFF5419)
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
                         .setContentIntent(enabled ? disableIntent : startIntent);
+
+        if (enabled) {
+            builder.addAction(new Notification.Action(R.drawable.ic_noisy, this.getResources().getString(R.string.notification_action_untilScreenOff), this.stopUntilScreenOffIntent));
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // Android S+: avoid 10s notification delay
