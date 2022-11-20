@@ -1,8 +1,11 @@
 package io.github.diontools.donotspeak;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +23,8 @@ import java.util.Set;
 public class SettingActivity extends Activity implements AdapterView.OnItemClickListener, CompoundButton.OnCheckedChangeListener {
     private ArrayList<Item> items;
     private ItemAdapter itemAdapter;
+    private CheckBox useAdjustVolumeCheckBox;
+    private CheckBox useBluetoothCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,43 +32,65 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         this.setTitle(R.string.settings_title);
         this.setContentView(R.layout.activity_setting);
 
-        CheckBox useAdjustVolumeCheckBox = this.findViewById(R.id.use_adjust_volume_check_box);
-        useAdjustVolumeCheckBox.setChecked(DNSSetting.getUseAdjustVolume(this));
-        useAdjustVolumeCheckBox.setOnCheckedChangeListener(this);
+        this.useAdjustVolumeCheckBox = this.findViewById(R.id.use_adjust_volume_check_box);
+        this.useAdjustVolumeCheckBox.setOnCheckedChangeListener(this);
+
+        this.useBluetoothCheckBox = this.findViewById(R.id.use_bluetooth_check_box);
+        this.useBluetoothCheckBox.setOnCheckedChangeListener(this);
 
         this.items = new ArrayList<>();
+        this.itemAdapter = new ItemAdapter(this, this.items);
+        ListView listView = this.findViewById(R.id.device_list_view);
+        listView.setAdapter(this.itemAdapter);
+        listView.setOnItemClickListener(this);
+
+        this.loadSettings();
+    }
+
+    private void loadSettings()
+    {
+        this.useAdjustVolumeCheckBox.setChecked(DNSSetting.getUseAdjustVolume(this));
+        this.useBluetoothCheckBox.setChecked(Boolean.TRUE.equals(DNSSetting.getUseBluetooth(this)));
+        this.refreshListItems();
+    }
+
+    private void refreshListItems()
+    {
+        this.items.clear();
+
         Set<String> addresses = DNSSetting.getBluetoothHeadsetAddresses(this);
         for (String address : addresses) {
             this.items.add(new Item(address, true));
         }
 
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (bluetoothAdapter != null) {
-            Set<BluetoothDevice> devices = bluetoothAdapter.getBondedDevices();
-            for (BluetoothDevice device : devices) {
-                String name = device.getName();
-                String address = device.getAddress();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                || this.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        ) {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter != null) {
+                Set<BluetoothDevice> devices = bluetoothAdapter.getBondedDevices();
+                for (BluetoothDevice device : devices) {
+                    String name = device.getName();
+                    String address = device.getAddress();
 
-                Item foundItem = null;
-                for (Item item : this.items) {
-                    if (item.address.equals(address)) {
-                        foundItem = item;
-                        break;
+                    Item foundItem = null;
+                    for (Item item : this.items) {
+                        if (item.address.equals(address)) {
+                            foundItem = item;
+                            break;
+                        }
                     }
-                }
 
-                if (foundItem != null) {
-                    foundItem.name = name;
-                } else {
-                    this.items.add(new Item(address, name, false));
+                    if (foundItem != null) {
+                        foundItem.name = name;
+                    } else {
+                        this.items.add(new Item(address, name, false));
+                    }
                 }
             }
         }
 
-        this.itemAdapter = new ItemAdapter(this, this.items);
-        ListView listView = this.findViewById(R.id.device_list_view);
-        listView.setAdapter(this.itemAdapter);
-        listView.setOnItemClickListener(this);
+        this.itemAdapter.notifyDataSetChanged();
     }
 
     // CompoundButton.OnCheckedChangeListener
@@ -73,6 +100,22 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         if (id == R.id.use_adjust_volume_check_box) {
             DNSSetting.setUseAdjustVolume(this, isChecked);
             IntentUtility.applySettings(this);
+        } else if (id == R.id.use_bluetooth_check_box) {
+            if (!Boolean.valueOf(isChecked).equals(DNSSetting.getUseBluetooth(this))) {
+                DNSSetting.setUseBluetooth(this, isChecked);
+                if (isChecked) {
+                    PermissionUtility.requestBluetoothPermissionIfRequired(
+                            this,
+                            result -> {
+                                DNSSetting.setUseBluetooth(this, PermissionUtility.isBluetoothGranted(this));
+                                IntentUtility.applySettings(this);
+                                this.loadSettings();
+                            }
+                    );
+                } else {
+                    IntentUtility.applySettings(this);
+                }
+            }
         }
     }
 
