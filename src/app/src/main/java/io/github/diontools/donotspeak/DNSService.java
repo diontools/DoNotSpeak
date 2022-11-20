@@ -36,7 +36,6 @@ public final class DNSService extends Service {
     private static final String TAG = "DNSService";
 
     public static final String ACTION_START = "START";
-    public static final String ACTION_TOGGLE = "TOGGLE";
     public static final String ACTION_SWITCH = "SWITCH";
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
@@ -65,8 +64,7 @@ public final class DNSService extends Service {
     private long disableTime;
     private String disableTimeString = "";
 
-    private Intent disableIntent;
-    private PendingIntent toggleIntent;
+    private PendingIntent disableIntent;
     private PendingIntent startIntent;
     private PendingIntent rebootIntent;
 
@@ -114,16 +112,12 @@ public final class DNSService extends Service {
         final int immutableFlag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0;
 
         this.disableIntent =
-                new Intent(this.getApplicationContext(), MainActivity.class)
-                        .setAction(MainActivity.ACTION_DISABLE_DIALOG)
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        this.toggleIntent =
-                PendingIntent.getService(
+                PendingIntent.getActivity(
                         this.getApplicationContext(),
                         0,
-                        new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_TOGGLE),
-                        PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
+                        new Intent(this.getApplicationContext(), MainActivity.class)
+                                .setAction(MainActivity.ACTION_DISABLE_DIALOG),
+                        immutableFlag);
 
         this.startIntent =
                 PendingIntent.getService(
@@ -348,18 +342,6 @@ public final class DNSService extends Service {
                 this.start();
                 break;
             }
-            case ACTION_TOGGLE: {
-                if (this.enabled) {
-                    // to disable
-                    if (logger != null) logger.Log(TAG, "start activity: disable");
-                    this.startActivity(new Intent(this.getApplicationContext(), MainActivity.class)
-                            .setAction(MainActivity.ACTION_DISABLE_DIALOG)
-                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                } else {
-                    this.start();
-                }
-                break;
-            }
             case ACTION_SWITCH: {
                 if (this.enabled) {
                     this.stop(new Date(0), true);
@@ -556,7 +538,7 @@ public final class DNSService extends Service {
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
-                        .setContentIntent(toggleIntent)
+                        .setContentIntent(enabled ? disableIntent : startIntent)
                         .build();
 
         this.startForeground(1, notification);
