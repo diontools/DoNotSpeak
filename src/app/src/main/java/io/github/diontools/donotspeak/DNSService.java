@@ -531,15 +531,21 @@ public final class DNSService extends Service {
         remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher_round : R.drawable.ic_noisy);
         remoteViews.setTextViewText(R.id.textView, enabled ? this.getStartedMessage() : this.getStoppedMessage());
 
-        Notification notification =
+        Notification.Builder builder =
                 Compat.createNotificationBuilder(this, id)
                         .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
                         .setContent(remoteViews)
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
-                        .setContentIntent(enabled ? disableIntent : startIntent)
-                        .build();
+                        .setContentIntent(enabled ? disableIntent : startIntent);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android S+: avoid 10s notification delay
+            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
+        }
+
+        Notification notification = builder.build();
 
         this.startForeground(1, notification);
     }
