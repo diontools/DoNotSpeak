@@ -538,6 +538,7 @@ public final class DNSService extends Service {
                 Compat.createNotificationBuilder(this, id)
                         .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
                         .setContentTitle(enabled ? this.getStartedMessage() : this.getStoppedMessage())
+                        .setSubText(this.getResources().getText(enabled ? R.string.notification_subtext_enabled : R.string.notification_subtext_disabled))
                         .setColor(enabled ? 0x1976D2 : 0xFF5419)
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)

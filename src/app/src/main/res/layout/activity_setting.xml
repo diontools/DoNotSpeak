@@ -25,6 +25,19 @@
             android:layout_height="1dp"
             android:background="?android:attr/listDivider" />
 
+    <CheckBox
+            android:id="@+id/use_notification_check_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Use Notification" />
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+
     <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

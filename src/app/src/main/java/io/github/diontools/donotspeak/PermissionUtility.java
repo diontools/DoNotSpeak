@@ -1,7 +1,6 @@
 package io.github.diontools.donotspeak;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -16,91 +15,147 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
-import android.widget.Toast;
 
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 final class PermissionUtility {
     private static final String TAG = "PermissionUtility";
-
-    public static boolean isBluetoothPermissionRequired(Context context) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
-    }
 
     public static boolean isBluetoothGranted(Context context) {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.S
                 || context.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
     }
 
+    public static boolean isPostNotificationsGranted(Context context) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+    }
+
     public static void requestBluetoothPermissionIfRequired(Activity context, Consumer<RequestResult> onCompleted) {
-        if (isBluetoothPermissionRequired(context)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             final Boolean useBluetooth = DNSSetting.getUseBluetooth(context);
             Log.d(TAG, "useBluetooth: " + useBluetooth);
 
-            if (useBluetooth == null || (useBluetooth && !isBluetoothGranted(context))) {
-                if (context.shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_CONNECT)) {
-                    new AlertDialog.Builder(context)
-                            .setTitle("Bluetooth権限が無効")
-                            .setMessage("Bluetooth権限が無効になっています。システム設定からDoNotSpeakのBluetooth権限(付近のデバイス)を許可してください。")
-                            .setPositiveButton("設定を開く", (dialog, which) -> {
-                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                intent.setData(Uri.fromParts("package", context.getPackageName(), null));
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                context.startActivity(intent);
-                                onCompleted.accept(RequestResult.None);
-                            })
-                            .setNegativeButton("Bluetoothを使用しない", (dialog, which) -> {
-                                onCompleted.accept(RequestResult.NotAllowed);
-                            })
-                            .setOnCancelListener(dialog -> {
-                                onCompleted.accept(RequestResult.None);
-                            })
-                            .show();
-                    return;
-                } else {
-                    showConfirmBluetoothPermissionDialog(context, onCompleted);
-                    return;
-                }
+            if (useBluetooth == null || useBluetooth) {
+                requestPermissionIfRequired(
+                        context,
+                        Manifest.permission.BLUETOOTH_CONNECT,
+                        onCompleted,
+                        (builder, requestPermission) -> builder
+                                .setTitle(R.string.permission_dialog_bluetooth_title)
+                                .setMessage(R.string.permission_dialog_bluetooth_message)
+                                .setPositiveButton(R.string.permission_dialog_bluetooth_positive, (dialog, which) -> requestPermission.run())
+                                .setNegativeButton(R.string.permission_dialog_bluetooth_negative, (dialog, which) -> onCompleted.accept(RequestResult.Denied)),
+                        builder -> builder
+                                .setTitle(R.string.permission_dialog_bluetooth_denied_title)
+                                .setMessage(R.string.permission_dialog_bluetooth_denied_message)
+                                .setPositiveButton(R.string.permission_dialog_bluetooth_denied_positive, (dialog, which) -> {
+                                    openApplicationDetailsSettings(context);
+                                    onCompleted.accept(RequestResult.None);
+                                })
+                                .setNegativeButton(R.string.permission_dialog_bluetooth_denied_negative, (dialog, which) -> onCompleted.accept(RequestResult.Denied))
+                                .setOnCancelListener(dialog -> onCompleted.accept(RequestResult.None))
+                );
+                return;
             }
         }
 
         onCompleted.accept(RequestResult.None);
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
-    public static void showConfirmBluetoothPermissionDialog(Activity context, Consumer<RequestResult> onCompleted) {
-        Log.d(TAG, "showConfirmBluetoothPermission");
-        new PermissionDialogFragment(onCompleted).show(context.getFragmentManager(), TAG);
+    public static void requestPostNotificationsPermissionIfRequired(Activity context, Consumer<RequestResult> onCompleted) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            final Boolean useNotification = DNSSetting.getUseNotification(context);
+            Log.d(TAG, "useNotification: " + useNotification);
+
+            if (useNotification == null || useNotification) {
+                requestPermissionIfRequired(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS,
+                        onCompleted,
+                        (builder, requestPermission) -> builder
+                                .setTitle(R.string.permission_dialog_notification_title)
+                                .setMessage(R.string.permission_dialog_notification_message)
+                                .setPositiveButton(R.string.permission_dialog_notification_positive, (dialog, which) -> requestPermission.run())
+                                .setNegativeButton(R.string.permission_dialog_notification_negative, (dialog, which) -> onCompleted.accept(RequestResult.Denied)),
+                        builder -> builder
+                                .setTitle(R.string.permission_dialog_notification_denied_title)
+                                .setMessage(R.string.permission_dialog_notification_denied_message)
+                                .setPositiveButton(R.string.permission_dialog_notification_denied_positive, (dialog, which) -> {
+                                    openApplicationDetailsSettings(context);
+                                    onCompleted.accept(RequestResult.None);
+                                })
+                                .setNegativeButton(R.string.permission_dialog_notification_denied_negative, (dialog, which) -> onCompleted.accept(RequestResult.Denied))
+                                .setOnCancelListener(dialog -> onCompleted.accept(RequestResult.None))
+                );
+                return;
+            }
+        }
+
+        onCompleted.accept(RequestResult.None);
+    }
+
+    private static void openApplicationDetailsSettings(Context context) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setData(Uri.fromParts("package", context.getPackageName(), null));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private static void requestPermissionIfRequired(
+            Activity context,
+            String permission,
+            Consumer<RequestResult> onCompleted,
+            BiFunction<AlertDialog.Builder, Runnable, AlertDialog.Builder> onConfirmDialogBuild,
+            Function<AlertDialog.Builder, AlertDialog.Builder> onDeniedDialogBuild
+    ) {
+        if (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "already granted: " + permission);
+            onCompleted.accept(RequestResult.Granted);
+            return;
+        }
+
+        if (context.shouldShowRequestPermissionRationale(permission)) {
+            onDeniedDialogBuild.apply(new AlertDialog.Builder(context))
+                    .show();
+        } else {
+            new PermissionDialogFragment()
+                    .set(permission, onCompleted, onConfirmDialogBuild)
+                    .show(context.getFragmentManager(), TAG);
+        }
     }
 
     public enum RequestResult {
         None,
         Canceled,
-        NotAllowed,
+        Denied,
         Granted,
     }
 
-    @SuppressWarnings("deprecation") @SuppressLint("ValidFragment")
+    @SuppressWarnings("deprecation")
     public static class PermissionDialogFragment extends DialogFragment
     {
-        private final Consumer<RequestResult> onCompleted;
+        private String permission;
+        private Consumer<RequestResult> onCompleted;
+        private BiFunction<AlertDialog.Builder, Runnable, AlertDialog.Builder> onConfirmDialogBuild;
 
-        public PermissionDialogFragment(Consumer<RequestResult> onCompleted)
-        {
+        public PermissionDialogFragment set(String permission, Consumer<RequestResult> onCompleted, BiFunction<AlertDialog.Builder, Runnable, AlertDialog.Builder> onConfirmDialogBuild) {
+            this.permission = permission;
             this.onCompleted = onCompleted;
+            this.onConfirmDialogBuild = onConfirmDialogBuild;
+            return this;
         }
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            return new AlertDialog.Builder(this.getActivity())
-                    .setTitle("Bluetoothイヤホンを使用しますか？")
-                    .setMessage("Bluetoothイヤホンを使用する場合はBluetoothデバイスにアクセスする権限をアプリに許可する必要があります。")
-                    .setPositiveButton("使用する", (dialog, which) -> {
-                        requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
-                    })
-                    .setNegativeButton("使用しない", (dialog, which) -> {
-                        this.onCompleted.accept(RequestResult.NotAllowed);
-                    })
+            return
+                    this.onConfirmDialogBuild.apply(
+                        new AlertDialog.Builder(this.getActivity()),
+                        () -> this.requestPermissions(new String[]{this.permission}, 1)
+                    )
                     .create();
         }
 
@@ -120,11 +175,11 @@ final class PermissionUtility {
             Log.d(TAG, "onRequestPermissionsResult " + requestCode + permissions.length + " " + grantResults.length);
             if (requestCode == 1) {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "Bluetooth permission: granted");
+                    Log.d(TAG, "permission granted");
                     this.onCompleted.accept(RequestResult.Granted);
                 } else {
-                    Log.d(TAG, "Bluetooth permission: denied");
-                    this.onCompleted.accept(RequestResult.NotAllowed);
+                    Log.d(TAG, "permission denied");
+                    this.onCompleted.accept(RequestResult.Denied);
                 }
             }
         }

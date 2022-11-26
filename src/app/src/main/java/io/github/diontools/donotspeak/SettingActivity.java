@@ -24,6 +24,7 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
     private ArrayList<Item> items;
     private ItemAdapter itemAdapter;
     private CheckBox useAdjustVolumeCheckBox;
+    private CheckBox useNotificationCheckBox;
     private CheckBox useBluetoothCheckBox;
 
     @Override
@@ -34,6 +35,9 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
 
         this.useAdjustVolumeCheckBox = this.findViewById(R.id.use_adjust_volume_check_box);
         this.useAdjustVolumeCheckBox.setOnCheckedChangeListener(this);
+
+        this.useNotificationCheckBox = this.findViewById(R.id.use_notification_check_box);
+        this.useNotificationCheckBox.setOnCheckedChangeListener(this);
 
         this.useBluetoothCheckBox = this.findViewById(R.id.use_bluetooth_check_box);
         this.useBluetoothCheckBox.setOnCheckedChangeListener(this);
@@ -50,6 +54,7 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
     private void loadSettings()
     {
         this.useAdjustVolumeCheckBox.setChecked(DNSSetting.getUseAdjustVolume(this));
+        this.useNotificationCheckBox.setChecked(Boolean.TRUE.equals(DNSSetting.getUseNotification(this)));
         this.useBluetoothCheckBox.setChecked(Boolean.TRUE.equals(DNSSetting.getUseBluetooth(this)));
         this.refreshListItems();
     }
@@ -100,6 +105,20 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         if (id == R.id.use_adjust_volume_check_box) {
             DNSSetting.setUseAdjustVolume(this, isChecked);
             IntentUtility.applySettings(this);
+        } else if (id == R.id.use_notification_check_box) {
+            if (!Boolean.valueOf(isChecked).equals(DNSSetting.getUseNotification(this))) {
+                DNSSetting.setUseNotification(this, isChecked);
+                if (isChecked) {
+                    PermissionUtility.requestPostNotificationsPermissionIfRequired(
+                            this,
+                            result -> {
+                                DNSSetting.setUseNotification(this, PermissionUtility.isPostNotificationsGranted(this));
+                                IntentUtility.applySettings(this);
+                                this.loadSettings();
+                            }
+                    );
+                }
+            }
         } else if (id == R.id.use_bluetooth_check_box) {
             if (!Boolean.valueOf(isChecked).equals(DNSSetting.getUseBluetooth(this))) {
                 DNSSetting.setUseBluetooth(this, isChecked);

@@ -1,16 +1,13 @@
 package io.github.diontools.donotspeak;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.quicksettings.TileService;
-import android.support.annotation.RequiresApi;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.MenuInflater;
@@ -202,13 +199,25 @@ public final class MainActivity extends Activity {
                     case Granted:
                         DNSSetting.setUseBluetooth(this, true);
                         break;
-                    case NotAllowed:
+                    case Denied:
                         DNSSetting.setUseBluetooth(this, false);
                         break;
                 }
-                Log.d(TAG, "start service!");
-                IntentUtility.start(this);
-                this.exit();
+
+                PermissionUtility.requestPostNotificationsPermissionIfRequired(this, result2 -> {
+                    switch (result2) {
+                        case Granted:
+                            DNSSetting.setUseNotification(this, true);
+                            break;
+                        case Denied:
+                            DNSSetting.setUseNotification(this, false);
+                            break;
+                    }
+
+                    Log.d(TAG, "start service!");
+                    IntentUtility.start(this);
+                    this.exit();
+                });
             });
         }
     }
