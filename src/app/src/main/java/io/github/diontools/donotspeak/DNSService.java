@@ -565,6 +565,7 @@ public final class DNSService extends Service {
                 NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
                 chan.setLightColor(Color.BLUE);
                 chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                chan.setShowBadge(false);
                 this.notificationManager.createNotificationChannel(chan);
             }
         }
