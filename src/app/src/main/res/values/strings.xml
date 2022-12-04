@@ -49,21 +49,21 @@
     <string name="settings_bluetooth_settings">Bluetooth Settings</string>
     <string name="settings_message">Select the device you want to treat as an earphone.</string>
 
-    <string name="permission_dialog_bluetooth_title">Bluetoothイヤホンを使用しますか？</string>
-    <string name="permission_dialog_bluetooth_message">Bluetoothイヤホンを使用する場合はBluetoothデバイスにアクセスする権限を許可する必要があります。</string>
-    <string name="permission_dialog_bluetooth_positive">使用する</string>
-    <string name="permission_dialog_bluetooth_negative">使用しない</string>
-    <string name="permission_dialog_bluetooth_denied_title">Bluetooth権限が無効</string>
-    <string name="permission_dialog_bluetooth_denied_message">Bluetooth権限が無効になっています。システム設定からDoNotSpeakのBluetooth権限(付近のデバイス)を許可してください。</string>
-    <string name="permission_dialog_bluetooth_denied_positive">設定を開く</string>
-    <string name="permission_dialog_bluetooth_denied_negative">Bluetoothを使用しない</string>
+    <string name="permission_dialog_bluetooth_title">Use Bluetooth earphones?</string>
+    <string name="permission_dialog_bluetooth_message">When using Bluetooth earphones, you must allow to access the Bluetooth devices (Nearby Devices).</string>
+    <string name="permission_dialog_bluetooth_positive">Use</string>
+    <string name="permission_dialog_bluetooth_negative">Not use</string>
+    <string name="permission_dialog_bluetooth_denied_title">Bluetooth permission denied</string>
+    <string name="permission_dialog_bluetooth_denied_message">Bluetooth permission are denied. Please allow DoNotSpeak Bluetooth permission (Nearby Devices) from the system settings.</string>
+    <string name="permission_dialog_bluetooth_denied_positive">Open Settings</string>
+    <string name="permission_dialog_bluetooth_denied_negative">Not use Bluetooth</string>
 
-    <string name="permission_dialog_notification_title">通知を使用しますか？</string>
-    <string name="permission_dialog_notification_message">通知を使用する場合は通知権限を許可する必要があります。</string>
-    <string name="permission_dialog_notification_positive">使用する</string>
-    <string name="permission_dialog_notification_negative">使用しない</string>
-    <string name="permission_dialog_notification_denied_title">通知権限が無効</string>
-    <string name="permission_dialog_notification_denied_message">通知権限が無効になっています。システム設定からDoNotSpeakの通知権限を許可してください。</string>
-    <string name="permission_dialog_notification_denied_positive">設定を開く</string>
-    <string name="permission_dialog_notification_denied_negative">通知を使用しない</string>
+    <string name="permission_dialog_notification_title">Use Notification？</string>
+    <string name="permission_dialog_notification_message">If you want to use Notification, you must allow Notification permission.</string>
+    <string name="permission_dialog_notification_positive">Use</string>
+    <string name="permission_dialog_notification_negative">Not use</string>
+    <string name="permission_dialog_notification_denied_title">Notification permission denied</string>
+    <string name="permission_dialog_notification_denied_message">Notification permission are denied. Please allow DoNotSpeak Notification permission from the system settings.</string>
+    <string name="permission_dialog_notification_denied_positive">Open Settings</string>
+    <string name="permission_dialog_notification_denied_negative">Not use Notification</string>
 </resources>
