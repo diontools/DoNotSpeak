@@ -1,12 +1,15 @@
 import * as core from '@actions/core'
 import * as fs from 'fs'
 import * as path from 'path'
+import { fileURLToPath } from 'url'
 import * as childProcess from 'child_process'
 import fetch from 'node-fetch'
 import * as crypto from 'crypto'
 import * as google from 'googleapis'
 
 console.log('publishing started')
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 interface Settings {
     applicationId: string

@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "upload": "ts-node --transpile-only ./index.ts"
+    "upload": "ts-node --esm --transpile-only ./index.ts"
   },
   "keywords": [],
   "author": "",
