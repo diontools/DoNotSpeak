@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## v1.8.0 2022/12/XX
+
+### 新機能
+
+* Android 12 / Android 13 に対応
+  * `BLUETOOTH_CONNECT`権限を追加（Android 12以降はBluetoothデバイスの情報を得ることが許可制になる）
+  * `POST_NOTIFICATIONS`権限を追加（Android 13以降は通知が許可制になる）
+  * `AlarmManager`の`setExactAndAllowWhileIdle`と`setExact`の代わりに`setAndAllowWhileIdle`と`set`を使用する。(`SCHEDULE_EXACT_ALARM`権限を回避)
+  * 通知タップからの通知トランポリンを回避
+  * 通知に`FOREGROUND_SERVICE_IMMEDIATE`を指定
+  * `PendingIntent`に`FLAG_IMMUTABLE`を指定
+* 再生停止を要求する機能を追加
+* 画面を消灯しない機能を追加
+
+### 変更
+
+* 通知のデザインを標準的なデザインに変更（今後のAndroidの変更に対応しやすくする）
+* 通知ドットを無効化（通知を使用するとショートカットを表示できる数が減るため）
+* メニュー画面の通知バーの色を透過色に変更
+
 ## v1.7.0 2022/01/09
 
 ### 新機能
