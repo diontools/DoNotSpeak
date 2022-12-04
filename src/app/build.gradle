@@ -16,15 +16,15 @@ android {
             keyPassword properties.getProperty('KEY_PASSWORD')
         }
     }
-    compileSdkVersion 30
+    compileSdkVersion 33
     defaultConfig {
         applicationId "io.github.diontools.donotspeak"
         minSdkVersion 21
-        targetSdkVersion 30
-        versionCode 64
+        targetSdkVersion 33
+        versionCode 65
         versionName "1.7.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        resConfigs "en", "ja"
+        resConfigs 'en', 'ja'
     }
     buildTypes {
         release {
@@ -37,6 +37,7 @@ android {
             applicationIdSuffix = ".debug"
         }
     }
+    namespace 'io.github.diontools.donotspeak'
 }
 
 dependencies {

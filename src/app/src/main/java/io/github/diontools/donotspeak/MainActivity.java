@@ -194,9 +194,31 @@ public final class MainActivity extends Activity {
             IntentUtility.switching(this);
             this.exit();
         } else {
-            Log.d(TAG, "start service!");
-            IntentUtility.start(this);
-            this.exit();
+            PermissionUtility.requestBluetoothPermissionIfRequired(this, result -> {
+                switch (result) {
+                    case Granted:
+                        DNSSetting.setUseBluetooth(this, true);
+                        break;
+                    case Denied:
+                        DNSSetting.setUseBluetooth(this, false);
+                        break;
+                }
+
+                PermissionUtility.requestPostNotificationsPermissionIfRequired(this, result2 -> {
+                    switch (result2) {
+                        case Granted:
+                            DNSSetting.setUseNotification(this, true);
+                            break;
+                        case Denied:
+                            DNSSetting.setUseNotification(this, false);
+                            break;
+                    }
+
+                    Log.d(TAG, "start service!");
+                    IntentUtility.start(this);
+                    this.exit();
+                });
+            });
         }
     }
 

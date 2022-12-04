@@ -16,6 +16,8 @@ final class DNSSetting {
         BLUETOOTH_HEADSET_ADDRESSES,
         DIAGNOSTICS_FILE_LOG,
         USE_ADJUST_VOLUME,
+        USE_NOTIFICATION,
+        USE_BLUETOOTH,
     }
 
     private static SharedPreferences getPref(Context context) {
@@ -92,6 +94,38 @@ final class DNSSetting {
         getPref(context)
                 .edit()
                 .putBoolean(Keys.USE_ADJUST_VOLUME.name(), value)
+                .apply();
+    }
+
+
+    public static Boolean getUseBluetooth(Context context) {
+        final SharedPreferences pref = getPref(context);
+        if (!pref.contains(Keys.USE_BLUETOOTH.name())) {
+            return null;
+        }
+        return pref.getBoolean(Keys.USE_BLUETOOTH.name(), false);
+    }
+
+    public static void setUseBluetooth(Context context, boolean value) {
+        getPref(context)
+                .edit()
+                .putBoolean(Keys.USE_BLUETOOTH.name(), value)
+                .apply();
+    }
+
+
+    public static Boolean getUseNotification(Context context) {
+        final SharedPreferences pref = getPref(context);
+        if (!pref.contains(Keys.USE_NOTIFICATION.name())) {
+            return null;
+        }
+        return pref.getBoolean(Keys.USE_NOTIFICATION.name(), false);
+    }
+
+    public static void setUseNotification(Context context, boolean value) {
+        getPref(context)
+                .edit()
+                .putBoolean(Keys.USE_NOTIFICATION.name(), value)
                 .apply();
     }
 }

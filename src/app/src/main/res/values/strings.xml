@@ -18,10 +18,13 @@
     <string name="disable_alert_okButton">Enable</string>
     <string name="disable_alert_cancelButton">Cancel</string>
     <string name="disable_alert_untilScreenOffButton">Until Screen Off</string>
-    <string name="start_toast_text">DoNotSpeak!</string>
+    <string name="start_toast_text">Muted</string>
     <string name="stop_toast_text">Speak until %1$s</string>
     <string name="stop_until_screen_off">Speak until screen off</string>
     <string name="notification_channel_name">Status</string>
+    <string name="notification_action_untilScreenOff">Enable Until Screen Off</string>
+    <string name="notification_subtext_enabled">Tap to show menu</string>
+    <string name="notification_subtext_disabled">Tap to mute</string>
     <string name="shortcut_enableSpeakerUntilScreenOff">Enable Speaker</string>
     <string name="shortcut_showMenu">Show Menu</string>
     <string name="shortcut_switch">Switch</string>
@@ -45,4 +48,22 @@
     <string name="settings_use_adjust_volume_description">Workaround for ColorOS (OPPO / Realme device) limitation</string>
     <string name="settings_bluetooth_settings">Bluetooth Settings</string>
     <string name="settings_message">Select the device you want to treat as an earphone.</string>
+
+    <string name="permission_dialog_bluetooth_title">Use Bluetooth earphones?</string>
+    <string name="permission_dialog_bluetooth_message">When using Bluetooth earphones, you must allow to access the Bluetooth devices (Nearby Devices).</string>
+    <string name="permission_dialog_bluetooth_positive">Use</string>
+    <string name="permission_dialog_bluetooth_negative">Not use</string>
+    <string name="permission_dialog_bluetooth_denied_title">Bluetooth permission denied</string>
+    <string name="permission_dialog_bluetooth_denied_message">Bluetooth permission are denied. Please allow DoNotSpeak Bluetooth permission (Nearby Devices) from the system settings.</string>
+    <string name="permission_dialog_bluetooth_denied_positive">Open Settings</string>
+    <string name="permission_dialog_bluetooth_denied_negative">Not use Bluetooth</string>
+
+    <string name="permission_dialog_notification_title">Use Notification？</string>
+    <string name="permission_dialog_notification_message">If you want to use Notification, you must allow Notification permission.</string>
+    <string name="permission_dialog_notification_positive">Use</string>
+    <string name="permission_dialog_notification_negative">Not use</string>
+    <string name="permission_dialog_notification_denied_title">Notification permission denied</string>
+    <string name="permission_dialog_notification_denied_message">Notification permission are denied. Please allow DoNotSpeak Notification permission from the system settings.</string>
+    <string name="permission_dialog_notification_denied_positive">Open Settings</string>
+    <string name="permission_dialog_notification_denied_negative">Not use Notification</string>
 </resources>

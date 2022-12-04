@@ -1,5 +1,6 @@
 package io.github.diontools.donotspeak;
 
+import android.Manifest;
 import android.app.*;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
@@ -11,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -20,7 +22,6 @@ import android.media.AudioPlaybackConfiguration;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 import android.media.AudioDeviceInfo;
 
@@ -33,7 +34,6 @@ public final class DNSService extends Service {
     private static final String TAG = "DNSService";
 
     public static final String ACTION_START = "START";
-    public static final String ACTION_TOGGLE = "TOGGLE";
     public static final String ACTION_SWITCH = "SWITCH";
     public static final String ACTION_STOP = "STOP";
     public static final String ACTION_STOP_UNTIL_SCREEN_OFF = "STOP_UNTIL_SCREEN_OFF";
@@ -56,14 +56,15 @@ public final class DNSService extends Service {
     private int beforeVolume = -1;
     private boolean useAdjustVolume = false;
     private boolean keepScreenOn = false;
+    private boolean useBluetooth = false;
 
     private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private long disableTime;
     private String disableTimeString = "";
 
-    private Intent disableIntent;
-    private PendingIntent toggleIntent;
+    private PendingIntent disableIntent;
     private PendingIntent startIntent;
+    private PendingIntent stopUntilScreenOffIntent;
     private PendingIntent rebootIntent;
 
     private AlarmManager alarmManager;
@@ -106,31 +107,38 @@ public final class DNSService extends Service {
 
         this.applySettings();
 
-        this.disableIntent =
-                new Intent(this.getApplicationContext(), MainActivity.class)
-                        .setAction(MainActivity.ACTION_DISABLE_DIALOG)
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Targeting S+ (version 31 and above) requires that one of FLAG_IMMUTABLE or FLAG_MUTABLE be specified when creating a PendingIntent.
+        final int immutableFlag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0;
 
-        this.toggleIntent =
-                PendingIntent.getService(
+        this.disableIntent =
+                PendingIntent.getActivity(
                         this.getApplicationContext(),
                         0,
-                        new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_TOGGLE),
-                        PendingIntent.FLAG_CANCEL_CURRENT);
+                        new Intent(this.getApplicationContext(), MainActivity.class)
+                                .setAction(MainActivity.ACTION_DISABLE_DIALOG),
+                        immutableFlag);
+
+        this.stopUntilScreenOffIntent =
+                PendingIntent.getActivity(
+                        this.getApplicationContext(),
+                        0,
+                        new Intent(this.getApplicationContext(), MainActivity.class)
+                                .setAction(MainActivity.ACTION_STOP_UNTIL_SCREEN_OFF),
+                        immutableFlag);
 
         this.startIntent =
                 PendingIntent.getService(
                         this.getApplicationContext(),
                         0,
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_START),
-                        PendingIntent.FLAG_CANCEL_CURRENT);
+                        PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
 
         this.rebootIntent =
                 PendingIntent.getBroadcast(
                         this.getApplicationContext(),
                         0,
                         new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(DNSReceiver.ACTION_REBOOT),
-                        0);
+                        immutableFlag);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
         if (this.notificationManager == null) throw new UnsupportedOperationException("NotificationManager is null");
@@ -255,8 +263,10 @@ public final class DNSService extends Service {
                 }
             };
 
-            this.bluetoothAdapter.getProfileProxy(this.getApplicationContext(), this.bluetoothServiceListener, BluetoothProfile.HEADSET);
-            this.bluetoothAdapter.getProfileProxy(this.getApplicationContext(), this.bluetoothServiceListener, BluetoothProfile.A2DP);
+            if (logger != null) logger.Log(TAG, "get bluetooth profile proxy");
+            final boolean headset = this.bluetoothAdapter.getProfileProxy(this.getApplicationContext(), this.bluetoothServiceListener, BluetoothProfile.HEADSET);
+            final boolean a2dp = this.bluetoothAdapter.getProfileProxy(this.getApplicationContext(), this.bluetoothServiceListener, BluetoothProfile.A2DP);
+            if (logger != null) logger.Log(TAG, "headset: " + headset + " a2dp: " + a2dp);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -313,6 +323,7 @@ public final class DNSService extends Service {
         this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
         this.useAdjustVolume = DNSSetting.getUseAdjustVolume(this);
         this.keepScreenOn = DNSSetting.getKeepScreenOn(this);
+        this.useBluetooth = Boolean.TRUE.equals(DNSSetting.getUseBluetooth(this));
     }
 
     @Override
@@ -336,15 +347,6 @@ public final class DNSService extends Service {
         switch (command) {
             case ACTION_START: {
                 this.start();
-                break;
-            }
-            case ACTION_TOGGLE: {
-                if (this.enabled) {
-                    // to disable
-                    this.startActivity(this.disableIntent);
-                } else {
-                    this.start();
-                }
                 break;
             }
             case ACTION_SWITCH: {
@@ -517,9 +519,9 @@ public final class DNSService extends Service {
         if (startTime > 0) {
             if (logger != null) logger.Log(TAG, "set timer: " + this.disableTimeString);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                this.alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
+                this.alarmManager.setAndAllowWhileIdle(AlarmManager.RTC, startTime, this.startIntent);
             } else {
-                this.alarmManager.setExact(AlarmManager.RTC, startTime, this.startIntent);
+                this.alarmManager.set(AlarmManager.RTC, startTime, this.startIntent);
             }
         }
 
@@ -532,19 +534,27 @@ public final class DNSService extends Service {
             this.createNotificationChannel(id, this.getResources().getString(R.string.notification_channel_name));
         }
 
-        RemoteViews remoteViews = new RemoteViews(this.getPackageName(), R.layout.notification_layout);
-        remoteViews.setImageViewResource(R.id.imageView, enabled ? R.drawable.ic_launcher_round : R.drawable.ic_noisy);
-        remoteViews.setTextViewText(R.id.textView, enabled ? this.getStartedMessage() : this.getStoppedMessage());
-
-        Notification notification =
+        Notification.Builder builder =
                 Compat.createNotificationBuilder(this, id)
                         .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
-                        .setContent(remoteViews)
+                        .setContentTitle(enabled ? this.getStartedMessage() : this.getStoppedMessage())
+                        .setSubText(this.getResources().getText(enabled ? R.string.notification_subtext_enabled : R.string.notification_subtext_disabled))
+                        .setColor(enabled ? 0x1976D2 : 0xFF5419)
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
-                        .setContentIntent(toggleIntent)
-                        .build();
+                        .setContentIntent(enabled ? disableIntent : startIntent);
+
+        if (enabled) {
+            builder.addAction(new Notification.Action(R.drawable.ic_noisy, this.getResources().getString(R.string.notification_action_untilScreenOff), this.stopUntilScreenOffIntent));
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android S+: avoid 10s notification delay
+            builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
+        }
+
+        Notification notification = builder.build();
 
         this.startForeground(1, notification);
     }
@@ -555,6 +565,7 @@ public final class DNSService extends Service {
                 NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
                 chan.setLightColor(Color.BLUE);
                 chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                chan.setShowBadge(false);
                 this.notificationManager.createNotificationChannel(chan);
             }
         }
@@ -633,11 +644,13 @@ public final class DNSService extends Service {
                     return true;
                 }
 
-                if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
-                        || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
-                ) {
-                    if (this.isBluetoothHeadsetConnected()) {
-                        return true;
+                if (this.useBluetooth) {
+                    if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+                            || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                    ) {
+                        if (this.isBluetoothHeadsetConnected()) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -651,34 +664,39 @@ public final class DNSService extends Service {
         boolean isConnectedWithoutAudio = false;
         boolean isAudioPlaying = false;
 
-        if (this.bluetoothHeadset != null) {
-            List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
-            for (BluetoothDevice device : devices) {
-                boolean isAudioConnected = this.bluetoothHeadset.isAudioConnected(device);
-                if (logger != null) logger.Log(TAG, "headset: " + device.getName() + " " + device.getAddress() + " isAudioConnected: " + isAudioConnected);
-                if (isAudioConnected) isAudioPlaying = true;
-                if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
-                    if (isAudioConnected) {
-                        if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
-                        return true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && this.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
+        } else {
+            if (this.bluetoothHeadset != null) {
+                List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
+                for (BluetoothDevice device : devices) {
+                    boolean isAudioConnected = this.bluetoothHeadset.isAudioConnected(device);
+                    if (logger != null) logger.Log(TAG, "headset: " + device.getName() + " " + device.getAddress() + " isAudioConnected: " + isAudioConnected);
+                    if (isAudioConnected) isAudioPlaying = true;
+                    if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                        if (isAudioConnected) {
+                            if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                            return true;
+                        }
+                        isConnectedWithoutAudio = true;
                     }
-                    isConnectedWithoutAudio = true;
                 }
             }
-        }
 
-        if (this.bluetoothA2dp != null) {
-            List<BluetoothDevice> devices = this.bluetoothA2dp.getConnectedDevices();
-            for (BluetoothDevice device : devices) {
-                boolean isA2dpPlaying = this.bluetoothA2dp.isA2dpPlaying(device);
-                if (logger != null) logger.Log(TAG, "a2dp: " + device.getName() + " " + device.getAddress() + " isA2dpPlaying: " + isA2dpPlaying);
-                if (isA2dpPlaying) isAudioPlaying = true;
-                if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
-                    if (isA2dpPlaying) {
-                        if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
-                        return true;
+            if (this.bluetoothA2dp != null) {
+                List<BluetoothDevice> devices = this.bluetoothA2dp.getConnectedDevices();
+                for (BluetoothDevice device : devices) {
+                    boolean isA2dpPlaying = this.bluetoothA2dp.isA2dpPlaying(device);
+                    if (logger != null) logger.Log(TAG, "a2dp: " + device.getName() + " " + device.getAddress() + " isA2dpPlaying: " + isA2dpPlaying);
+                    if (isA2dpPlaying) isAudioPlaying = true;
+                    if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                        if (isA2dpPlaying) {
+                            if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                            return true;
+                        }
+                        isConnectedWithoutAudio = true;
                     }
-                    isConnectedWithoutAudio = true;
                 }
             }
         }
@@ -690,6 +708,11 @@ public final class DNSService extends Service {
 
     private boolean isBluetoothInitialized() {
         DiagnosticsLogger logger = Logger;
+
+        if (!this.useBluetooth) {
+            if (logger != null) logger.Log(TAG, "useBluetooth: false");
+            return true;
+        }
 
         BluetoothAdapter adapter = this.bluetoothAdapter;
         if (adapter == null) {
