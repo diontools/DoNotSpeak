@@ -1,7 +1,9 @@
-v1.7.0 2022/01/09
-When the service is restored, it returns to the state before it was terminated.
-Fixed the problem of mute when using Bluetooth earphones when starting the app.
-Added settings for ColorOS (OPPO / Realme devices).
-Checking startup every hour to avoid OS-induced outages.
+v1.8.0 2022/12/XX
+Support Android 12 / Android 13
+* Added BLUETOOTH_CONNECT permission (Android 12 or later)
+* Added POST_NOTIFICATIONS permission (Android 13 or later)
+Added ability to request to stop playback.
+Added ability to keep screen on.
+Changed the design of notifications to a standard design.
 
 Details (japanese): https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md

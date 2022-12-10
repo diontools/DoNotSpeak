@@ -1,7 +1,9 @@
-v1.7.0 2022/01/09
-サービス復帰時、終了前の状態に戻すように改善
-アプリ起動時にBluetoothイヤホンを使用していてもミュートされてしまう問題を解消
-ColorOS (OPPO / Realme デバイス) のための設定を追加
-OSによる停止を回避するために1時間毎に起動を確認する
+v1.8.0 2022/12/XX
+Android 12 / Android 13 に対応
+* BLUETOOTH_CONNECT権限を追加（Android 12以降）
+* POST_NOTIFICATIONS権限を追加（Android 13以降）
+再生停止を要求する機能を追加
+画面を消灯しない機能を追加
+通知のデザインを標準的なデザインに変更
 
 詳細：https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md
