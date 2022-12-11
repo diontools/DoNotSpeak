@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "upload": "ts-node --esm --transpile-only ./index.ts"
+    "upload": "ts-node --esm --transpile-only ./index.ts",
+    "build-screenshots": "ts-node --esm --transpile-only ./build-screenshots.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,8 +15,10 @@
     "@actions/core": "^1.10.0",
     "@types/node": "^18.11.10",
     "@types/node-fetch": "^2.6.2",
+    "@types/sharp": "^0.31.0",
     "googleapis": "^109.0.1",
     "node-fetch": "^3.3.0",
+    "sharp": "^0.31.2",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.3"
   }
