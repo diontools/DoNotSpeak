@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "upload": "ts-node --esm --transpile-only ./index.ts",
-    "build-screenshots": "ts-node --esm --transpile-only ./build-screenshots.ts"
+    "build-screenshots": "ts-node --esm --transpile-only ./build-screenshots.ts",
+    "upload-screenshots": "ts-node --esm --transpile-only ./build-screenshots.ts upload"
   },
   "keywords": [],
   "author": "",

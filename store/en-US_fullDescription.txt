@@ -1,0 +1,22 @@
+It resides in the notification area and sets the volume to zero when the speaker volume is raised.
+Tap on the notification, the menu dialog will appear, and you can enable the speaker for a specified time or until screen off.
+
+Using the Quick Settings Tile, you can operate with notifications turned off. (Android 7.0 or later)
+Quick Settings Tile
+* Tap: Display menu (Disable speaker when speaker is enabled)
+* Long press: Enable speaker until screen turns off
+
+About Bluetooth earphone
+Open the settings from the ⋮ button on the upper right corner of the menu dialog, and select the Bluetooth device to be treated as an earphone.
+
+About permissions
+Nearby Device (Android 12 or later): used to obtain Bluetooth earphone info
+Notification (Android 13 or later): used to show notification
+
+After installation, please check the following.
+1. When raising the volume of the speaker where the earphone is not connected, will it automatically sets to zero?
+2. Do you restart the terminal and DoNotSpeak automatically appears in the notification area?
+
+
+Icons made by Freepik from www.flaticon.com is licensed by CC 3.0 BY.
+Details, Source codes and Feedback: https://github.com/diontools/DoNotSpeak

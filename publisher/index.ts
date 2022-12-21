@@ -6,32 +6,15 @@ import * as childProcess from 'child_process'
 import fetch from 'node-fetch'
 import * as crypto from 'crypto'
 import * as google from 'googleapis'
+import { getCredentials, getSettings } from './utility'
 
 console.log('publishing started')
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-interface Settings {
-    applicationId: string
-    track: string
-    releaseFilePath: string
-    releaseNotesDir: string
-    versionCodeFile: string
-}
-
 const runner = async () => {
-    // load settings
-    const settingsFile = path.resolve(__dirname, 'settings.json')
-    const settingsJson = fs.readFileSync(settingsFile).toString()
-    const settings = JSON.parse(settingsJson) as Settings
-    console.log('settings', settings)
-
-    // load credentials
-    const credentialsFile = path.resolve(__dirname, 'credentials.json')
-    if (!fs.existsSync(credentialsFile)) throw `credentialsFile '${credentialsFile}' not found.`
-    const credentialsJson = fs.readFileSync(credentialsFile).toString()
-    const credentials = JSON.parse(credentialsJson)
-    console.log('credentials.type', credentials.type)
+    const settings = getSettings()
+    const credentials = getCredentials()
 
     // resoleve aab file
     const releaseFilePath = path.resolve(__dirname, settings.releaseFilePath)
