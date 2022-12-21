@@ -46,7 +46,9 @@
     <string name="settings_title">設定</string>
     <string name="settings_use_adjust_volume">Adjust Volume API を使用する</string>
     <string name="settings_use_adjust_volume_description">ColorOS (OPPO / Realme デバイス) の制限を回避するために使用します。</string>
+    <string name="settings_use_notification">通知を使用する</string>
     <string name="settings_bluetooth_settings">Bluetooth設定</string>
+    <string name="settings_use_bluetooth">Bluetoothを使用する</string>
     <string name="settings_message">イヤホンとして扱うデバイスを選択してください。</string>
 
     <string name="permission_dialog_bluetooth_title">Bluetoothイヤホンを使用しますか？</string>

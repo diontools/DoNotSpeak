@@ -98,12 +98,8 @@ final class DNSSetting {
     }
 
 
-    public static Boolean getUseBluetooth(Context context) {
-        final SharedPreferences pref = getPref(context);
-        if (!pref.contains(Keys.USE_BLUETOOTH.name())) {
-            return null;
-        }
-        return pref.getBoolean(Keys.USE_BLUETOOTH.name(), false);
+    public static boolean getUseBluetooth(Context context) {
+        return getPref(context).getBoolean(Keys.USE_BLUETOOTH.name(), true);
     }
 
     public static void setUseBluetooth(Context context, boolean value) {
@@ -114,12 +110,8 @@ final class DNSSetting {
     }
 
 
-    public static Boolean getUseNotification(Context context) {
-        final SharedPreferences pref = getPref(context);
-        if (!pref.contains(Keys.USE_NOTIFICATION.name())) {
-            return null;
-        }
-        return pref.getBoolean(Keys.USE_NOTIFICATION.name(), false);
+    public static boolean getUseNotification(Context context) {
+        return getPref(context).getBoolean(Keys.USE_NOTIFICATION.name(), true);
     }
 
     public static void setUseNotification(Context context, boolean value) {

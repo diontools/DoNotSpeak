@@ -38,9 +38,11 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
 
         this.useNotificationCheckBox = this.findViewById(R.id.use_notification_check_box);
         this.useNotificationCheckBox.setOnCheckedChangeListener(this);
+        this.useNotificationCheckBox.setVisibility(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? View.VISIBLE : View.GONE);
 
         this.useBluetoothCheckBox = this.findViewById(R.id.use_bluetooth_check_box);
         this.useBluetoothCheckBox.setOnCheckedChangeListener(this);
+        this.useBluetoothCheckBox.setVisibility(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? View.VISIBLE : View.GONE);
 
         this.items = new ArrayList<>();
         this.itemAdapter = new ItemAdapter(this, this.items);
@@ -54,8 +56,8 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
     private void loadSettings()
     {
         this.useAdjustVolumeCheckBox.setChecked(DNSSetting.getUseAdjustVolume(this));
-        this.useNotificationCheckBox.setChecked(Boolean.TRUE.equals(DNSSetting.getUseNotification(this)));
-        this.useBluetoothCheckBox.setChecked(Boolean.TRUE.equals(DNSSetting.getUseBluetooth(this)));
+        this.useNotificationCheckBox.setChecked(DNSSetting.getUseNotification(this));
+        this.useBluetoothCheckBox.setChecked(DNSSetting.getUseBluetooth(this));
         this.refreshListItems();
     }
 
@@ -106,7 +108,7 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
             DNSSetting.setUseAdjustVolume(this, isChecked);
             IntentUtility.applySettings(this);
         } else if (id == R.id.use_notification_check_box) {
-            if (!Boolean.valueOf(isChecked).equals(DNSSetting.getUseNotification(this))) {
+            if (DNSSetting.getUseNotification(this) != isChecked) {
                 DNSSetting.setUseNotification(this, isChecked);
                 if (isChecked) {
                     PermissionUtility.requestPostNotificationsPermissionIfRequired(
@@ -120,7 +122,7 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
                 }
             }
         } else if (id == R.id.use_bluetooth_check_box) {
-            if (!Boolean.valueOf(isChecked).equals(DNSSetting.getUseBluetooth(this))) {
+            if (DNSSetting.getUseBluetooth(this) != isChecked) {
                 DNSSetting.setUseBluetooth(this, isChecked);
                 if (isChecked) {
                     PermissionUtility.requestBluetoothPermissionIfRequired(

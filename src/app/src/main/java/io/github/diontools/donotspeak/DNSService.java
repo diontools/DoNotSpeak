@@ -323,7 +323,7 @@ public final class DNSService extends Service {
         this.bluetoothHeadsetAddresses = DNSSetting.getBluetoothHeadsetAddresses(this);
         this.useAdjustVolume = DNSSetting.getUseAdjustVolume(this);
         this.keepScreenOn = DNSSetting.getKeepScreenOn(this);
-        this.useBluetooth = Boolean.TRUE.equals(DNSSetting.getUseBluetooth(this));
+        this.useBluetooth = DNSSetting.getUseBluetooth(this);
     }
 
     @Override

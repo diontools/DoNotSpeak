@@ -29,9 +29,8 @@
             android:id="@+id/use_notification_check_box"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="8dp"
-            android:text="Use Notification" />
+            android:layout_margin="8dp"
+            android:text="@string/settings_use_notification" />
 
     <View
             android:layout_width="match_parent"
@@ -49,9 +48,8 @@
             android:id="@+id/use_bluetooth_check_box"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="8dp"
-            android:text="Use Bluetooth" />
+            android:layout_margin="8dp"
+            android:text="@string/settings_use_bluetooth" />
 
     <TextView
             android:layout_width="wrap_content"

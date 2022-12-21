@@ -46,7 +46,9 @@
     <string name="settings_title">Settings</string>
     <string name="settings_use_adjust_volume">Use Adjust Volume API</string>
     <string name="settings_use_adjust_volume_description">Workaround for ColorOS (OPPO / Realme device) limitation</string>
+    <string name="settings_use_notification">Use Notification</string>
     <string name="settings_bluetooth_settings">Bluetooth Settings</string>
+    <string name="settings_use_bluetooth">Use Bluetooth</string>
     <string name="settings_message">Select the device you want to treat as an earphone.</string>
 
     <string name="permission_dialog_bluetooth_title">Use Bluetooth earphones?</string>

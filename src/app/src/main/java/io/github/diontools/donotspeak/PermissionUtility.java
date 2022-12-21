@@ -35,10 +35,10 @@ final class PermissionUtility {
 
     public static void requestBluetoothPermissionIfRequired(Activity context, Consumer<RequestResult> onCompleted) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            final Boolean useBluetooth = DNSSetting.getUseBluetooth(context);
+            final boolean useBluetooth = DNSSetting.getUseBluetooth(context);
             Log.d(TAG, "useBluetooth: " + useBluetooth);
 
-            if (useBluetooth == null || useBluetooth) {
+            if (useBluetooth) {
                 requestPermissionIfRequired(
                         context,
                         Manifest.permission.BLUETOOTH_CONNECT,
@@ -67,10 +67,10 @@ final class PermissionUtility {
 
     public static void requestPostNotificationsPermissionIfRequired(Activity context, Consumer<RequestResult> onCompleted) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            final Boolean useNotification = DNSSetting.getUseNotification(context);
+            final boolean useNotification = DNSSetting.getUseNotification(context);
             Log.d(TAG, "useNotification: " + useNotification);
 
-            if (useNotification == null || useNotification) {
+            if (useNotification) {
                 requestPermissionIfRequired(
                         context,
                         Manifest.permission.POST_NOTIFICATIONS,
