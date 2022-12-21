@@ -307,7 +307,7 @@ public final class DNSService extends Service {
                         logger.Log(TAG, "onPlaybackConfigChanged");
                         for (AudioPlaybackConfiguration config : configs) {
                             AudioAttributes audioAttributes = config.getAudioAttributes();
-                            logger.Log(TAG, "playback: " + config.toString() + " content-type: " + audioAttributes.getContentType() + " usage: " + audioAttributes.getUsage());
+                            logger.Log(TAG, "playback: " + config + " content-type: " + audioAttributes.getContentType() + " usage: " + audioAttributes.getUsage());
                         }
                     }
                     DNSService.this.update();
@@ -635,7 +635,7 @@ public final class DNSService extends Service {
             AudioDeviceInfo[] devices = this.audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
             for (AudioDeviceInfo device : devices) {
                 int type = device.getType();
-                if (logger != null) logger.Log(TAG, "device:" + device.toString() + " type:" + type);
+                if (logger != null) logger.Log(TAG, "device:" + device + " type:" + type);
 
                 if (type == AudioDeviceInfo.TYPE_WIRED_HEADSET
                         || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES

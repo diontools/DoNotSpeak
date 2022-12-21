@@ -106,18 +106,15 @@ public class DiagnosticsLogger {
         }
 
         this.backupDefaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                try {
-                    Log.e(TAG, e.toString());
-                    String message = DiagnosticsLogger.DateFormat.format(new Date()) + " " + e.toString() + "\r\n" + TextUtils.join("\r\n", e.getStackTrace());
-                    DiagnosticsLogger.this.writeFile(message);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                DiagnosticsLogger.this.backupDefaultUncaughtExceptionHandler.uncaughtException(t, e);
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            try {
+                Log.e(TAG, e.toString());
+                String message = DiagnosticsLogger.DateFormat.format(new Date()) + " " + e + "\r\n" + TextUtils.join("\r\n", e.getStackTrace());
+                DiagnosticsLogger.this.writeFile(message);
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
+            DiagnosticsLogger.this.backupDefaultUncaughtExceptionHandler.uncaughtException(t, e);
         });
     }
 }

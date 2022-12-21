@@ -5,10 +5,7 @@ import android.media.AudioManager;
 final class AudioFocusUtility {
     private static final String TAG = "AudioFocusUtility";
 
-    private static final AudioManager.OnAudioFocusChangeListener listener = new AudioManager.OnAudioFocusChangeListener() {
-        @Override
-        public void onAudioFocusChange(int focusChange) {
-        }
+    private static final AudioManager.OnAudioFocusChangeListener listener = focusChange -> {
     };
 
     public static void request(AudioManager audioManager, DiagnosticsLogger logger) {

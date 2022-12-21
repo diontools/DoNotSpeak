@@ -52,12 +52,9 @@ public class DiagnosticsActivity extends Activity {
         logListView.setAdapter(logArrayAdapter);
 
         DiagnosticsLogger logger = DiagnosticsLogger.Instance;
-        logger.setCallback(new DiagnosticsLogger.Callback() {
-            @Override
-            public void call(final String str) {
-                logs.add(str);
-                logArrayAdapter.notifyDataSetChanged();
-            }
+        logger.setCallback(str -> {
+            logs.add(str);
+            logArrayAdapter.notifyDataSetChanged();
         });
 
         DNSService.Logger = logger;

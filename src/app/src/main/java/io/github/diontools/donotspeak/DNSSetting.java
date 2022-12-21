@@ -63,7 +63,7 @@ final class DNSSetting {
 
     public static Set<String> getBluetoothHeadsetAddresses(Context context) {
         Set<String> value = getPref(context).getStringSet(Keys.BLUETOOTH_HEADSET_ADDRESSES.name(), null);
-        return value != null ? value : new HashSet<String>();
+        return value != null ? value : new HashSet<>();
     }
 
     public static void setBlueToothHeadsetAddresses(Context context, Set<String> value) {
