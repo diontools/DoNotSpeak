@@ -16,10 +16,6 @@ import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 final class PermissionUtility {
     private static final String TAG = "PermissionUtility";
 
@@ -136,6 +132,7 @@ final class PermissionUtility {
     }
 
     @SuppressWarnings("deprecation")
+    @RequiresApi(Build.VERSION_CODES.M)
     public static class PermissionDialogFragment extends DialogFragment
     {
         private String permission;
