@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v1.8.0 2022/12/XX
+## v1.8.0 2022/12/24
 
 ### 新機能
 
@@ -11,6 +11,7 @@
   * 通知タップからの通知トランポリンを回避
   * 通知に`FOREGROUND_SERVICE_IMMEDIATE`を指定
   * `PendingIntent`に`FLAG_IMMUTABLE`を指定
+  * `dataExtractionRules`に対応（Android 12以降のクラウドバックアップ・D2D転送）
 * 再生停止を要求する機能を追加
 * 画面を消灯しない機能を追加
 

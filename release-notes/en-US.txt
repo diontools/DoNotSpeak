@@ -1,4 +1,4 @@
-v1.8.0 2022/12/XX
+v1.8.0 2022/12/24
 Support Android 12 / Android 13
 * Added BLUETOOTH_CONNECT permission (Android 12 or later)
 * Added POST_NOTIFICATIONS permission (Android 13 or later)

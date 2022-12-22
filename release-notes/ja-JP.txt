@@ -1,4 +1,4 @@
-v1.8.0 2022/12/XX
+v1.8.0 2022/12/24
 Android 12 / Android 13 に対応
 * BLUETOOTH_CONNECT権限を追加（Android 12以降）
 * POST_NOTIFICATIONS権限を追加（Android 13以降）
