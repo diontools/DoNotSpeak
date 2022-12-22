@@ -2,6 +2,7 @@
   <dictionary name="user">
     <words>
       <w>donotspeak</w>
+      <w>sharedpref</w>
     </words>
   </dictionary>
 </component>
