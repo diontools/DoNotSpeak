@@ -10,10 +10,6 @@
     <style name="ActivityTheme" parent="android:Theme.DeviceDefault.DayNight">
     </style>
 
-    <!-- Notification theme for Android 10 and later. -->
-    <style name="AppNotificationTheme" parent="android:Theme.DeviceDefault.DayNight">
-    </style>
-
     <!-- Disable animation for light mode. -->
     <style name="DisableAnimationDialogTheme" parent="android:Theme.DeviceDefault.Light.Dialog.Alert">
         <item name="android:windowAnimationStyle">@null</item>

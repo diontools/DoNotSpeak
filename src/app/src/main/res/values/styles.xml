@@ -9,10 +9,6 @@
     <style name="ActivityTheme" parent="android:Theme.DeviceDefault">
     </style>
 
-    <!-- White notification theme for Android 9 and before. -->
-    <style name="AppNotificationTheme" parent="android:Theme.DeviceDefault.Light">
-    </style>
-
     <!-- Disable animation -->
     <style name="DisableAnimationDialogTheme" parent="android:Theme.DeviceDefault.Dialog">
         <item name="android:windowAnimationStyle">@null</item>
