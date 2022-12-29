@@ -4,9 +4,9 @@
 
 ### 変更
 
-* `SCHEDULE_EXACT_ALARM`権限を追加
-* RebootTimerで``set`からsetExact`を使用するように変更
-  * Android 12 以降に導入されたフォアグラウンドサービスの起動制限を回避するため
+* Android 12 以降に導入されたフォアグラウンドサービスの起動制限を回避する (https://developer.android.com/about/versions/12/foreground-services?hl=ja#alarm-manager)
+  * `SCHEDULE_EXACT_ALARM`権限を追加
+  * RebootTimerで`set`から`setExact`を使用するように変更
 
 ## v1.8.0 2022/12/24
 
