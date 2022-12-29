@@ -1,3 +1,7 @@
+v1.8.1 2022/12/29
+一部の端末でクラッシュする問題を修正 (Android 12以降)
+* SCHEDULE_EXACT_ALARM権限を追加
+
 v1.8.0 2022/12/24
 Android 12 / Android 13 に対応
 * BLUETOOTH_CONNECT権限を追加（Android 12以降）

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.8.1 2022/12/29
+
+### 変更
+
+* `SCHEDULE_EXACT_ALARM`権限を追加
+* RebootTimerで``set`からsetExact`を使用するように変更
+  * Android 12 以降に導入されたフォアグラウンドサービスの起動制限を回避するため
+
 ## v1.8.0 2022/12/24
 
 ### 新機能
