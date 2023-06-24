@@ -65,7 +65,6 @@ public final class DNSService extends Service {
     private PendingIntent disableIntent;
     private PendingIntent startIntent;
     private PendingIntent stopUntilScreenOffIntent;
-    private PendingIntent rebootIntent;
 
     private AlarmManager alarmManager;
     private NotificationManager notificationManager;
@@ -132,13 +131,6 @@ public final class DNSService extends Service {
                         0,
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_START),
                         PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
-
-        this.rebootIntent =
-                PendingIntent.getBroadcast(
-                        this.getApplicationContext(),
-                        0,
-                        new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(DNSReceiver.ACTION_REBOOT),
-                        immutableFlag);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
         if (this.notificationManager == null) throw new UnsupportedOperationException("NotificationManager is null");
@@ -386,12 +378,6 @@ public final class DNSService extends Service {
             }
         }
 
-        if (IsLive) {
-            this.setRebootTimer();
-        } else {
-            this.cancelRebootTimer();
-        }
-
         return START_STICKY;
     }
 
@@ -476,19 +462,6 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "cancel timer");
         this.alarmManager.cancel(this.startIntent);
-    }
-
-    private void setRebootTimer() {
-        DiagnosticsLogger logger = Logger;
-        long nextTime = System.currentTimeMillis() + 60 * 60 * 1000;
-        if (logger != null) logger.Log(TAG, "setRebootTimer " + DateFormat.format(new Date(nextTime)));
-        this.alarmManager.setExact(AlarmManager.RTC_WAKEUP, nextTime, this.rebootIntent);
-    }
-
-    private void cancelRebootTimer() {
-        DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "clearRebootTimer");
-        this.alarmManager.cancel(this.rebootIntent);
     }
 
     private void update() {
