@@ -8,18 +8,19 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
             android:allowBackup="true"
-            android:fullBackupContent="@xml/backup_rules"
-            android:dataExtractionRules="@xml/backup_rules_12"
+            android:backupAgent=".PreferenceBackupAgent"
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
             tools:ignore="GoogleAppIndexingWarning"
             tools:targetApi="s">
+
+        <meta-data android:name="com.google.android.backup.api_key" android:value="unused" />
 
         <receiver
                 android:name=".DNSReceiver"
@@ -28,8 +29,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-
-                <action android:name="${applicationId}.REBOOT" />
             </intent-filter>
         </receiver>
 
@@ -58,7 +57,14 @@
                 android:name=".SettingActivity"
                 android:theme="@style/ActivityTheme" />
 
-        <service android:name=".DNSService" />
+        <service
+                android:name=".DNSService"
+                android:foregroundServiceType="specialUse">
+            <property
+                    android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                    android:value="Watch media volume and bluetooth connection changing, for keeping media volume to zero." />
+        </service>
+
         <service
                 android:name=".DNSTileService"
                 android:exported="true"

@@ -1,6 +1,7 @@
 package io.github.diontools.donotspeak;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.*;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
@@ -40,6 +41,7 @@ public final class DNSService extends Service {
     public static final String ACTION_SHUTDOWN = "SHUTDOWN";
     public static final String ACTION_APPLY_SETTINGS = "APPLY_SETTINGS";
     public static final String ACTION_REBOOT = "REBOOT";
+    public static final String ACTION_REBOOT_EXTRA_REASON = "reason";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
@@ -64,8 +66,8 @@ public final class DNSService extends Service {
 
     private PendingIntent disableIntent;
     private PendingIntent startIntent;
+    private PendingIntent closeNotificationIntent;
     private PendingIntent stopUntilScreenOffIntent;
-    private PendingIntent rebootIntent;
 
     private AlarmManager alarmManager;
     private NotificationManager notificationManager;
@@ -133,12 +135,12 @@ public final class DNSService extends Service {
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_START),
                         PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
 
-        this.rebootIntent =
-                PendingIntent.getBroadcast(
+        this.closeNotificationIntent =
+                PendingIntent.getService(
                         this.getApplicationContext(),
                         0,
-                        new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(DNSReceiver.ACTION_REBOOT),
-                        immutableFlag);
+                        new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_REBOOT).putExtra(ACTION_REBOOT_EXTRA_REASON, "closeNotification"),
+                        PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
         if (this.notificationManager == null) throw new UnsupportedOperationException("NotificationManager is null");
@@ -377,6 +379,9 @@ public final class DNSService extends Service {
                 break;
             }
             case ACTION_REBOOT: {
+                if (intent != null && logger != null) {
+                    logger.Log(TAG, "reason: " + intent.getStringExtra(ACTION_REBOOT_EXTRA_REASON));
+                }
                 this.restoreState();
                 this.update();
                 break;
@@ -384,12 +389,6 @@ public final class DNSService extends Service {
             default: {
                 if (logger != null) logger.Log(TAG, "unknown command");
             }
-        }
-
-        if (IsLive) {
-            this.setRebootTimer();
-        } else {
-            this.cancelRebootTimer();
         }
 
         return START_STICKY;
@@ -478,23 +477,11 @@ public final class DNSService extends Service {
         this.alarmManager.cancel(this.startIntent);
     }
 
-    private void setRebootTimer() {
-        DiagnosticsLogger logger = Logger;
-        long nextTime = System.currentTimeMillis() + 60 * 60 * 1000;
-        if (logger != null) logger.Log(TAG, "setRebootTimer " + DateFormat.format(new Date(nextTime)));
-        this.alarmManager.setExact(AlarmManager.RTC_WAKEUP, nextTime, this.rebootIntent);
-    }
-
-    private void cancelRebootTimer() {
-        DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "clearRebootTimer");
-        this.alarmManager.cancel(this.rebootIntent);
-    }
-
     private void update() {
         this.update(false);
     }
 
+    @SuppressLint("WakelockTimeout")
     private void update(boolean forceMute) {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "update forceMute:" + forceMute);
@@ -543,7 +530,8 @@ public final class DNSService extends Service {
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
-                        .setContentIntent(enabled ? disableIntent : startIntent);
+                        .setContentIntent(enabled ? disableIntent : startIntent)
+                        .setDeleteIntent(closeNotificationIntent);
 
         if (enabled) {
             builder.addAction(new Notification.Action(R.drawable.ic_noisy, this.getResources().getString(R.string.notification_action_untilScreenOff), this.stopUntilScreenOffIntent));

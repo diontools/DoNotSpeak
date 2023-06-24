@@ -1,5 +1,6 @@
 package io.github.diontools.donotspeak;
 
+import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -24,6 +25,10 @@ final class DNSSetting {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
+    private static void requestBackup(Context context) {
+        new BackupManager(context).dataChanged();
+    }
+
 
     public static boolean getRestoreVolume(Context context) {
         return getPref(context).getBoolean(Keys.RESTORE_VOLUME.name(), false);
@@ -34,6 +39,7 @@ final class DNSSetting {
                 .edit()
                 .putBoolean(Keys.RESTORE_VOLUME.name(), value)
                 .apply();
+        requestBackup(context);
     }
 
 
@@ -46,6 +52,7 @@ final class DNSSetting {
                 .edit()
                 .putBoolean(Keys.REQUEST_TO_STOP_PLAYBACK.name(), value)
                 .apply();
+        requestBackup(context);
     }
 
 
@@ -58,6 +65,7 @@ final class DNSSetting {
                 .edit()
                 .putBoolean(Keys.KEEP_SCREEN_ON.name(), value)
                 .apply();
+        requestBackup(context);
     }
 
 
@@ -71,6 +79,7 @@ final class DNSSetting {
                 .edit()
                 .putStringSet(Keys.BLUETOOTH_HEADSET_ADDRESSES.name(), value)
                 .apply();
+        requestBackup(context);
     }
 
 
@@ -83,6 +92,7 @@ final class DNSSetting {
                 .edit()
                 .putBoolean(Keys.DIAGNOSTICS_FILE_LOG.name(), value)
                 .apply();
+        requestBackup(context);
     }
 
 
@@ -95,6 +105,7 @@ final class DNSSetting {
                 .edit()
                 .putBoolean(Keys.USE_ADJUST_VOLUME.name(), value)
                 .apply();
+        requestBackup(context);
     }
 
 
@@ -107,6 +118,7 @@ final class DNSSetting {
                 .edit()
                 .putBoolean(Keys.USE_BLUETOOTH.name(), value)
                 .apply();
+        requestBackup(context);
     }
 
 
@@ -119,5 +131,6 @@ final class DNSSetting {
                 .edit()
                 .putBoolean(Keys.USE_NOTIFICATION.name(), value)
                 .apply();
+        requestBackup(context);
     }
 }
