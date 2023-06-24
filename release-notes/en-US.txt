@@ -1,11 +1,11 @@
+v1.9.0 2023/06/xx
+Support Android 14
+* Removed SCHEDULE_EXACT_ALARM permission (Eliminate periodic startup checks)
+* Added FOREGROUND_SERVICE_SPECIAL_USE permission
+Changed backup method to Key-Value
+
 v1.8.1 2022/12/29
 Fixed crash issue on some devices (Android 12 or later)
 * Added SCHEDULE_EXACT_ALARM permission
-
-v1.8.0 2022/12/24
-Support Android 12 / Android 13
-* Added BLUETOOTH_CONNECT permission (Android 12 or later)
-* Added POST_NOTIFICATIONS permission (Android 13 or later)
-etc.
 
 Details (japanese): https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md

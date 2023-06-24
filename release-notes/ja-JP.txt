@@ -1,13 +1,11 @@
+v1.9.0 2023/06/xx
+Android 14 に対応
+* SCHEDULE_EXACT_ALARM権限を削除（定期的な起動確認を廃止）
+* FOREGROUND_SERVICE_SPECIAL_USE権限を追加
+バックアップ方式をKey-Valueに変更
+
 v1.8.1 2022/12/29
 一部の端末でクラッシュする問題を修正 (Android 12以降)
 * SCHEDULE_EXACT_ALARM権限を追加
-
-v1.8.0 2022/12/24
-Android 12 / Android 13 に対応
-* BLUETOOTH_CONNECT権限を追加（Android 12以降）
-* POST_NOTIFICATIONS権限を追加（Android 13以降）
-再生停止を要求する機能を追加
-画面を消灯しない機能を追加
-通知のデザインを標準的なデザインに変更
 
 詳細：https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md
