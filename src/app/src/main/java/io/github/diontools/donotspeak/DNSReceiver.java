@@ -8,8 +8,6 @@ import android.util.Log;
 public final class DNSReceiver extends BroadcastReceiver {
     private static final String TAG = "DNSReceiver";
 
-    public static final  String ACTION_REBOOT = BuildConfig.APPLICATION_ID + ".REBOOT";
-
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, intent != null ? intent.toString() : "null");
@@ -24,12 +22,7 @@ public final class DNSReceiver extends BroadcastReceiver {
             }
             case Intent.ACTION_MY_PACKAGE_REPLACED: {
                 Log.d(TAG, "ACTION_MY_PACKAGE_REPLACED");
-                IntentUtility.reboot(context);
-                break;
-            }
-            case ACTION_REBOOT: {
-                Log.d(TAG, "ACTION_REBOOT");
-                IntentUtility.reboot(context);
+                IntentUtility.reboot(context, "ACTION_MY_PACKAGE_REPLACED");
                 break;
             }
         }

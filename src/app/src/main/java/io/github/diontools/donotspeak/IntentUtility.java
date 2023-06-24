@@ -60,11 +60,12 @@ final class IntentUtility {
         );
     }
 
-    static void reboot(Context context) {
+    static void reboot(Context context, @SuppressWarnings("SameParameterValue") String reason) {
         Compat.startForegroundService(
                 context,
                 new Intent(context, DNSService.class)
                         .setAction(DNSService.ACTION_REBOOT)
+                        .putExtra(DNSService.ACTION_REBOOT_EXTRA_REASON, reason)
         );
     }
 

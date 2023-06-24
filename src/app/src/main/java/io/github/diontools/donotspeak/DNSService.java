@@ -40,6 +40,7 @@ public final class DNSService extends Service {
     public static final String ACTION_SHUTDOWN = "SHUTDOWN";
     public static final String ACTION_APPLY_SETTINGS = "APPLY_SETTINGS";
     public static final String ACTION_REBOOT = "REBOOT";
+    public static final String ACTION_REBOOT_EXTRA_REASON = "reason";
 
     public static final String DISABLE_TIME_NAME = "DISABLE_TIME";
 
@@ -64,6 +65,7 @@ public final class DNSService extends Service {
 
     private PendingIntent disableIntent;
     private PendingIntent startIntent;
+    private PendingIntent closeNotificationIntent;
     private PendingIntent stopUntilScreenOffIntent;
 
     private AlarmManager alarmManager;
@@ -130,6 +132,13 @@ public final class DNSService extends Service {
                         this.getApplicationContext(),
                         0,
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_START),
+                        PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
+
+        this.closeNotificationIntent =
+                PendingIntent.getService(
+                        this.getApplicationContext(),
+                        0,
+                        new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_REBOOT).putExtra(ACTION_REBOOT_EXTRA_REASON, "closeNotification"),
                         PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
@@ -369,6 +378,9 @@ public final class DNSService extends Service {
                 break;
             }
             case ACTION_REBOOT: {
+                if (intent != null && logger != null) {
+                    logger.Log(TAG, "reason: " + intent.getStringExtra(ACTION_REBOOT_EXTRA_REASON));
+                }
                 this.restoreState();
                 this.update();
                 break;
@@ -516,7 +528,8 @@ public final class DNSService extends Service {
                         .setOngoing(true)
                         .setPriority(Notification.PRIORITY_LOW)
                         .setVisibility(Notification.VISIBILITY_PUBLIC)
-                        .setContentIntent(enabled ? disableIntent : startIntent);
+                        .setContentIntent(enabled ? disableIntent : startIntent)
+                        .setDeleteIntent(closeNotificationIntent);
 
         if (enabled) {
             builder.addAction(new Notification.Action(R.drawable.ic_noisy, this.getResources().getString(R.string.notification_action_untilScreenOff), this.stopUntilScreenOffIntent));
