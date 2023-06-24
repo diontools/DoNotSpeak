@@ -25,6 +25,7 @@ final class Compat {
             return context.getSystemService(serviceClass);
         }
         String serviceName = getSystemServiceName(context, serviceClass);
+        //noinspection unchecked
         return serviceName != null ? (T) context.getSystemService(serviceName) : null;
     }
 

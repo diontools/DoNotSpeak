@@ -1,6 +1,7 @@
 package io.github.diontools.donotspeak;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.*;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
@@ -480,6 +481,7 @@ public final class DNSService extends Service {
         this.update(false);
     }
 
+    @SuppressLint("WakelockTimeout")
     private void update(boolean forceMute) {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "update forceMute:" + forceMute);
