@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
             android:allowBackup="true"
@@ -58,7 +59,14 @@
                 android:name=".SettingActivity"
                 android:theme="@style/ActivityTheme" />
 
-        <service android:name=".DNSService" />
+        <service
+                android:name=".DNSService"
+                android:foregroundServiceType="specialUse">
+            <property
+                    android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                    android:value="Watch media volume and bluetooth connection changing, for keeping media volume to zero." />
+        </service>
+
         <service
                 android:name=".DNSTileService"
                 android:exported="true"
