@@ -25,6 +25,9 @@
     <string name="notification_action_untilScreenOff">Enable Until Screen Off</string>
     <string name="notification_subtext_enabled">Tap to show menu</string>
     <string name="notification_subtext_disabled">Tap to mute</string>
+    <string name="notification_reboot_channel_name">Check Startup</string>
+    <string name="notification_reboot_content_title">DoNotSpeak is not started</string>
+    <string name="notification_reboot_content_text">DoNotSpeak has detected that it has been terminated by the OS. Please tap here to start it.</string>
     <string name="shortcut_enableSpeakerUntilScreenOff">Enable Speaker</string>
     <string name="shortcut_showMenu">Show Menu</string>
     <string name="shortcut_switch">Switch</string>

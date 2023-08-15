@@ -25,6 +25,9 @@
     <string name="notification_action_untilScreenOff">画面消灯まで有効化</string>
     <string name="notification_subtext_enabled">タップしてメニューを表示</string>
     <string name="notification_subtext_disabled">タップしてミュート</string>
+    <string name="notification_reboot_channel_name">起動確認</string>
+    <string name="notification_reboot_content_title">DoNotSpeakが起動していません</string>
+    <string name="notification_reboot_content_text">DoNotSpeakがOSにより終了されたことを検出しました。ここタップして起動してください。</string>
     <string name="shortcut_enableSpeakerUntilScreenOff">スピーカー有効化</string>
     <string name="shortcut_showMenu">メニュー</string>
     <string name="shortcut_switch">切り替え</string>

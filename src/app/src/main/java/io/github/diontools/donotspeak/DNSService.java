@@ -31,7 +31,6 @@ import java.util.*;
 
 
 public final class DNSService extends Service {
-    private static final String NOTIFICATION_ID = "DoNotSpeak_Status_Notification";
     private static final String TAG = "DNSService";
 
     public static final String ACTION_START = "START";
@@ -68,6 +67,7 @@ public final class DNSService extends Service {
     private PendingIntent startIntent;
     private PendingIntent closeNotificationIntent;
     private PendingIntent stopUntilScreenOffIntent;
+    private PendingIntent rebootIntent;
 
     private AlarmManager alarmManager;
     private NotificationManager notificationManager;
@@ -141,6 +141,13 @@ public final class DNSService extends Service {
                         0,
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_REBOOT).putExtra(ACTION_REBOOT_EXTRA_REASON, "closeNotification"),
                         PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
+
+        this.rebootIntent =
+                PendingIntent.getBroadcast(
+                        this.getApplicationContext(),
+                        0,
+                        new Intent(this.getApplicationContext(), DNSReceiver.class).setAction(DNSReceiver.ACTION_REBOOT),
+                        immutableFlag);
 
         this.notificationManager = Compat.getSystemService(this, NotificationManager.class);
         if (this.notificationManager == null) throw new UnsupportedOperationException("NotificationManager is null");
@@ -391,6 +398,12 @@ public final class DNSService extends Service {
             }
         }
 
+        if (IsLive) {
+            this.setRebootTimer();
+        } else {
+            this.cancelRebootTimer();
+        }
+
         return START_STICKY;
     }
 
@@ -477,6 +490,20 @@ public final class DNSService extends Service {
         this.alarmManager.cancel(this.startIntent);
     }
 
+    private void setRebootTimer() {
+        DiagnosticsLogger logger = Logger;
+        long nextTime = System.currentTimeMillis() + 5 * 60 * 1000;
+        if (logger != null) logger.Log(TAG, "setRebootTimer " + DateFormat.format(new Date(nextTime)));
+        this.alarmManager.set(AlarmManager.RTC_WAKEUP, nextTime, this.rebootIntent);
+        this.notificationManager.cancel(NotificationInfo.REQUEST_CODE_REBOOT);
+    }
+
+    private void cancelRebootTimer() {
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "clearRebootTimer");
+        this.alarmManager.cancel(this.rebootIntent);
+    }
+
     private void update() {
         this.update(false);
     }
@@ -512,17 +539,15 @@ public final class DNSService extends Service {
             }
         }
 
-        this.createNotification(NOTIFICATION_ID, this.enabled);
+        this.createNotification(this.enabled);
         this.responseStateToTile();
     }
 
-    private void createNotification(String id, boolean enabled) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            this.createNotificationChannel(id, this.getResources().getString(R.string.notification_channel_name));
-        }
+    private void createNotification(boolean enabled) {
+        NotificationInfo.createNotificationChannels(this, notificationManager);
 
         Notification.Builder builder =
-                Compat.createNotificationBuilder(this, id)
+                Compat.createNotificationBuilder(this, NotificationInfo.ID_STATUS)
                         .setSmallIcon(enabled ? R.drawable.ic_volume_off_black_24dp : R.drawable.ic_volume_up_black_24dp)
                         .setContentTitle(enabled ? this.getStartedMessage() : this.getStoppedMessage())
                         .setSubText(this.getResources().getText(enabled ? R.string.notification_subtext_enabled : R.string.notification_subtext_disabled))
@@ -544,19 +569,7 @@ public final class DNSService extends Service {
 
         Notification notification = builder.build();
 
-        this.startForeground(1, notification);
-    }
-
-    private void createNotificationChannel(String channelId, String channelName) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (this.notificationManager.getNotificationChannel(channelId) == null) {
-                NotificationChannel chan = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW);
-                chan.setLightColor(Color.BLUE);
-                chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                chan.setShowBadge(false);
-                this.notificationManager.createNotificationChannel(chan);
-            }
-        }
+        this.startForeground(NotificationInfo.REQUEST_CODE_STATUS, notification);
     }
 
     private void mute(boolean force) {
