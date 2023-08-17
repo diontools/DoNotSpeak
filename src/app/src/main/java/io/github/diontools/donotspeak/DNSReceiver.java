@@ -56,10 +56,10 @@ public final class DNSReceiver extends BroadcastReceiver {
         final int immutableFlag = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0;
 
         final PendingIntent startIntent =
-                PendingIntent.getService(
+                PendingIntent.getActivity(
                         context.getApplicationContext(),
                         NotificationInfo.REQUEST_CODE_REBOOT,
-                        new Intent(context.getApplicationContext(), DNSService.class).setAction(DNSService.ACTION_START),
+                        new Intent(context.getApplicationContext(), MainActivity.class),
                         PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
 
         final Notification.Builder builder =
