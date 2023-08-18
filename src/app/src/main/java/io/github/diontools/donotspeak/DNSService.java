@@ -59,7 +59,7 @@ public final class DNSService extends Service {
     private boolean keepScreenOn = false;
     private boolean useBluetooth = false;
 
-    private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+    public static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private long disableTime;
     private String disableTimeString = "";
 
@@ -399,9 +399,9 @@ public final class DNSService extends Service {
         }
 
         if (IsLive) {
-            this.setRebootTimer();
+            NotificationInfo.setRebootTimer(this.alarmManager, this.notificationManager, this.rebootIntent);
         } else {
-            this.cancelRebootTimer();
+            NotificationInfo.cancelRebootTimer(this.alarmManager, this.rebootIntent);
         }
 
         return START_STICKY;
@@ -488,20 +488,6 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "cancel timer");
         this.alarmManager.cancel(this.startIntent);
-    }
-
-    private void setRebootTimer() {
-        DiagnosticsLogger logger = Logger;
-        long nextTime = System.currentTimeMillis() + 60 * 60 * 1000;
-        if (logger != null) logger.Log(TAG, "setRebootTimer " + DateFormat.format(new Date(nextTime)));
-        this.alarmManager.set(AlarmManager.RTC_WAKEUP, nextTime, this.rebootIntent);
-        this.notificationManager.cancel(NotificationInfo.REQUEST_CODE_REBOOT);
-    }
-
-    private void cancelRebootTimer() {
-        DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "clearRebootTimer");
-        this.alarmManager.cancel(this.rebootIntent);
     }
 
     private void update() {

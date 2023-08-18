@@ -1,5 +1,6 @@
 package io.github.diontools.donotspeak;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -35,7 +36,18 @@ public final class DNSReceiver extends BroadcastReceiver {
             }
             case ACTION_REBOOT: {
                 Log.d(TAG, "ACTION_REBOOT");
-                if (!DNSService.IsLive) {
+                if (DNSService.IsLive) {
+                    NotificationInfo.setRebootTimer(
+                            Compat.getSystemService(context, AlarmManager.class),
+                            Compat.getSystemService(context, NotificationManager.class),
+                            PendingIntent.getBroadcast(
+                                    context.getApplicationContext(),
+                                    NotificationInfo.REQUEST_CODE_REBOOT,
+                                    new Intent(context.getApplicationContext(), DNSReceiver.class).setAction(ACTION_REBOOT),
+                                    PendingIntent.FLAG_MUTABLE
+                            )
+                    );
+                } else {
                     Log.d(TAG, "show reboot notification");
                     showRebootNotification(context);
                 }
