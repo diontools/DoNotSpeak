@@ -1,19 +1,13 @@
 package io.github.diontools.donotspeak;
 
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 
-import java.util.Date;
-
 final class NotificationInfo {
-    private static final String TAG = "NotificationInfo";
-
     public static final String ID_STATUS = "DoNotSpeak_Status_Notification";
     public static final int REQUEST_CODE_STATUS = 1;
 
@@ -39,22 +33,8 @@ final class NotificationInfo {
             chan.setLightColor(Color.RED);
             chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             chan.setShowBadge(true);
-            chan.setImportance(NotificationManager.IMPORTANCE_HIGH);
+            chan.setImportance(NotificationManager.IMPORTANCE_LOW);
             notificationManager.createNotificationChannel(chan);
         }
-    }
-
-    public static void setRebootTimer(AlarmManager alarmManager, NotificationManager notificationManager, PendingIntent rebootIntent) {
-        DiagnosticsLogger logger = DNSService.Logger;
-        long nextTime = System.currentTimeMillis() + 60 * 60 * 1000;
-        if (logger != null) logger.Log(TAG, "setRebootTimer " + DNSService.DateFormat.format(new Date(nextTime)));
-        alarmManager.set(AlarmManager.RTC_WAKEUP, nextTime, rebootIntent);
-        notificationManager.cancel(NotificationInfo.REQUEST_CODE_REBOOT);
-    }
-
-    public static void cancelRebootTimer(AlarmManager alarmManager, PendingIntent rebootIntent) {
-        DiagnosticsLogger logger = DNSService.Logger;
-        if (logger != null) logger.Log(TAG, "cancelRebootTimer");
-        alarmManager.cancel(rebootIntent);
     }
 }

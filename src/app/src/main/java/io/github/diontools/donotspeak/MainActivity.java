@@ -55,7 +55,7 @@ public final class MainActivity extends Activity {
         }
 
         String action = this.getIntent().getAction();
-        Log.d(TAG, action);
+        Log.d(TAG, "action: " + action);
 
         if (Objects.equals(action, ACTION_DISABLE_DIALOG)) {
             View view = this.getLayoutInflater().inflate(R.layout.disable_dialog_layout, null);
