@@ -1,6 +1,6 @@
-v1.9.0 2023/06/xx
+v1.9.0 2023/08/27
 Android 14 に対応
-* SCHEDULE_EXACT_ALARM権限を削除（定期的な起動確認を廃止）
+* SCHEDULE_EXACT_ALARM権限を削除（定期的な起動確認を通知に変更）
 * FOREGROUND_SERVICE_SPECIAL_USE権限を追加
 バックアップ方式をKey-Valueに変更
 
