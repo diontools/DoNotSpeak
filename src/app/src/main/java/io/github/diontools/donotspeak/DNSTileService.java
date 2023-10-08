@@ -1,6 +1,5 @@
 package io.github.diontools.donotspeak;
 
-import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Icon;
@@ -8,9 +7,10 @@ import android.os.Build;
 import android.os.IBinder;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
-@TargetApi(Build.VERSION_CODES.N)
+@RequiresApi(api = Build.VERSION_CODES.N)
 public final class DNSTileService extends TileService {
     private static final String TAG = "DNSTileService";
 
@@ -98,18 +98,22 @@ public final class DNSTileService extends TileService {
     }
 
     private void showDisableDialogAndCollapse() {
-        this.startActivityAndCollapse(
+        Compat.startActivityAndCollapse(
+                this,
                 new Intent(this, MainActivity.class)
                         .setAction(MainActivity.ACTION_DISABLE_DIALOG)
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                NotificationInfo.REQUEST_CODE_TILE
         );
     }
 
     private void startAndCollapse() {
-        this.startActivityAndCollapse(
+        Compat.startActivityAndCollapse(
+                this,
                 new Intent(this, MainActivity.class)
                         .setAction("")
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                NotificationInfo.REQUEST_CODE_TILE
         );
     }
 

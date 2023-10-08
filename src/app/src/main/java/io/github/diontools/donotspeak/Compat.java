@@ -4,12 +4,14 @@ import android.app.AlarmManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.PowerManager;
+import android.service.quicksettings.TileService;
 
 final class Compat {
     static void startForegroundService(Context context, Intent intent) {
@@ -47,5 +49,20 @@ final class Compat {
             return new Notification.Builder(context, id);
         }
         return new Notification.Builder(context);
+    }
+
+    static void startActivityAndCollapse(TileService tileService, Intent intent, int requestCode) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            tileService.startActivityAndCollapse(
+                    PendingIntent.getActivity(
+                            tileService.getApplicationContext(),
+                            requestCode,
+                            intent,
+                            PendingIntent.FLAG_IMMUTABLE
+                    )
+            );
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            tileService.startActivityAndCollapse(intent);
+        }
     }
 }

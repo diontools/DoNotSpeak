@@ -14,6 +14,8 @@ final class NotificationInfo {
     public static final String ID_REBOOT = "DoNotSpeak_Reboot_Notification";
     public static final int REQUEST_CODE_REBOOT = 2;
 
+    public static final int REQUEST_CODE_TILE = 3;
+
 
     public static void createNotificationChannels(Context context, NotificationManager notificationManager) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
