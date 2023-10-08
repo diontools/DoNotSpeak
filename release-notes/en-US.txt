@@ -1,11 +1,10 @@
+v1.9.1 2023/10/08
+Fixed crash when manipulating the quick settings tile (Android 14 or later)
+
 v1.9.0 2023/08/27
 Support Android 14
 * Removed SCHEDULE_EXACT_ALARM permission (Changed periodic startup checks to the notification)
 * Added FOREGROUND_SERVICE_SPECIAL_USE permission
 Changed backup method to Key-Value
-
-v1.8.1 2022/12/29
-Fixed crash issue on some devices (Android 12 or later)
-* Added SCHEDULE_EXACT_ALARM permission
 
 Details (japanese): https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.9.1 2023/10/08
+
+### 変更
+
+* Android 14 以降で `TileService.startActivityAndCollapse(Intent)` を `PendingIntent` に変更
+
 ## v1.9.0 2023/08/27
 
 ### 新機能
