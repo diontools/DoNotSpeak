@@ -39,8 +39,8 @@
     <shortcut
         android:shortcutId="shutdown"
         android:icon="@drawable/ic_noisy"
-        android:shortcutShortLabel="Stop app"
-        android:shortcutLongLabel="Stop app"
+        android:shortcutShortLabel="@string/shortcut_stop_this_app"
+        android:shortcutLongLabel="@string/shortcut_stop_this_app"
         >
         <intent
             android:action="SHUTDOWN"
