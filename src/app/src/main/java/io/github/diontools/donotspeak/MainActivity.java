@@ -152,7 +152,7 @@ public final class MainActivity extends Activity {
             IntentUtility.switching(this);
             this.exit();
         } else if (Objects.equals(action, DNSService.ACTION_SHUTDOWN)) {
-            this.requestStopApp();
+            this.requestStopApp(true);
         } else {
             PermissionUtility.requestBluetoothPermissionIfRequired(this, result -> {
                 switch (result) {
@@ -203,13 +203,18 @@ public final class MainActivity extends Activity {
         this.overridePendingTransition(0, 0);
     }
 
-    private void requestStopApp() {
+    private void requestStopApp(boolean exitAfterDismiss) {
         AlertDialog dialog =
                 new AlertDialog.Builder(this, R.style.DisableAnimationDialogTheme)
                 .setTitle(R.string.stop_app_alert_title)
                 .setMessage(R.string.stop_app_alert_message)
                 .setPositiveButton(R.string.stop_app_alert_ok, (dialog1, which) -> MainActivity.this.stopApp())
                 .setNegativeButton(R.string.disable_alert_cancelButton, (dialog12, which) -> {})
+                .setOnDismissListener((dialog3) -> {
+                    if (exitAfterDismiss) {
+                        MainActivity.this.exit();
+                    }
+                })
                 .create();
         dialog.show();
     }
@@ -228,7 +233,7 @@ public final class MainActivity extends Activity {
         popup.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.stop_app) {
-                MainActivity.this.requestStopApp();
+                MainActivity.this.requestStopApp(false);
                 return true;
             } else if (itemId == R.id.diagnostics) {
                 MainActivity.this.startActivity(new Intent(MainActivity.this, DiagnosticsActivity.class));
