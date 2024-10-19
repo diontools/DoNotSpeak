@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.DeviceDefault.DayNight">
         <item name="android:windowBackground">@android:color/transparent</item>
@@ -8,6 +8,7 @@
     </style>
 
     <style name="ActivityTheme" parent="android:Theme.DeviceDefault.DayNight">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 
     <!-- Disable animation for light mode. -->

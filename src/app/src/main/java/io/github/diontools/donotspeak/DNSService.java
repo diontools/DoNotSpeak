@@ -15,7 +15,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceCallback;
 import android.media.AudioManager;

@@ -139,7 +139,7 @@ final class PermissionUtility {
         private Consumer<RequestResult> onCompleted;
         private BiFunction<AlertDialog.Builder, Runnable, AlertDialog.Builder> onConfirmDialogBuild;
 
-        public PermissionDialogFragment set(String permission, Consumer<RequestResult> onCompleted, BiFunction<AlertDialog.Builder, Runnable, AlertDialog.Builder> onConfirmDialogBuild) {
+        PermissionDialogFragment set(String permission, Consumer<RequestResult> onCompleted, BiFunction<AlertDialog.Builder, Runnable, AlertDialog.Builder> onConfirmDialogBuild) {
             this.permission = permission;
             this.onCompleted = onCompleted;
             this.onConfirmDialogBuild = onConfirmDialogBuild;
