@@ -151,6 +151,8 @@ public final class MainActivity extends Activity {
         } else if (Objects.equals(action, DNSService.ACTION_SWITCH)) {
             IntentUtility.switching(this);
             this.exit();
+        } else if (Objects.equals(action, DNSService.ACTION_SHUTDOWN)) {
+            this.requestStopApp();
         } else {
             PermissionUtility.requestBluetoothPermissionIfRequired(this, result -> {
                 switch (result) {

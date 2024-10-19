@@ -21,6 +21,7 @@
     <string name="start_toast_text">ミュートしています</string>
     <string name="stop_toast_text">%1$s まで有効</string>
     <string name="stop_until_screen_off">画面消灯まで有効</string>
+    <string name="shortcut_stop_this_app">アプリ停止</string>
     <string name="notification_channel_name">ステータス</string>
     <string name="notification_action_untilScreenOff">画面消灯まで有効化</string>
     <string name="notification_subtext_enabled">タップしてメニューを表示</string>

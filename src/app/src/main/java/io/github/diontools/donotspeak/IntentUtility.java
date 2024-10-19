@@ -37,8 +37,8 @@ final class IntentUtility {
     }
 
     static void shutdown(Context context) {
-        Compat.startForegroundService(
-                context,
+        // use startService for shutdown
+        context.startService(
                 new Intent(context, DNSService.class)
                         .setAction(DNSService.ACTION_SHUTDOWN)
         );

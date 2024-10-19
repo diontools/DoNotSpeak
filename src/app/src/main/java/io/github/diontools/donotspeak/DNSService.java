@@ -375,6 +375,8 @@ public final class DNSService extends Service {
                 break;
             }
             case ACTION_SHUTDOWN: {
+                if (logger != null) logger.Log(TAG, "shutdown");
+                Toast.makeText(this.getApplicationContext(), "Shutdown", Toast.LENGTH_SHORT).show();
                 this.stopSelf();
                 IsLive = false;
                 break;

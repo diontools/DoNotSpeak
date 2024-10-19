@@ -36,4 +36,16 @@
                 android:targetClass="io.github.diontools.donotspeak.MainActivity"
                 />
     </shortcut>
+    <shortcut
+        android:shortcutId="shutdown"
+        android:icon="@drawable/ic_noisy"
+        android:shortcutShortLabel="@string/shortcut_stop_this_app"
+        android:shortcutLongLabel="@string/shortcut_stop_this_app"
+        >
+        <intent
+            android:action="SHUTDOWN"
+            android:targetPackage="io.github.diontools.donotspeak.debug"
+            android:targetClass="io.github.diontools.donotspeak.MainActivity"
+            />
+    </shortcut>
 </shortcuts>
