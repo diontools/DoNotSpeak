@@ -21,6 +21,7 @@
     <string name="start_toast_text">Muted</string>
     <string name="stop_toast_text">Speak until %1$s</string>
     <string name="stop_until_screen_off">Speak until screen off</string>
+    <string name="stopped">Stopped</string>
     <string name="notification_channel_name">Status</string>
     <string name="notification_action_untilScreenOff">Enable Until Screen Off</string>
     <string name="notification_subtext_enabled">Tap to show menu</string>
