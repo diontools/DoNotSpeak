@@ -1,4 +1,4 @@
-v1.10.0 2024/10/19
+v1.10.0 2024/10/21
 Support Android 15
 Add "Stop this app" shortcut
 
