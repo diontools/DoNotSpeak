@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.quicksettings.TileService;
@@ -245,6 +246,10 @@ public final class MainActivity extends Activity {
                 } else {
                     MainActivity.this.startActivity(new Intent(MainActivity.this, SettingActivity.class));
                 }
+                return true;
+            } else if (itemId == R.id.support_developer) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://ko-fi.com/diontools"));
+                MainActivity.this.startActivity(intent);
                 return true;
             }
             return false;

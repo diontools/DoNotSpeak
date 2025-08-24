@@ -5,6 +5,7 @@
     <string name="disable_alert_menu_stop_app">このアプリを停止する</string>
     <string name="disable_alert_menu_diagnostics_tool">診断ツール</string>
     <string name="disable_alert_menu_settings">設定</string>
+    <string name="disable_alert_menu_support_developer">開発者をサポート</string>
     <string name="disable_alert_menu_settings_not_supported_message">Bluetooth設定はAndroid 6.0以降で使用可能です。</string>
     <string name="disable_alert_period">期間:</string>
     <string name="disable_alert_period_minutes">分指定</string>
