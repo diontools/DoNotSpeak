@@ -24,6 +24,7 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
     private ArrayList<Item> items;
     private ItemAdapter itemAdapter;
     private CheckBox useAdjustVolumeCheckBox;
+    private CheckBox restoreVolumeOnHeadphoneConnectCheckBox;
     private CheckBox useNotificationCheckBox;
     private CheckBox useBluetoothCheckBox;
 
@@ -35,6 +36,9 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
 
         this.useAdjustVolumeCheckBox = this.findViewById(R.id.use_adjust_volume_check_box);
         this.useAdjustVolumeCheckBox.setOnCheckedChangeListener(this);
+
+        this.restoreVolumeOnHeadphoneConnectCheckBox = this.findViewById(R.id.restore_volume_on_headphone_connect_check_box);
+        this.restoreVolumeOnHeadphoneConnectCheckBox.setOnCheckedChangeListener(this);
 
         this.useNotificationCheckBox = this.findViewById(R.id.use_notification_check_box);
         this.useNotificationCheckBox.setOnCheckedChangeListener(this);
@@ -56,6 +60,7 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
     private void loadSettings()
     {
         this.useAdjustVolumeCheckBox.setChecked(DNSSetting.getUseAdjustVolume(this));
+        this.restoreVolumeOnHeadphoneConnectCheckBox.setChecked(DNSSetting.getRestoreVolumeOnHeadphoneConnect(this));
         this.useNotificationCheckBox.setChecked(DNSSetting.getUseNotification(this));
         this.useBluetoothCheckBox.setChecked(DNSSetting.getUseBluetooth(this));
         this.refreshListItems();
@@ -106,6 +111,9 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         final int id = buttonView.getId();
         if (id == R.id.use_adjust_volume_check_box) {
             DNSSetting.setUseAdjustVolume(this, isChecked);
+            IntentUtility.applySettings(this);
+        } else if (id == R.id.restore_volume_on_headphone_connect_check_box) {
+            DNSSetting.setRestoreVolumeOnHeadphoneConnect(this, isChecked);
             IntentUtility.applySettings(this);
         } else if (id == R.id.use_notification_check_box) {
             if (DNSSetting.getUseNotification(this) != isChecked) {

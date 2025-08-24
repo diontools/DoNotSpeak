@@ -57,6 +57,8 @@ public final class DNSService extends Service {
     private boolean useAdjustVolume = false;
     private boolean keepScreenOn = false;
     private boolean useBluetooth = false;
+    private boolean restoreVolume = false;
+    private boolean restoreVolumeOnHeadphoneConnect = false;
 
     private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private long disableTime;
@@ -177,6 +179,13 @@ public final class DNSService extends Service {
                             int prevVolume = intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
                             int volume = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1);
                             if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume);
+                            
+                            // Update beforeVolume
+                            if ((!DNSService.this.enabled || DNSService.this.isHeadsetConnected()) && volume > 0) {
+                                DNSService.this.beforeVolume = volume;
+                                if (logger != null) logger.Log(TAG, "updated beforeVolume to: " + volume);
+                            }
+                            
                             if (volume != 0 || prevVolume != volume) {
                                 DNSService.this.update();
                             }
@@ -196,11 +205,12 @@ public final class DNSService extends Service {
                         DNSService.this.update(true);
                         break;
                     case Intent.ACTION_HEADSET_PLUG:
-                        if (logger != null) logger.Log(TAG, "ACTION_HEADSET_PLUG");
-                        if (intent.getIntExtra("state", -1) == 0) {
-                            if (logger != null) logger.Log(TAG, "unplugged");
-                            DNSService.this.update();
+                        int state = intent.getIntExtra("state", -1);
+                        if (logger != null) logger.Log(TAG, "ACTION_HEADSET_PLUG state: " + state);
+                        if (state == 1 && DNSService.this.restoreVolumeOnHeadphoneConnect) {
+                            DNSService.this.unmute();
                         }
+                        DNSService.this.update();
                         break;
                     case BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED:
                         if (logger != null) logger.Log(TAG, "A2dp.ACTION_PLAYING_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
@@ -288,6 +298,23 @@ public final class DNSService extends Service {
                             logger.Log(TAG, "added device: " + device.toString() + " type: " + device.getType());
                         }
                     }
+                    
+                    // Check if headphone was connected
+                    if (DNSService.this.restoreVolumeOnHeadphoneConnect) {
+                        for (AudioDeviceInfo device : addedDevices) {
+                            int type = device.getType();
+                            if (type == AudioDeviceInfo.TYPE_WIRED_HEADSET
+                                    || type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES
+                                    || type == AudioDeviceInfo.TYPE_USB_HEADSET
+                                    || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+                                    || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+                                if (logger != null) logger.Log(TAG, "headphone connected via AudioDeviceCallback");
+                                DNSService.this.unmute();
+                                break;
+                            }
+                        }
+                    }
+                    
                     DNSService.this.update();
                 }
 
@@ -300,6 +327,8 @@ public final class DNSService extends Service {
                             logger.Log(TAG, "removed device: " + device.toString() + " type: " + device.getType());
                         }
                     }
+                    
+                    
                     DNSService.this.update();
                 }
             };
@@ -332,6 +361,8 @@ public final class DNSService extends Service {
         this.useAdjustVolume = DNSSetting.getUseAdjustVolume(this);
         this.keepScreenOn = DNSSetting.getKeepScreenOn(this);
         this.useBluetooth = DNSSetting.getUseBluetooth(this);
+        this.restoreVolume = DNSSetting.getRestoreVolume(this);
+        this.restoreVolumeOnHeadphoneConnect = DNSSetting.getRestoreVolumeOnHeadphoneConnect(this);
     }
 
     @Override
@@ -593,7 +624,7 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "unmute");
 
-        if (DNSSetting.getRestoreVolume(this) && this.beforeVolume >= 0) {
+        if (this.restoreVolume && this.beforeVolume >= 0) {
             if (logger != null) logger.Log(TAG, "restore volume: " + this.beforeVolume);
             this.setVolumeTo(this.beforeVolume, AudioManager.FLAG_SHOW_UI);
             this.beforeVolume = -1;

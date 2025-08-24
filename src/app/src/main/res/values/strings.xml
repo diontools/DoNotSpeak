@@ -52,6 +52,8 @@
     <string name="settings_title">Settings</string>
     <string name="settings_use_adjust_volume">Use Adjust Volume API</string>
     <string name="settings_use_adjust_volume_description">Workaround for ColorOS (OPPO / Realme device) limitation</string>
+    <string name="settings_restore_volume_on_headphone_connect">Restore volume on headphone connect</string>
+    <string name="settings_restore_volume_on_headphone_connect_description">Automatically restore volume when headphones are connected</string>
     <string name="settings_use_notification">Use Notification</string>
     <string name="settings_bluetooth_settings">Bluetooth Settings</string>
     <string name="settings_use_bluetooth">Use Bluetooth</string>

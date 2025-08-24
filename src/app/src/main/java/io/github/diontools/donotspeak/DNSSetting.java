@@ -19,6 +19,7 @@ final class DNSSetting {
         USE_ADJUST_VOLUME,
         USE_NOTIFICATION,
         USE_BLUETOOTH,
+        RESTORE_VOLUME_ON_HEADPHONE_CONNECT,
     }
 
     private static SharedPreferences getPref(Context context) {
@@ -130,6 +131,19 @@ final class DNSSetting {
         getPref(context)
                 .edit()
                 .putBoolean(Keys.USE_NOTIFICATION.name(), value)
+                .apply();
+        requestBackup(context);
+    }
+
+
+    public static boolean getRestoreVolumeOnHeadphoneConnect(Context context) {
+        return getPref(context).getBoolean(Keys.RESTORE_VOLUME_ON_HEADPHONE_CONNECT.name(), false);
+    }
+
+    public static void setRestoreVolumeOnHeadphoneConnect(Context context, boolean value) {
+        getPref(context)
+                .edit()
+                .putBoolean(Keys.RESTORE_VOLUME_ON_HEADPHONE_CONNECT.name(), value)
                 .apply();
         requestBackup(context);
     }
