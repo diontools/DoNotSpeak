@@ -51,7 +51,7 @@ public final class DNSService extends Service {
 
     private SharedPreferences statePreferences;
 
-    private boolean speakerEnabled = false;
+    private boolean muteEnabled = false;
     private boolean stopUntilScreenOff = false;
     private int beforeVolume = -1;
     private boolean useAdjustVolume = false;
@@ -182,7 +182,7 @@ public final class DNSService extends Service {
                             if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume);
                             
                             // Update beforeVolume
-                            if ((!DNSService.this.speakerEnabled || DNSService.this.isHeadsetConnected()) && volume > 0) {
+                            if ((!DNSService.this.muteEnabled || DNSService.this.isHeadsetConnected()) && volume > 0) {
                                 DNSService.this.beforeVolume = volume;
                                 if (logger != null) logger.Log(TAG, "beforeVolume: " + volume);
                             }
@@ -392,7 +392,7 @@ public final class DNSService extends Service {
                 break;
             }
             case ACTION_SWITCH: {
-                if (this.speakerEnabled) {
+                if (this.muteEnabled) {
                     this.stop(new Date(0), true);
                 } else {
                     this.start();
@@ -444,23 +444,23 @@ public final class DNSService extends Service {
 
     private void backupState() {
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "backup state: " + this.speakerEnabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
+        if (logger != null) logger.Log(TAG, "backup state: " + this.muteEnabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
 
         this.statePreferences
             .edit()
-            .putBoolean("enabled", this.speakerEnabled)
+            .putBoolean("enabled", this.muteEnabled)
             .putBoolean("stopUntilScreenOff", this.stopUntilScreenOff)
             .putLong("disableTime", this.disableTime)
             .apply();
     }
 
     private void restoreState() {
-        this.speakerEnabled = this.statePreferences.getBoolean("enabled", true);
+        this.muteEnabled = this.statePreferences.getBoolean("enabled", true);
         this.stopUntilScreenOff = this.statePreferences.getBoolean("stopUntilScreenOff", false);
         this.setDisableTime(new Date(this.statePreferences.getLong("disableTime", 0)));
 
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "restore state: " + this.speakerEnabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
+        if (logger != null) logger.Log(TAG, "restore state: " + this.muteEnabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
     }
 
     private void clearState() {
@@ -473,12 +473,12 @@ public final class DNSService extends Service {
     private void start() {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "start");
-        if (!this.speakerEnabled) {
+        if (!this.muteEnabled) {
             this.beforeVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
             if (logger != null) logger.Log(TAG, "beforeVolume: " + this.beforeVolume);
         }
 
-        this.speakerEnabled = true;
+        this.muteEnabled = true;
         this.stopUntilScreenOff = false;
         this.setDisableTime(new Date(0));
         this.backupState();
@@ -496,7 +496,7 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "stop disableTime:" + disableTime + " stopUntilScreenOff: " + stopUntilScreenOff);
 
-        this.speakerEnabled = false;
+        this.muteEnabled = false;
         this.stopUntilScreenOff = stopUntilScreenOff;
         this.setDisableTime(disableTime);
         this.backupState();
@@ -547,7 +547,7 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "update forceMute:" + forceMute);
 
-        if (this.speakerEnabled) {
+        if (this.muteEnabled) {
             this.mute(forceMute);
             if (this.wakeLock.isHeld()) {
                 if (logger != null) logger.Log(TAG, "release wake lock");
@@ -575,7 +575,7 @@ public final class DNSService extends Service {
             }
         }
 
-        this.createNotification(this.speakerEnabled);
+        this.createNotification(this.muteEnabled);
         this.responseStateToTile();
     }
 
@@ -767,7 +767,7 @@ public final class DNSService extends Service {
 
     private void responseStateToTile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            IntentUtility.setTileState(this.speakerEnabled, this.stopUntilScreenOff, this.disableTimeString);
+            IntentUtility.setTileState(this.muteEnabled, this.stopUntilScreenOff, this.disableTimeString);
         }
     }
 
