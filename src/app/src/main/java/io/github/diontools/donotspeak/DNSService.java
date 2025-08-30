@@ -51,7 +51,7 @@ public final class DNSService extends Service {
 
     private SharedPreferences statePreferences;
 
-    private boolean enabled = false;
+    private boolean speakerEnabled = false;
     private boolean stopUntilScreenOff = false;
     private int beforeVolume = -1;
     private boolean useAdjustVolume = false;
@@ -59,6 +59,7 @@ public final class DNSService extends Service {
     private boolean useBluetooth = false;
     private boolean restoreVolume = false;
     private boolean restoreVolumeOnHeadphoneConnect = false;
+    private boolean requestToStopPlayback = false;
 
     private static final SimpleDateFormat DateFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private long disableTime;
@@ -181,9 +182,9 @@ public final class DNSService extends Service {
                             if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume);
                             
                             // Update beforeVolume
-                            if ((!DNSService.this.enabled || DNSService.this.isHeadsetConnected()) && volume > 0) {
+                            if ((!DNSService.this.speakerEnabled || DNSService.this.isHeadsetConnected()) && volume > 0) {
                                 DNSService.this.beforeVolume = volume;
-                                if (logger != null) logger.Log(TAG, "updated beforeVolume to: " + volume);
+                                if (logger != null) logger.Log(TAG, "beforeVolume: " + volume);
                             }
                             
                             if (volume != 0 || prevVolume != volume) {
@@ -207,10 +208,11 @@ public final class DNSService extends Service {
                     case Intent.ACTION_HEADSET_PLUG:
                         int state = intent.getIntExtra("state", -1);
                         if (logger != null) logger.Log(TAG, "ACTION_HEADSET_PLUG state: " + state);
-                        if (state == 1 && DNSService.this.restoreVolumeOnHeadphoneConnect) {
-                            DNSService.this.unmute();
+                        if (state == 0) {
+                            DNSService.this.update();
+                        } else if (state == 1 && DNSService.this.restoreVolumeOnHeadphoneConnect) {
+                            DNSService.this.restoreVolume();
                         }
-                        DNSService.this.update();
                         break;
                     case BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED:
                         if (logger != null) logger.Log(TAG, "A2dp.ACTION_PLAYING_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
@@ -309,7 +311,7 @@ public final class DNSService extends Service {
                                     || type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
                                     || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
                                 if (logger != null) logger.Log(TAG, "headphone connected via AudioDeviceCallback");
-                                DNSService.this.unmute();
+                                DNSService.this.restoreVolume();
                                 break;
                             }
                         }
@@ -363,6 +365,7 @@ public final class DNSService extends Service {
         this.useBluetooth = DNSSetting.getUseBluetooth(this);
         this.restoreVolume = DNSSetting.getRestoreVolume(this);
         this.restoreVolumeOnHeadphoneConnect = DNSSetting.getRestoreVolumeOnHeadphoneConnect(this);
+        this.requestToStopPlayback = DNSSetting.getRequestToStopPlayback(this);
     }
 
     @Override
@@ -389,7 +392,7 @@ public final class DNSService extends Service {
                 break;
             }
             case ACTION_SWITCH: {
-                if (this.enabled) {
+                if (this.speakerEnabled) {
                     this.stop(new Date(0), true);
                 } else {
                     this.start();
@@ -441,23 +444,23 @@ public final class DNSService extends Service {
 
     private void backupState() {
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "backup state: " + this.enabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
+        if (logger != null) logger.Log(TAG, "backup state: " + this.speakerEnabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
 
         this.statePreferences
             .edit()
-            .putBoolean("enabled", this.enabled)
+            .putBoolean("enabled", this.speakerEnabled)
             .putBoolean("stopUntilScreenOff", this.stopUntilScreenOff)
             .putLong("disableTime", this.disableTime)
             .apply();
     }
 
     private void restoreState() {
-        this.enabled = this.statePreferences.getBoolean("enabled", true);
+        this.speakerEnabled = this.statePreferences.getBoolean("enabled", true);
         this.stopUntilScreenOff = this.statePreferences.getBoolean("stopUntilScreenOff", false);
         this.setDisableTime(new Date(this.statePreferences.getLong("disableTime", 0)));
 
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "restore state: " + this.enabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
+        if (logger != null) logger.Log(TAG, "restore state: " + this.speakerEnabled + " " + this.stopUntilScreenOff + " " + this.disableTime);
     }
 
     private void clearState() {
@@ -470,19 +473,19 @@ public final class DNSService extends Service {
     private void start() {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "start");
-        if (!this.enabled) {
+        if (!this.speakerEnabled) {
             this.beforeVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
             if (logger != null) logger.Log(TAG, "beforeVolume: " + this.beforeVolume);
         }
 
-        this.enabled = true;
+        this.speakerEnabled = true;
         this.stopUntilScreenOff = false;
         this.setDisableTime(new Date(0));
         this.backupState();
 
         this.update();
 
-        if (DNSSetting.getRequestToStopPlayback(this)) {
+        if (this.requestToStopPlayback) {
             AudioFocusUtility.request(this.audioManager, logger);
         }
 
@@ -493,7 +496,7 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "stop disableTime:" + disableTime + " stopUntilScreenOff: " + stopUntilScreenOff);
 
-        this.enabled = false;
+        this.speakerEnabled = false;
         this.stopUntilScreenOff = stopUntilScreenOff;
         this.setDisableTime(disableTime);
         this.backupState();
@@ -544,14 +547,16 @@ public final class DNSService extends Service {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "update forceMute:" + forceMute);
 
-        if (this.enabled) {
+        if (this.speakerEnabled) {
             this.mute(forceMute);
             if (this.wakeLock.isHeld()) {
                 if (logger != null) logger.Log(TAG, "release wake lock");
                 this.wakeLock.release();
             }
         } else {
-            this.unmute();
+            if (this.restoreVolume) {
+                this.restoreVolume();
+            }
             if (this.keepScreenOn && !this.wakeLock.isHeld()) {
                 if (logger != null) logger.Log(TAG, "acquire wake lock");
                 this.wakeLock.acquire();
@@ -570,7 +575,7 @@ public final class DNSService extends Service {
             }
         }
 
-        this.createNotification(this.enabled);
+        this.createNotification(this.speakerEnabled);
         this.responseStateToTile();
     }
 
@@ -620,11 +625,11 @@ public final class DNSService extends Service {
         this.setVolumeTo(0, 0);
     }
 
-    private void unmute() {
+    private void restoreVolume() {
         DiagnosticsLogger logger = Logger;
-        if (logger != null) logger.Log(TAG, "unmute");
+        if (logger != null) logger.Log(TAG, "restoreVolume");
 
-        if (this.restoreVolume && this.beforeVolume >= 0) {
+        if (this.beforeVolume >= 0) {
             if (logger != null) logger.Log(TAG, "restore volume: " + this.beforeVolume);
             this.setVolumeTo(this.beforeVolume, AudioManager.FLAG_SHOW_UI);
             this.beforeVolume = -1;
@@ -762,7 +767,7 @@ public final class DNSService extends Service {
 
     private void responseStateToTile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            IntentUtility.setTileState(this.enabled, this.stopUntilScreenOff, this.disableTimeString);
+            IntentUtility.setTileState(this.speakerEnabled, this.stopUntilScreenOff, this.disableTimeString);
         }
     }
 

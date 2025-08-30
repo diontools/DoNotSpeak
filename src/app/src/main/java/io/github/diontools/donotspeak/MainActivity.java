@@ -94,11 +94,17 @@ public final class MainActivity extends Activity {
 
             final Switch restoreVolumeSwitch = view.findViewById(R.id.restoreVolumeSwitch);
             restoreVolumeSwitch.setChecked(DNSSetting.getRestoreVolume(this));
-            restoreVolumeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> DNSSetting.setRestoreVolume(MainActivity.this, isChecked));
+            restoreVolumeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                DNSSetting.setRestoreVolume(MainActivity.this, isChecked);
+                IntentUtility.applySettings(MainActivity.this);
+            });
 
             final Switch requestToStopPlaybackSwitch = view.findViewById(R.id.requestToStopPlaybackSwitch);
             requestToStopPlaybackSwitch.setChecked(DNSSetting.getRequestToStopPlayback(this));
-            requestToStopPlaybackSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> DNSSetting.setRequestToStopPlayback(MainActivity.this, isChecked));
+            requestToStopPlaybackSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                DNSSetting.setRequestToStopPlayback(MainActivity.this, isChecked);
+                IntentUtility.applySettings(MainActivity.this);
+            });
 
             final Switch keepScreenOnSwitch = view.findViewById(R.id.keepScreenOnSwitch);
             keepScreenOnSwitch.setChecked(DNSSetting.getKeepScreenOn(this));
