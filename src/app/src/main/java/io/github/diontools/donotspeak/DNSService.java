@@ -182,12 +182,12 @@ public final class DNSService extends Service {
                             if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume);
                             
                             // Update beforeVolume
-                            if ((!DNSService.this.muteEnabled || DNSService.this.isHeadsetConnected()) && volume > 0) {
+                            if (!DNSService.this.muteEnabled || DNSService.this.isHeadsetConnected()) {
                                 DNSService.this.beforeVolume = volume;
                                 if (logger != null) logger.Log(TAG, "beforeVolume: " + volume);
                             }
-                            
-                            if (volume != 0 || prevVolume != volume) {
+
+                            if (prevVolume != volume) {
                                 DNSService.this.update();
                             }
                         }
@@ -657,9 +657,12 @@ public final class DNSService extends Service {
                 }
             }
         } else {
-            if (logger != null) logger.Log(TAG, "set volume: " + targetVolume);
-            this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, flags);
-            if (logger != null) logger.Log(TAG, "volume: " + this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+            int currentVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+            if (currentVolume != targetVolume) {
+                if (logger != null) logger.Log(TAG, "set volume: " + targetVolume);
+                this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, flags);
+                if (logger != null) logger.Log(TAG, "volume: " + this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC));
+            }
         }
     }
 
