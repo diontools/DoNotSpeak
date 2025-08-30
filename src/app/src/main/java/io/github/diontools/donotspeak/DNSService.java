@@ -70,6 +70,7 @@ public final class DNSService extends Service {
     private PendingIntent startIntent;
     private PendingIntent closeNotificationIntent;
     private PendingIntent stopUntilScreenOffIntent;
+    private PendingIntent showMenuIntent;
     private PendingIntent rebootIntent;
 
     private AlarmManager alarmManager;
@@ -144,6 +145,14 @@ public final class DNSService extends Service {
                         0,
                         new Intent(this.getApplicationContext(), DNSService.class).setAction(ACTION_REBOOT).putExtra(ACTION_REBOOT_EXTRA_REASON, "closeNotification"),
                         PendingIntent.FLAG_CANCEL_CURRENT | immutableFlag);
+
+        this.showMenuIntent =
+                PendingIntent.getActivity(
+                        this.getApplicationContext(),
+                        0,
+                        new Intent(this.getApplicationContext(), MainActivity.class)
+                                .setAction(MainActivity.ACTION_DISABLE_DIALOG),
+                        immutableFlag);
 
         this.rebootIntent =
                 PendingIntent.getBroadcast(
@@ -596,6 +605,8 @@ public final class DNSService extends Service {
 
         if (enabled) {
             builder.addAction(new Notification.Action(R.drawable.ic_noisy, this.getResources().getString(R.string.notification_action_untilScreenOff), this.stopUntilScreenOffIntent));
+        } else {
+            builder.addAction(new Notification.Action(R.drawable.ic_noisy, this.getResources().getString(R.string.disable_alert_menu_button), this.showMenuIntent));
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

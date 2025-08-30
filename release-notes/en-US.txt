@@ -1,8 +1,9 @@
-v1.10.0 2025/08/25
+v1.10.0 2025/08/31
 Support Android 15
 Add "Stop this app" shortcut
 Add "Support Developer" link
 Add "restore volume on headphone connect" setting
+Add "Show Menu" button to notification when speaker is enabled
 
 v1.9.1 2023/10/08
 Fixed crash when manipulating the quick settings tile (Android 14 or later)
