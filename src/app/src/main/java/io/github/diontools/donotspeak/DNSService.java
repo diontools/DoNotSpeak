@@ -179,12 +179,13 @@ public final class DNSService extends Service {
                         int streamType = intent.getIntExtra(ANDROID_MEDIA_EXTRA_VOLUME_STREAM_TYPE, -1);
                         if (streamType == AudioManager.STREAM_MUSIC) {
                             int prevVolume = intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
-                            int volume = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1);
-                            if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume);
+                            int volume = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_VALUE", -1); // this is not current volume!
+                            int currentVolume = DNSService.this.getCurrentVolume();
+                            if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume + " | current: " + currentVolume);
                             
                             // Update beforeVolume
                             if (!DNSService.this.muteEnabled || (DNSService.this.restoreVolumeOnHeadphoneConnect && DNSService.this.isHeadsetConnected())) {
-                                DNSService.this.backupVolume(volume);
+                                DNSService.this.backupVolume(currentVolume);
                             }
 
                             if (prevVolume != volume) {
