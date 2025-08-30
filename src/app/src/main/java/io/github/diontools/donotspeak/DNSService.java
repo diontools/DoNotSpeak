@@ -55,6 +55,7 @@ public final class DNSService extends Service {
     private boolean stopUntilScreenOff = false;
     private int beforeVolume = -1;
     private boolean useAdjustVolume = false;
+    private boolean volumeAdjusting = false;  // Flag to track volume adjustment in progress
     private boolean keepScreenOn = false;
     private boolean useBluetooth = false;
     private boolean restoreVolume = false;
@@ -639,22 +640,32 @@ public final class DNSService extends Service {
     private void setVolumeTo(int targetVolume, int flags) {
         DiagnosticsLogger logger = Logger;
 
-        if (useAdjustVolume) {
-            int failSafeLoopCount = 0;
-            while (true) {
-                int currentVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                if (logger != null) logger.Log(TAG, "volume current: " + currentVolume + " target: " + targetVolume);
-                if (currentVolume == targetVolume || failSafeLoopCount++ > 50) {
-                    break;
-                }
+        // Skip if volume adjustment is already in progress to avoid recursive calls
+        if (this.volumeAdjusting) {
+            if (logger != null) logger.Log(TAG, "Skip setVolumeTo during volume adjusting");
+            return;
+        }
 
-                if (currentVolume > targetVolume) {
-                    if (logger != null) logger.Log(TAG, "adjust lower volume");
-                    this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, flags);
-                } else {
-                    if (logger != null) logger.Log(TAG, "adjust raise volume");
-                    this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, flags);
+        if (useAdjustVolume) {
+            try {
+                this.volumeAdjusting = true;
+                for (int failSafeLoopCount = 0; failSafeLoopCount < 50; failSafeLoopCount++) {
+                    int currentVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                    if (logger != null) logger.Log(TAG, "volume current: " + currentVolume + " target: " + targetVolume);
+                    if (currentVolume == targetVolume) {
+                        break;
+                    }
+
+                    if (currentVolume > targetVolume) {
+                        if (logger != null) logger.Log(TAG, "adjust lower volume");
+                        this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, flags);
+                    } else {
+                        if (logger != null) logger.Log(TAG, "adjust raise volume");
+                        this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, flags);
+                    }
                 }
+            } finally {
+                this.volumeAdjusting = false;
             }
         } else {
             int currentVolume = this.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
