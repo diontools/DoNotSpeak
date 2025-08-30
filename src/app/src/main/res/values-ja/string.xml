@@ -53,7 +53,7 @@
     <string name="settings_use_adjust_volume">Adjust Volume API を使用する</string>
     <string name="settings_use_adjust_volume_description">ColorOS (OPPO / Realme デバイス) の制限を回避するために使用します。</string>
     <string name="settings_restore_volume_on_headphone_connect">イヤホン接続時に音量を復元する</string>
-    <string name="settings_restore_volume_on_headphone_connect_description">イヤホンを接続した時、切断前の音量レベルに自動で復元します</string>
+    <string name="settings_restore_volume_on_headphone_connect_description">イヤホンを接続した時に音量レベルを自動で復元します。OSが自動的に音量を復元しない場合にのみご使用ください</string>
     <string name="settings_use_notification">通知を使用する</string>
     <string name="settings_bluetooth_settings">Bluetooth設定</string>
     <string name="settings_use_bluetooth">Bluetoothを使用する</string>
