@@ -183,7 +183,7 @@ public final class DNSService extends Service {
                             if (logger != null) logger.Log(TAG, "VOLUME_CHANGED_ACTION " + prevVolume + " -> " + volume);
                             
                             // Update beforeVolume
-                            if (!DNSService.this.muteEnabled || DNSService.this.isHeadsetConnected()) {
+                            if (!DNSService.this.muteEnabled || (DNSService.this.restoreVolumeOnHeadphoneConnect && DNSService.this.isHeadsetConnected())) {
                                 DNSService.this.backupVolume(volume);
                             }
 
