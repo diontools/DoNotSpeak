@@ -1,0 +1,52 @@
+# ビルド設定
+
+## 前提
+
+- `minSdk = 21`（Android 5.0）をサポートする。以下の設定はすべてこの制約が理由。
+- AGP 9.3.1 / Gradle 9.5.0 / JDK 21（`src/gradle/gradle-daemon-jvm.properties` で固定）
+
+## Android 5.0 のための必須設定
+
+### `-Dcom.android.tools.r8.disableApiModeling=1`（`org.gradle.jvmargs`）
+
+AGP 9 は D8 の API modeling により、`generateDebugGlobalSynthetics` で
+`android.accessibilityservice.*`、`android.icu.*` など約950件の `android.*` クラスを
+「定義」した dex（約145KB）を生成し、APK に含める。`android.*` のクラスを APK が持つと
+Android 5.0 でインストールに失敗する。
+
+```
+INSTALL_FAILED_DEXOPT: Package couldn't be installed in /data/app/...: scanPackageLI
+installd: DexInv: --- END '.../base.apk' --- status=0x0006, process failed
+```
+
+AGP 8.9.2 ではこの成果物自体が生成されていなかった。Android 16 では問題なくインストール
+できてしまうため、API 21 での確認が必須。
+
+このプロパティは R8 の内部システムプロパティであり AGP の公式オプションではない。
+AGP を上げた際は効いているかを下記の手順で再確認する。
+
+### `android.builtInKotlin=false`
+
+AGP 9 のデフォルト `true` では Kotlin サポートが有効化され、Kotlin を使っていなくても
+kotlin-stdlib（約2.4MB）が APK に追加される。AGP 10 でこのプロパティは削除される予定のため、
+その際は別の手段が必要になる。
+
+## 確認手順
+
+API 21 のエミュレータを起動した状態で:
+
+```sh
+./gradlew assembleDebug
+# classes4.dex が 145KB 級なら API modeling が抑止できていない
+unzip -l app/build/outputs/apk/debug/app-debug.apk | grep dex
+# Success になること
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+dex に `android.*` のクラスが含まれていないことの確認:
+
+```sh
+$ANDROID_HOME/build-tools/<ver>/dexdump classes4.dex | grep "Class descriptor"
+```
+
+`com.android.tools.r8.*`（desugaring 補助クラス）のみであれば正常。
