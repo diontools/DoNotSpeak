@@ -8,7 +8,7 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
-    compileSdk = 35
+    compileSdk = 36
     signingConfigs {
         release {
             storeFile = file(properties.getProperty('KEYSTORE'))
@@ -20,9 +20,9 @@ android {
     defaultConfig {
         applicationId = "io.github.diontools.donotspeak"
         minSdk = 21
-        targetSdk = 35
-        versionCode = 90
-        versionName = "1.10.0"
+        targetSdk = 36
+        versionCode = 91
+        versionName = "1.11.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resourceConfigurations += ['en', 'ja']
     }

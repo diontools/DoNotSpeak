@@ -51,6 +51,8 @@ public class DiagnosticsActivity extends Activity {
         final ListView logListView = this.findViewById(R.id.log_list_view);
         logListView.setAdapter(logArrayAdapter);
 
+        Compat.applySystemBarInsets(this.findViewById(R.id.root_layout), logListView);
+
         DiagnosticsLogger logger = DiagnosticsLogger.Instance;
         logger.setCallback(str -> {
             logs.add(str);

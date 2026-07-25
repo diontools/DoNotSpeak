@@ -68,6 +68,19 @@ inset を自前で処理する。
 5. `screenshots/vc91/` に撮り直し、`screenshots/vc90/` と比較する
 6. CHANGELOG / release-notes を更新する
 
+## 対応結果（vc91）
+
+- インセットは `Compat.applySystemBarInsets(root, listView)` で適用する。ルートに
+  left / top / right、`ListView` に bottom（`clipToPadding=false`）
+- **エッジツーエッジ時、ルートに届く top インセットはステータスバー高 + アクションバー高**
+  （API 36 の Pixel 9 で 289px）。デコアがアクションバー分を差し引いた位置に
+  コンテンツを置くのではなく、自身のコンテンツインセットを下位に流すため。
+  これをそのまま padding にすると vc90 と同じ位置に収まる
+- API 36 / 35 は下端がナビゲーションバー下まで描画されるようになった。
+  API 26 / 21 は vc90 と完全に同一（二重 padding なし）
+- API 21 での `adb install` は成功。`classes4.dex` は 13KB で `com.android.tools.r8.*` のみ。
+  compileSdk 36 でも API modeling の抑止は効いている
+
 ## 検証方法
 
 対応前後の画面比較と今後の出荷前テストのため、エミュレータ起動・画面遷移・

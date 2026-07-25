@@ -54,6 +54,8 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         listView.setAdapter(this.itemAdapter);
         listView.setOnItemClickListener(this);
 
+        Compat.applySystemBarInsets(this.findViewById(R.id.root_layout), listView);
+
         this.loadSettings();
     }
 
