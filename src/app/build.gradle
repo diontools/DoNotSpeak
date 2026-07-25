@@ -8,42 +8,47 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
+    compileSdk = 36
     signingConfigs {
         release {
-            storeFile file(properties.getProperty('KEYSTORE'))
-            storePassword properties.getProperty('STORE_PASSWORD')
-            keyAlias properties.getProperty('KEY_ALIAS')
-            keyPassword properties.getProperty('KEY_PASSWORD')
+            storeFile = file(properties.getProperty('KEYSTORE'))
+            storePassword = properties.getProperty('STORE_PASSWORD')
+            keyAlias = properties.getProperty('KEY_ALIAS')
+            keyPassword = properties.getProperty('KEY_PASSWORD')
         }
     }
     defaultConfig {
-        applicationId "io.github.diontools.donotspeak"
-        minSdkVersion 21
-        targetSdkVersion 35
-        compileSdk 35
-        versionCode 89
-        versionName "1.10.0"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        applicationId = "io.github.diontools.donotspeak"
+        minSdk = 21
+        targetSdk = 36
+        versionCode = 91
+        versionName = "1.11.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resourceConfigurations += ['en', 'ja']
     }
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro')
+            signingConfig = signingConfigs.release
         }
         debug {
             applicationIdSuffix = ".debug"
         }
     }
-    namespace 'io.github.diontools.donotspeak'
+    namespace = 'io.github.diontools.donotspeak'
     buildFeatures {
-        buildConfig true // BuildConfig class generation
+        buildConfig = true // BuildConfig class generation
     }
 }
 
 dependencies {
+    // androidTest only. These are never packaged into the release APK.
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
+
 //    implementation fileTree(dir: 'libs', include: ['*.jar'])
 //    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 //    implementation 'androidx.appcompat:appcompat:1.0.0-beta01'

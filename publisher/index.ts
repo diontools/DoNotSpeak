@@ -3,7 +3,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import * as childProcess from 'child_process'
-import fetch from 'node-fetch'
 import * as crypto from 'crypto'
 import * as google from 'googleapis'
 
@@ -16,7 +15,6 @@ interface Settings {
     track: string
     releaseFilePath: string
     releaseNotesDir: string
-    versionCodeFile: string
 }
 
 const runner = async () => {
@@ -59,7 +57,7 @@ const runner = async () => {
 
     // download bundletool
     console.log('download bundletool')
-    const bundleToolResponse = await fetch("https://github.com/google/bundletool/releases/download/1.5.0/bundletool-all-1.5.0.jar")
+    const bundleToolResponse = await fetch("https://github.com/google/bundletool/releases/download/1.18.3/bundletool-all-1.18.3.jar")
     if (!bundleToolResponse.ok) throw `bundletool download failed. status: ${bundleToolResponse.statusText}`
     const bundleToolBinary = await bundleToolResponse.arrayBuffer()
     const bundleToolPath = path.join(__dirname, 'bundletool.jar')
@@ -78,9 +76,8 @@ const runner = async () => {
         credentials: credentials,
         scopes: 'https://www.googleapis.com/auth/androidpublisher'
     })
-    const authClient = await auth.getClient()
     const publisher = new google.androidpublisher_v3.Androidpublisher({
-        auth: authClient,
+        auth: auth,
     })
 
     // start edit
@@ -119,9 +116,9 @@ const runner = async () => {
         }
 
         // patch track
-        const status = targetTrack.releases?.[0].status || 'draft'
+        const status = targetTrack.releases?.[0]?.status || 'draft'
         console.log('patch track', `status: ${status}`)
-        const patchedTrack = (await publisher.edits.tracks.patch({
+        await publisher.edits.tracks.patch({
             editId: appEditId,
             packageName: settings.applicationId,
             track: settings.track,
@@ -136,7 +133,7 @@ const runner = async () => {
                     }
                 ]
             }
-        })).data
+        })
     } else {
         // upload aab file
         console.log('upload aab file')
@@ -158,7 +155,7 @@ const runner = async () => {
 
         // update track
         console.log('update track')
-        const updatedTrack = (await publisher.edits.tracks.update({
+        await publisher.edits.tracks.update({
             editId: appEditId,
             packageName: settings.applicationId,
             track: settings.track,
@@ -173,7 +170,7 @@ const runner = async () => {
                     }
                 ]
             }
-        })).data
+        })
     }
 
     // commit

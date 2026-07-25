@@ -16,8 +16,10 @@ import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.PopupMenu;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -74,41 +76,95 @@ public final class MainActivity extends Activity {
             final TimePicker timePicker = view.findViewById(R.id.timePicker);
             timePicker.setIs24HourView(DateFormat.is24HourFormat(this));
 
-            final RadioGroup periodRadioGroup = view.findViewById(R.id.periodRadioGroup);
+            final RadioButton screenOffRadioButton = view.findViewById(R.id.screenOffRadioButton);
+            final RadioButton minutesRadioButton = view.findViewById(R.id.minutesRadioButton);
+            final RadioButton timeOfDayRadioButton = view.findViewById(R.id.timeOfDayRadioButton);
             final View minutesView = view.findViewById(R.id.minutesView);
             final View timeOfDayView = view.findViewById(R.id.timeOfDayView);
-            periodRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
-                minutesView.setVisibility(checkedId == R.id.minutesRadioButton ? View.VISIBLE : View.GONE);
-                timeOfDayView.setVisibility(checkedId == R.id.timeOfDayRadioButton ? View.VISIBLE : View.GONE);
+            final View screenOffView = view.findViewById(R.id.screenOffView);
 
-                // init time by selected number picker value
-                if (checkedId == R.id.timeOfDayRadioButton) {
-                    final Calendar calendar = Calendar.getInstance();
-                    int totalMinutes = (numPicker.getValue() + 1) * 5;
-                    calendar.add(Calendar.MINUTE, totalMinutes);
-                    timePicker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
-                    timePicker.setCurrentMinute(calendar.get(Calendar.MINUTE));
-                }
+            // Manual RadioButton group management
+            final RadioButton[] radioButtons = {screenOffRadioButton, minutesRadioButton, timeOfDayRadioButton};
+
+            // Set up click listeners for manual radio button group
+            for (RadioButton radioButton : radioButtons) {
+                radioButton.setOnClickListener(v -> {
+                    // Uncheck all other radio buttons
+                    for (RadioButton rb : radioButtons) {
+                        rb.setChecked(rb == v);
+                    }
+                    
+                    // Update view visibility
+                    int checkedId = v.getId();
+                    minutesView.setVisibility(checkedId == R.id.minutesRadioButton ? View.VISIBLE : View.GONE);
+                    timeOfDayView.setVisibility(checkedId == R.id.timeOfDayRadioButton ? View.VISIBLE : View.GONE);
+                    screenOffView.setVisibility(checkedId == R.id.screenOffRadioButton ? View.VISIBLE : View.GONE);
+
+                    // init time by selected number picker value
+                    if (checkedId == R.id.timeOfDayRadioButton) {
+                        final Calendar calendar = Calendar.getInstance();
+                        int totalMinutes = (numPicker.getValue() + 1) * 5;
+                        calendar.add(Calendar.MINUTE, totalMinutes);
+                        timePicker.setCurrentHour(calendar.get(Calendar.HOUR_OF_DAY));
+                        timePicker.setCurrentMinute(calendar.get(Calendar.MINUTE));
+                    }
+                });
+            }
+
+            // Restore saved selection
+            String savedType = DNSSetting.getDurationSelectionType(this);
+            numPicker.setValue(DNSSetting.getSelectedMinutesValue(this));
+            
+            switch (savedType) {
+                case "minutes":
+                    minutesRadioButton.setChecked(true);
+                    minutesView.setVisibility(View.VISIBLE);
+                    timeOfDayView.setVisibility(View.GONE);
+                    screenOffView.setVisibility(View.GONE);
+                    break;
+                case "timeOfDay":
+                    timeOfDayRadioButton.setChecked(true);
+                    minutesView.setVisibility(View.GONE);
+                    timeOfDayView.setVisibility(View.VISIBLE);
+                    screenOffView.setVisibility(View.GONE);
+                    break;
+                default:
+                    screenOffRadioButton.setChecked(true);
+                    screenOffView.setVisibility(View.VISIBLE);
+                    minutesView.setVisibility(View.GONE);
+                    timeOfDayView.setVisibility(View.GONE);
+                    break;
+            }
+
+            // Collapsible options functionality
+            final View optionsHeader = view.findViewById(R.id.optionsHeader);
+            final View optionsContent = view.findViewById(R.id.optionsContent);
+            final TextView optionsArrow = view.findViewById(R.id.optionsArrow);
+            optionsArrow.setText("▶");
+
+            optionsHeader.setOnClickListener(v -> {
+                boolean isVisible = optionsContent.getVisibility() == View.VISIBLE;
+                optionsContent.setVisibility(isVisible ? View.GONE : View.VISIBLE);
+                optionsArrow.setText(isVisible ? "▶" : "▼");
             });
-            periodRadioGroup.check(R.id.minutesRadioButton);
 
-            final Switch restoreVolumeSwitch = view.findViewById(R.id.restoreVolumeSwitch);
-            restoreVolumeSwitch.setChecked(DNSSetting.getRestoreVolume(this));
-            restoreVolumeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            final OptionSwitchView restoreVolumeOption = view.findViewById(R.id.restoreVolumeOption);
+            restoreVolumeOption.setChecked(DNSSetting.getRestoreVolume(this));
+            restoreVolumeOption.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 DNSSetting.setRestoreVolume(MainActivity.this, isChecked);
                 IntentUtility.applySettings(MainActivity.this);
             });
 
-            final Switch requestToStopPlaybackSwitch = view.findViewById(R.id.requestToStopPlaybackSwitch);
-            requestToStopPlaybackSwitch.setChecked(DNSSetting.getRequestToStopPlayback(this));
-            requestToStopPlaybackSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            final OptionSwitchView requestToStopPlaybackOption = view.findViewById(R.id.requestToStopPlaybackOption);
+            requestToStopPlaybackOption.setChecked(DNSSetting.getRequestToStopPlayback(this));
+            requestToStopPlaybackOption.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 DNSSetting.setRequestToStopPlayback(MainActivity.this, isChecked);
                 IntentUtility.applySettings(MainActivity.this);
             });
 
-            final Switch keepScreenOnSwitch = view.findViewById(R.id.keepScreenOnSwitch);
-            keepScreenOnSwitch.setChecked(DNSSetting.getKeepScreenOn(this));
-            keepScreenOnSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            final OptionSwitchView keepScreenOnOption = view.findViewById(R.id.keepScreenOnOption);
+            keepScreenOnOption.setChecked(DNSSetting.getKeepScreenOn(this));
+            keepScreenOnOption.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 DNSSetting.setKeepScreenOn(MainActivity.this, isChecked);
                 IntentUtility.applySettings(MainActivity.this);
             });
@@ -117,36 +173,51 @@ public final class MainActivity extends Activity {
                     new AlertDialog.Builder(this)
                             .setView(view)
                             .setPositiveButton(R.string.disable_alert_okButton, (dialog, which) -> {
-                                boolean useMinutes = periodRadioGroup.getCheckedRadioButtonId() == R.id.minutesRadioButton;
-                                Date disableTime;
-                                if (useMinutes) {
-                                    int minutes = (numPicker.getValue() + 1) * 5;
-                                    Calendar calendar = Calendar.getInstance();
-                                    calendar.add(Calendar.MINUTE, minutes);
-                                    disableTime = calendar.getTime();
+                                int checkedId = getSelectedRadioButtonId(radioButtons);
+                                
+                                // Save duration selection when Enable button is pressed
+                                if (checkedId == R.id.screenOffRadioButton) {
+                                    DNSSetting.setDurationSelectionType(MainActivity.this, "screenOff");
+                                } else if (checkedId == R.id.minutesRadioButton) {
+                                    DNSSetting.setDurationSelectionType(MainActivity.this, "minutes");
+                                    DNSSetting.setSelectedMinutesValue(MainActivity.this, numPicker.getValue());
+                                } else if (checkedId == R.id.timeOfDayRadioButton) {
+                                    DNSSetting.setDurationSelectionType(MainActivity.this, "timeOfDay");
+                                }
+                                
+                                if (checkedId == R.id.screenOffRadioButton) {
+                                    MainActivity.this.stopUntilScreenOff();
                                 } else {
-                                    Calendar currentCalendar = Calendar.getInstance();
-                                    Calendar disableTimeCalender = Calendar.getInstance();
-                                    disableTimeCalender.clear();
-                                    disableTimeCalender.set(
-                                            currentCalendar.get(Calendar.YEAR),
-                                            currentCalendar.get(Calendar.MONTH),
-                                            currentCalendar.get(Calendar.DATE),
-                                            timePicker.getCurrentHour(),
-                                            timePicker.getCurrentMinute());
+                                    boolean useMinutes = checkedId == R.id.minutesRadioButton;
+                                    Date disableTime;
+                                    if (useMinutes) {
+                                        int minutes = (numPicker.getValue() + 1) * 5;
+                                        Calendar calendar = Calendar.getInstance();
+                                        calendar.add(Calendar.MINUTE, minutes);
+                                        disableTime = calendar.getTime();
+                                    } else {
+                                        Calendar currentCalendar = Calendar.getInstance();
+                                        Calendar disableTimeCalender = Calendar.getInstance();
+                                        disableTimeCalender.clear();
+                                        disableTimeCalender.set(
+                                                currentCalendar.get(Calendar.YEAR),
+                                                currentCalendar.get(Calendar.MONTH),
+                                                currentCalendar.get(Calendar.DATE),
+                                                timePicker.getCurrentHour(),
+                                                timePicker.getCurrentMinute());
 
-                                    // add one day when disableTime < now
-                                    if (disableTimeCalender.before(currentCalendar)) {
-                                        disableTimeCalender.add(Calendar.DATE, 1);
+                                        // add one day when disableTime < now
+                                        if (disableTimeCalender.before(currentCalendar)) {
+                                            disableTimeCalender.add(Calendar.DATE, 1);
+                                        }
+
+                                        disableTime = disableTimeCalender.getTime();
                                     }
 
-                                    disableTime = disableTimeCalender.getTime();
+                                    IntentUtility.stop(MainActivity.this, disableTime);
                                 }
-
-                                IntentUtility.stop(MainActivity.this, disableTime);
                                 MainActivity.this.exit();
                             })
-                            .setNeutralButton(R.string.disable_alert_untilScreenOffButton, (dialog, which) -> MainActivity.this.stopUntilScreenOff())
                             .setNegativeButton(R.string.disable_alert_cancelButton, (dialog, which) -> MainActivity.this.exit())
                             .setOnDismissListener(dialog -> MainActivity.this.exit())
                             .create();
@@ -262,5 +333,14 @@ public final class MainActivity extends Activity {
         });
 
         popup.show();
+    }
+
+    private int getSelectedRadioButtonId(RadioButton[] radioButtons) {
+        for (RadioButton rb : radioButtons) {
+            if (rb.isChecked()) {
+                return rb.getId();
+            }
+        }
+        return -1; // None selected
     }
 }

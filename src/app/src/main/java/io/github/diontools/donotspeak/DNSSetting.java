@@ -20,6 +20,8 @@ final class DNSSetting {
         USE_NOTIFICATION,
         USE_BLUETOOTH,
         RESTORE_VOLUME_ON_HEADPHONE_CONNECT,
+        DURATION_SELECTION_TYPE,
+        SELECTED_MINUTES_VALUE,
     }
 
     private static SharedPreferences getPref(Context context) {
@@ -144,6 +146,32 @@ final class DNSSetting {
         getPref(context)
                 .edit()
                 .putBoolean(Keys.RESTORE_VOLUME_ON_HEADPHONE_CONNECT.name(), value)
+                .apply();
+        requestBackup(context);
+    }
+
+
+    public static String getDurationSelectionType(Context context) {
+        return getPref(context).getString(Keys.DURATION_SELECTION_TYPE.name(), "screenOff");
+    }
+
+    public static void setDurationSelectionType(Context context, String type) {
+        getPref(context)
+                .edit()
+                .putString(Keys.DURATION_SELECTION_TYPE.name(), type)
+                .apply();
+        requestBackup(context);
+    }
+
+
+    public static int getSelectedMinutesValue(Context context) {
+        return getPref(context).getInt(Keys.SELECTED_MINUTES_VALUE.name(), 0);
+    }
+
+    public static void setSelectedMinutesValue(Context context, int value) {
+        getPref(context)
+                .edit()
+                .putInt(Keys.SELECTED_MINUTES_VALUE.name(), value)
                 .apply();
         requestBackup(context);
     }
