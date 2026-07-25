@@ -60,3 +60,4 @@ oxipng -o 4 --strip safe -a -r screenshots
 | versionCode | 内容 | 枚数 |
 | --- | --- | --- |
 | 90 | ダイアログ改善後・Android 16 対応前（`targetSdk = 35`） | 47 (api36:20 / api35:20 / api26:4 / api21:3) |
+| 91 | Android 16 対応後（`targetSdk = 36`・エッジツーエッジ） | 47 (api36:20 / api35:20 / api26:4 / api21:3) |
