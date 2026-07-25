@@ -1,0 +1,190 @@
+# スクリーンショットテスト
+
+エミュレータ上での画面遷移とスクリーンショット取得を自動化する。
+当面の目的は Android 16 対応（`spec/android16.md`）の対応前・対応後比較だが、
+以後の出荷前テストにも使い回す。
+
+## 方式
+
+instrumentation テスト（UI Automator）を `connectedAndroidTest` で実行する。
+
+### なぜ instrumentation テストか
+
+- 非公開の `SettingActivity` / `DiagnosticsActivity` を自プロセスから起動できる。
+  adb 直叩きだと `adb root` が要る
+- リソース ID / テキストで待機できるため、座標依存の `input tap` よりフレーキーになりにくい
+- `androidTestImplementation` 依存はリリース APK に入らないため、
+  AndroidX 依存ゼロの方針（`spec/build.md`）は維持される
+
+### なぜ Gradle Managed Devices ではないか
+
+- **API 21 の回帰確認が必須**（`spec/build.md`）だが、Managed Devices の対応 API 下限で
+  回るか不明。既存 AVD をそのまま使える `connectedAndroidTest` なら確実
+- 起動済みエミュレータを使い回せるため反復が速い
+- 実機でも同じコマンドが通る
+
+CI 用に Managed Devices を後から追加することは妨げない。
+
+### なぜ JVM 系（Roborazzi / Paparazzi）ではないか
+
+実機のシステムバー inset を再現しないため、今回の検証目的（エッジツーエッジ）に使えない。
+
+## 構成
+
+```groovy
+androidTestImplementation 'androidx.test:runner:1.6.2'
+androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
+```
+
+`testInstrumentationRunner` は `app/build.gradle` に宣言済み。
+
+- `app/src/androidTest/java/.../SmokeTest.java` — 各 API レベルでテスト APK が
+  インストールでき、`executeShellCommand` と `screencap` が動くことの確認
+- `app/src/androidTest/java/.../ScreenshotTest.java` — 撮影本体
+
+## 実行
+
+```sh
+# 接続中の全デバイスで実行される
+./gradlew connectedDebugAndroidTest
+
+# 特定のデバイスのみ
+ANDROID_SERIAL=emulator-5556 ./gradlew connectedDebugAndroidTest
+
+# テストクラスを絞る
+./gradlew connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=io.github.diontools.donotspeak.ScreenshotTest
+```
+
+エミュレータを複数起動しておけば 1 コマンドで全 API レベルを回せる。
+APK のインストールも Gradle が行う。
+
+回収は実行後に行う。Windows の Git Bash では MSYS のパス変換が `/sdcard/...` を
+Windows パスに書き換えるため `MSYS_NO_PATHCONV=1` が必要。
+
+```sh
+MSYS_NO_PATHCONV=1 adb -s emulator-5556 pull /sdcard/Download/shots/api36 ../screenshots/vc<N>/
+```
+
+## 保存先
+
+`screenshots/<versionCode>/api<SDK>/` に置く。`src/` はソースコードのみとし、
+成果物は入れない。詳細は `screenshots/README.md` を参照。
+
+API 36 の 1 マトリクスで約 5.7MB ある。`screencap` の PNG は無圧縮に近いため、
+リリースごとに全 API レベルを保存すると増加が速い。必要なら保存前に
+`oxipng` / `pngquant` で最適化するか、保存する API レベルを絞る。
+
+## 撮影対象
+
+| 画面 | 起動方法 |
+| --- | --- |
+| `disable` | `MainActivity` + `ACTION_DISABLE_DIALOG` |
+| `disable-options` | 同上でオプションを展開（ダイアログが最も高くなる状態） |
+| `setting` | `SettingActivity` |
+| `diagnostics` | `DiagnosticsActivity` |
+
+`MainActivity` の `ACTION_MAIN` は UI を持たない（権限要求 → サービス起動 → 即終了）ため
+撮影対象外。
+
+マトリクスは以下の 3 軸。
+
+| 軸 | 値 |
+| --- | --- |
+| ロケール | `ja` / `en` |
+| ナビゲーション | `gestural` / `threebutton` |
+| テーマ | `light` / `dark` |
+
+ナビゲーションとテーマは inset の高さと `values-night-v29` に効くため、エッジツーエッジ
+検証の主軸になる。API 29 未満は両方とも存在しないため `default` の 1 通りのみ撮る。
+
+ロケールは API 33 以降でのみ切り替えられる（後述）。ナビゲーションとテーマの効き方は
+ロケールに依存しないため、**全組み合わせを撮るのは `ja` のみとし、`en` は端末の初期状態
+である `gestural-light` だけ**撮る。英語のほうが文字列が長く、折り返し行数の違いが
+下端のクリッピングに影響しうるため、この 1 条件で確認する。
+
+API 33 未満はアプリ単位のロケール切替ができないため、AVD のシステムロケールをそのまま
+ラベルにする。端末ロケールの変更方法は後述。
+
+出力は `/sdcard/Download/shots/api<SDK>/<画面>-<ロケール>-<ナビ>-<テーマ>.png`。
+API 36 で 20 枚、所要 2 分程度。
+
+## 実装上の制約（実測で判明）
+
+- **`executeShellCommand` はシェルを介さず直接 exec する。**
+  組み込みコマンド・パイプ・リダイレクト・クォートが使えない。`/system/bin` にある
+  実バイナリのみ。API 21 では `echo` が組み込みのため空を返す
+- **`cmd` は API 24 以降にしか存在しない。** ナビゲーション切替（`cmd overlay`）と
+  ダークモード切替（`cmd uimode`）はいずれも API 29 以降でのみ使う
+- **ロケール切替（`cmd locale set-app-locales`）は API 33 以降。**
+  API 26 では `Can't find service: locale` になる。アプリ単位で切り替わるため
+  システムは日本語のままアプリだけ英語にでき、再起動も root も不要。
+  `--locales` を空にするとシステムロケールに戻る
+- **`screencap` はシェル UID で動くため `/sdcard/Download` に直接書ける。**
+  アプリ側のストレージ権限や scoped storage を回避できる
+- **`Until.hasObject` はタイムアウト時に `null` ではなく `Boolean.FALSE` を返す。**
+  待機結果ではなく `findObject` の戻り値を null 判定すること
+- **`connectedAndroidTest` は実行後に APK を自動アンインストールする。**
+  スクリーンショットの回収は実行後で問題ない（`/sdcard` はアンインストールの影響を
+  受けない）が、手動で `am start` する場合は再インストールが要る
+- API 21 でのみ `By.res` が `optionsHeader`（clickable な `LinearLayout`）を解決できず、
+  `disable-options` が撮影されない。API 26 では解決できるため API 21 固有の制限。
+  API 21 はインストール確認が主目的のため許容する
+
+## API 33 未満での端末ロケール変更
+
+アプリ単位の切替ができないため、AVD 自体のロケールを変える。テスト内からは行えず、
+起動し直しが必要。**変更は AVD の userdata に永続する**ため、戻すには同じ手順で
+戻す必要がある。
+
+### API 26（`persist.sys.locale` を見る世代）
+
+エミュレータの起動オプションで指定できる。
+
+```sh
+emulator -avd Pixel_6_API_26_Without_GooglePlay -no-snapshot -change-locale ja-JP
+```
+
+`persist.sys.locale = ja-JP` が設定され、システム全体が日本語になることを確認済み。
+なお `-help-change-locale` に「Quickboot スナップショットが上書きされる」旨の注意がある。
+
+### API 21（`persist.sys.language` / `persist.sys.country` を見る世代）
+
+**`-change-locale` は効かない。** このオプションは `persist.sys.locale` しか設定せず、
+Android 5.0 はそちらを参照しないため、`persist.sys.language` が `en` のまま残る。
+root で個別に設定して framework を再起動する。
+
+```sh
+adb root
+adb shell "setprop persist.sys.language ja; setprop persist.sys.country JP"
+adb shell "stop; start"
+```
+
+AVD は `PlayStore.enabled = false` のため `adb root` が使える。
+
+## ナビゲーションオーバーレイ名（API 36 で確認）
+
+```
+com.android.internal.systemui.navbar.gestural      (既定)
+com.android.internal.systemui.navbar.threebutton
+com.android.internal.systemui.navbar.twobutton
+com.android.internal.systemui.navbar.transparent
+```
+
+## 対象 API レベル
+
+| AVD | 用途 | 撮影枚数 |
+| --- | --- | --- |
+| `Pixel_9_API_36_Android_16` | Android 16 対応の主検証 | 20 |
+| `Pixel_7a_API_35_Android_15` | 退行確認（opt-out が効く側） | 20 |
+| `Pixel_6_API_26_Without_GooglePlay` | 退行確認 | 4 |
+| `API_21_Android_5.0_Lolipop` | `minSdk` 下限 | 3 |
+
+AVD はいずれも `PlayStore.enabled = false`。
+
+## 比較レポート
+
+対応前・対応後の比較は「差分が出るのが正解」であるため、機械的な pass/fail ではなく
+横並びの目視比較とする。出荷前テストとして定着させる段階で baseline を撮り置きし、
+差分検出（`pixelmatch` 等）を導入するかを検討する。

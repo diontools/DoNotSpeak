@@ -44,6 +44,11 @@ android {
 }
 
 dependencies {
+    // androidTest only. These are never packaged into the release APK.
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
+
 //    implementation fileTree(dir: 'libs', include: ['*.jar'])
 //    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 //    implementation 'androidx.appcompat:appcompat:1.0.0-beta01'
