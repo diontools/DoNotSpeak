@@ -666,34 +666,39 @@ public final class DNSService extends Service {
             return;
         }
 
-        if (useAdjustVolume) {
-            try {
-                this.volumeAdjusting = true;
-                for (int failSafeLoopCount = 0; failSafeLoopCount < 50; failSafeLoopCount++) {
-                    int currentVolume = this.getCurrentVolume();
-                    if (logger != null) logger.Log(TAG, "volume current: " + currentVolume + " target: " + targetVolume);
-                    if (currentVolume == targetVolume) {
-                        break;
-                    }
+        try {
+            if (useAdjustVolume) {
+                try {
+                    this.volumeAdjusting = true;
+                    for (int failSafeLoopCount = 0; failSafeLoopCount < 50; failSafeLoopCount++) {
+                        int currentVolume = this.getCurrentVolume();
+                        if (logger != null) logger.Log(TAG, "volume current: " + currentVolume + " target: " + targetVolume);
+                        if (currentVolume == targetVolume) {
+                            break;
+                        }
 
-                    if (currentVolume > targetVolume) {
-                        if (logger != null) logger.Log(TAG, "adjust lower volume");
-                        this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, flags);
-                    } else {
-                        if (logger != null) logger.Log(TAG, "adjust raise volume");
-                        this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, flags);
+                        if (currentVolume > targetVolume) {
+                            if (logger != null) logger.Log(TAG, "adjust lower volume");
+                            this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, flags);
+                        } else {
+                            if (logger != null) logger.Log(TAG, "adjust raise volume");
+                            this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, flags);
+                        }
                     }
+                } finally {
+                    this.volumeAdjusting = false;
                 }
-            } finally {
-                this.volumeAdjusting = false;
+            } else {
+                int currentVolume = this.getCurrentVolume();
+                if (currentVolume != targetVolume) {
+                    if (logger != null) logger.Log(TAG, "set volume: " + targetVolume);
+                    this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, flags);
+                    if (logger != null) logger.Log(TAG, "volume: " + this.getCurrentVolume());
+                }
             }
-        } else {
-            int currentVolume = this.getCurrentVolume();
-            if (currentVolume != targetVolume) {
-                if (logger != null) logger.Log(TAG, "set volume: " + targetVolume);
-                this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, flags);
-                if (logger != null) logger.Log(TAG, "volume: " + this.getCurrentVolume());
-            }
+        } catch (SecurityException ex) {
+            if (logger != null) logger.Log(TAG, "Volume adjustment denied: " + ex);
+            Toast.makeText(this, R.string.volume_adjustment_denied, Toast.LENGTH_SHORT).show();
         }
     }
 

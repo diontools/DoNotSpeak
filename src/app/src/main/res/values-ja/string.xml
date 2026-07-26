@@ -26,6 +26,7 @@
     <string name="stop_toast_text">%1$s まで有効</string>
     <string name="stop_until_screen_off">画面消灯まで有効</string>
     <string name="stopped">停止しました</string>
+    <string name="volume_adjustment_denied">音量を変更できませんでした。おやすみモードの設定を確認してください。</string>
     <string name="notification_channel_name">ステータス</string>
     <string name="notification_action_untilScreenOff">画面消灯まで有効化</string>
     <string name="notification_subtext_enabled">タップしてメニューを表示</string>
