@@ -1,11 +1,12 @@
 {
-  "name": "publisher",
+  "name": "donotspeak-scripts",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Google Play scripts for DoNotSpeak",
+  "private": true,
   "type": "module",
   "scripts": {
-    "upload": "tsx ./index.ts",
+    "upload": "tsx ./publisher/index.ts",
+    "fetch-crashes": "tsx ./play-reporting/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
