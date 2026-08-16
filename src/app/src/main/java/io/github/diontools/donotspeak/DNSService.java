@@ -20,6 +20,7 @@ import android.media.AudioPlaybackConfiguration;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.widget.Toast;
 import android.media.AudioDeviceInfo;
 
@@ -535,7 +536,13 @@ public final class DNSService extends Service {
     private void setRebootTimer() {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "setRebootTimer");
-        this.alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 60 * 60 * 1000, 60 * 60 * 1000, this.rebootIntent);
+        final long intervalMillis = AlarmManager.INTERVAL_HOUR;
+        final long firstTriggerAtMillis = SystemClock.elapsedRealtime() + intervalMillis;
+        this.alarmManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME,
+                firstTriggerAtMillis,
+                intervalMillis,
+                this.rebootIntent);
         this.notificationManager.cancel(NotificationInfo.REQUEST_CODE_REBOOT);
     }
 
