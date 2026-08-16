@@ -1,0 +1,3 @@
+interface:
+  short_description: "spec資料の分類・問題管理・計画・検証を一貫して行います"
+  default_prompt: "$manage-project-specs を使ってspec資料を管理規則に従って確認・更新してください。"
