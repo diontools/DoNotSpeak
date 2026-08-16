@@ -102,6 +102,7 @@ Bluetooth設定無効、権限説明ダイアログキャンセル、権限許�
 すべて成功した。
 権限拒否時は保存設定を維持したまま`BLUETOOTH_CONNECT permission: denied`を記録し、
 Bluetoothプロファイルの初期化を待たずに音量0へ到達することを確認した。
+同じAPI 31・36 matrixはGitHub Actions run [31940795652](https://github.com/diontools/DoNotSpeak/actions/runs/31940795652)でも成功した。
 
 実行方法とAPI 31の回帰範囲は
 [Bluetooth権限不足時のエミュレータ検証](../対応計画/AUD-003_Bluetooth権限不足時のエミュレータ検証.md)で管理する。

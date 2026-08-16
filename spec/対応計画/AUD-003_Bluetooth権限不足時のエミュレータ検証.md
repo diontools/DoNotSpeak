@@ -1,10 +1,10 @@
 ---
 title: Bluetooth権限不足時のエミュレータ検証
 type: 対応計画
-status: 検証待ち
+status: 完了
 created: 2026-08-16
 last-reviewed: 2026-08-16
-applies-to: 7e9f386
+applies-to: 3f98cf8
 related-findings:
   - AUD-003
   - AUD-008
@@ -34,9 +34,9 @@ API 31およびAPI 36のエミュレータを正本の検証環境とする。
 - `isBluetoothInitialized()`を設定値だけで判定する修正前条件へ一時的に戻すと、拒否試験が`BLUETOOTH_CONNECT permission: denied`の欠落を検出して失敗した
 - 一時的な本番コード変更は元へ戻し、`DNSService.java`にテスト由来の差分を残していない
 - GitHub ActionsのエミュレータActionはv2.38.0のrelease commit `a421e43855164a8197daf9d8d40fe71c6996bb0d`へ固定した
+- テストコミット`3f98cf8`のGitHub Actions run [31940795652](https://github.com/diontools/DoNotSpeak/actions/runs/31940795652)で、API 31・36の両ジョブと診断artifact保存が成功した
 
-ローカルのAPI 31・36検証は完了した。GitHub Actionsの初回実行結果が未確認なので、
-計画とAUD-003の状態は`検証待ち`を維持する。
+ローカルとGitHub ActionsのAPI 31・36検証が完了したため、計画を`完了`、AUD-003を`対応済み`とする。
 
 ## 目標
 
