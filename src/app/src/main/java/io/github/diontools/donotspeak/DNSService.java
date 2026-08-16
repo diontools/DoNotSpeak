@@ -1,6 +1,5 @@
 package io.github.diontools.donotspeak;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.*;
 import android.bluetooth.BluetoothA2dp;
@@ -13,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceCallback;
@@ -702,6 +700,10 @@ public final class DNSService extends Service {
         }
     }
 
+    private boolean canUseBluetooth() {
+        return this.useBluetooth && PermissionUtility.isBluetoothGranted(this);
+    }
+
     private boolean isHeadsetConnected() {
         final DiagnosticsLogger logger = Logger;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -720,7 +722,7 @@ public final class DNSService extends Service {
                     return true;
                 }
 
-                if (this.useBluetooth) {
+                if (this.canUseBluetooth()) {
                     if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
                             || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
                     ) {
@@ -740,9 +742,12 @@ public final class DNSService extends Service {
         boolean isConnectedWithoutAudio = false;
         boolean isAudioPlaying = false;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                && this.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
+        if (!this.canUseBluetooth()) {
+            if (!this.useBluetooth) {
+                if (logger != null) logger.Log(TAG, "useBluetooth: false");
+            } else {
+                if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
+            }
         } else {
             if (this.bluetoothHeadset != null) {
                 List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
@@ -785,8 +790,12 @@ public final class DNSService extends Service {
     private boolean isBluetoothInitialized() {
         DiagnosticsLogger logger = Logger;
 
-        if (!this.useBluetooth) {
-            if (logger != null) logger.Log(TAG, "useBluetooth: false");
+        if (!this.canUseBluetooth()) {
+            if (!this.useBluetooth) {
+                if (logger != null) logger.Log(TAG, "useBluetooth: false");
+            } else {
+                if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
+            }
             return true;
         }
 
