@@ -42,6 +42,10 @@ DozeやOSの一括処理によって後へ遅れる可能性がある。
 - 修正後は端末稼働時間3909秒の確認時点で`origWhen=7499085`、`repeatInterval=3600000`となり、
   現在から約59分49秒先に登録されていた
 - 修正後の登録から60秒間、`DNSReceiver.ACTION_REBOOT`が発生しないことを確認した
+- 修正後APKをコールドブートし、BOOT_COMPLETED経路で製品と同じ1時間設定を
+  `origWhen=3644818`として登録した。設定時刻を越えるまで待機し、端末稼働時間3843.7秒に実際の
+  `PendingIntent`が`DNSReceiver.ACTION_REBOOT`まで配信されることを確認した。不正確なAlarmによる
+  遅延は約199秒で、配信後の次回時刻は`origWhen=7244818`（さらに1時間後）へ更新された
 - サービスコマンドの再実行により、初回絶対時刻が`7385007`から`7499085`へ更新された
 - UIの停止確認から「停止する」を実行すると`clearRebootTimer`と`onDestroy`が記録され、
   対象Alarmと稼働サービスが残らなかった
@@ -112,6 +116,8 @@ Android 12以降でも、バッテリーセーバーやDozeの影響があれば
    約1時間先へ更新されることを確認する。
 5. 明示停止時に定期確認Alarmが取り消され、復旧通知が残らないことを確認する。
 6. Debug APKビルドとandroidTestのJavaコンパイルを成功させる。
+7. 修正後も製品と同じ1時間設定のまま初回時刻を越えるまで待機し、設定した`PendingIntent`が
+   `DNSReceiver.ACTION_REBOOT`まで実配信されることを確認する。
 
 `dumpsys alarm`の出力形式はAndroidバージョン間で安定した公開APIではないため、この確認は永続的な
 自動テストにしていない。Alarm設定境界を差し替えるサービス全体の回帰テストはAUD-008で扱う。
@@ -121,6 +127,7 @@ Android 12以降でも、バッテリーセーバーやDozeの影響があれば
 - 初回発火時刻が`SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_HOUR`で設定されている
 - `ELAPSED_REALTIME`、非Wakeup、`setInexactRepeating()`が維持されている
 - 端末稼働時間が1時間を超える修正前条件で問題を再現し、修正後に即時発火しないことを確認している
+- 修正後の製品設定で初回時刻を越えるまで待機し、`PendingIntent`の実配信と次回登録を確認している
 - Alarmの再設定と明示停止時の取消を確認している
 - ビルドとandroidTestコンパイルが成功している
 - 問題一覧と状態保存・復旧の現行資料に実装結果を反映している
