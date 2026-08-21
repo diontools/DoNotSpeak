@@ -80,7 +80,7 @@ final class PermissionUtility {
                                 .setTitle(R.string.permission_dialog_notification_denied_title)
                                 .setMessage(R.string.permission_dialog_notification_denied_message)
                                 .setPositiveButton(R.string.permission_dialog_notification_denied_positive, (dialog, which) -> {
-                                    openApplicationDetailsSettings(context);
+                                    openNotificationSettings(context);
                                     onCompleted.accept(RequestResult.None);
                                 })
                                 .setNegativeButton(R.string.permission_dialog_notification_denied_negative, (dialog, which) -> onCompleted.accept(RequestResult.Denied))
@@ -91,6 +91,17 @@ final class PermissionUtility {
         }
 
         onCompleted.accept(RequestResult.None);
+    }
+
+    public static void openNotificationSettings(Context context) {
+        Intent intent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
+        } else {
+            intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.fromParts("package", context.getPackageName(), null));
+        }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     private static void openApplicationDetailsSettings(Context context) {

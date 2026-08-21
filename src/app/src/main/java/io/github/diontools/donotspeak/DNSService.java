@@ -239,6 +239,10 @@ public final class DNSService extends Service {
                         if (logger != null) logger.Log(TAG, "Headset.ACTION_CONNECTION_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
                         DNSService.this.update();
                         break;
+                    case NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED:
+                    case NotificationManager.ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED:
+                        DNSService.this.onNotificationBlockStateChanged(intent);
+                        break;
                 }
             }
         };
@@ -252,6 +256,10 @@ public final class DNSService extends Service {
         intentFilter.addAction(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED);
         intentFilter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
         intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            intentFilter.addAction(NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED);
+            intentFilter.addAction(NotificationManager.ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED);
+        }
 
         this.registerReceiver(this.broadcastReceiver, intentFilter);
 
@@ -591,6 +599,33 @@ public final class DNSService extends Service {
 
         this.createNotification(this.muteEnabled);
         this.responseStateToTile();
+    }
+
+    private void onNotificationBlockStateChanged(Intent intent) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return;
+        }
+
+        String action = intent.getAction();
+        boolean blocked = intent.getBooleanExtra(NotificationManager.EXTRA_BLOCKED_STATE, false);
+        String channelId = intent.getStringExtra(NotificationManager.EXTRA_NOTIFICATION_CHANNEL_ID);
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "notification block state changed action:" + action + " channel:" + channelId + " blocked:" + blocked);
+        if (blocked
+            || (
+                NotificationManager.ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED.equals(action)
+                && !NotificationInfo.ID_STATUS.equals(channelId)
+            )
+        ) {
+            return;
+        }
+
+        NotificationChannel channel = this.notificationManager.getNotificationChannel(NotificationInfo.ID_STATUS);
+        if (this.notificationManager.areNotificationsEnabled()
+            && channel != null
+            && channel.getImportance() != NotificationManager.IMPORTANCE_NONE) {
+            this.createNotification(this.muteEnabled);
+        }
     }
 
     private void createNotification(boolean enabled) {

@@ -2,15 +2,19 @@ package io.github.diontools.donotspeak;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
@@ -25,8 +29,10 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
     private ItemAdapter itemAdapter;
     private CheckBox useAdjustVolumeCheckBox;
     private CheckBox restoreVolumeOnHeadphoneConnectCheckBox;
-    private CheckBox useNotificationCheckBox;
     private CheckBox useBluetoothCheckBox;
+    private View notificationSettingsSection;
+    private TextView notificationStatusTextView;
+    private Button notificationSettingsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +46,11 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         this.restoreVolumeOnHeadphoneConnectCheckBox = this.findViewById(R.id.restore_volume_on_headphone_connect_check_box);
         this.restoreVolumeOnHeadphoneConnectCheckBox.setOnCheckedChangeListener(this);
 
-        this.useNotificationCheckBox = this.findViewById(R.id.use_notification_check_box);
-        this.useNotificationCheckBox.setOnCheckedChangeListener(this);
-        this.useNotificationCheckBox.setVisibility(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? View.VISIBLE : View.GONE);
+        this.notificationSettingsSection = this.findViewById(R.id.notification_settings_section);
+        this.notificationStatusTextView = this.findViewById(R.id.notification_status_text_view);
+        this.notificationSettingsButton = this.findViewById(R.id.notification_settings_button);
+        this.notificationSettingsSection.setVisibility(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? View.VISIBLE : View.GONE);
+        this.notificationSettingsButton.setOnClickListener(view -> this.onNotificationSettingsClicked());
 
         this.useBluetoothCheckBox = this.findViewById(R.id.use_bluetooth_check_box);
         this.useBluetoothCheckBox.setOnCheckedChangeListener(this);
@@ -59,13 +67,62 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         this.loadSettings();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.refreshNotificationSettings();
+    }
+
     private void loadSettings()
     {
         this.useAdjustVolumeCheckBox.setChecked(DNSSetting.getUseAdjustVolume(this));
         this.restoreVolumeOnHeadphoneConnectCheckBox.setChecked(DNSSetting.getRestoreVolumeOnHeadphoneConnect(this));
-        this.useNotificationCheckBox.setChecked(DNSSetting.getUseNotification(this));
         this.useBluetoothCheckBox.setChecked(DNSSetting.getUseBluetooth(this));
         this.refreshListItems();
+    }
+
+    private void onNotificationSettingsClicked() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
+        if (PermissionUtility.isPostNotificationsGranted(this)) {
+            PermissionUtility.openNotificationSettings(this);
+            return;
+        }
+
+        DNSSetting.setUseNotification(this, true);
+        PermissionUtility.requestPostNotificationsPermissionIfRequired(this, result -> {
+            switch (result) {
+                case Granted:
+                    DNSSetting.setUseNotification(this, true);
+                    break;
+                case Denied:
+                    DNSSetting.setUseNotification(this, false);
+                    break;
+            }
+            this.refreshNotificationSettings();
+        });
+    }
+
+    private void refreshNotificationSettings() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return;
+        NotificationManager notificationManager = Compat.getSystemService(this, NotificationManager.class);
+        String unavailable = this.getString(R.string.settings_notification_state_unavailable);
+        String appState = unavailable;
+        String statusChannelState = unavailable;
+        String rebootChannelState = unavailable;
+        if (notificationManager != null) {
+            appState = this.getString(notificationManager.areNotificationsEnabled() ? R.string.settings_notification_state_enabled : R.string.settings_notification_state_disabled);
+            statusChannelState = this.getNotificationChannelState(notificationManager, NotificationInfo.ID_STATUS);
+            rebootChannelState = this.getNotificationChannelState(notificationManager, NotificationInfo.ID_REBOOT);
+        }
+        this.notificationStatusTextView.setText(this.getString(R.string.settings_notification_status, appState, statusChannelState, rebootChannelState));
+        this.notificationSettingsButton.setText(PermissionUtility.isPostNotificationsGranted(this) ? R.string.settings_notification_open_settings : R.string.settings_notification_allow);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private String getNotificationChannelState(NotificationManager notificationManager, String channelId) {
+        NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
+        if (channel == null) return this.getString(R.string.settings_notification_state_not_created);
+        return this.getString(channel.getImportance() == NotificationManager.IMPORTANCE_NONE ? R.string.settings_notification_state_disabled : R.string.settings_notification_state_enabled);
     }
 
     private void refreshListItems()
@@ -117,20 +174,6 @@ public class SettingActivity extends Activity implements AdapterView.OnItemClick
         } else if (id == R.id.restore_volume_on_headphone_connect_check_box) {
             DNSSetting.setRestoreVolumeOnHeadphoneConnect(this, isChecked);
             IntentUtility.applySettings(this);
-        } else if (id == R.id.use_notification_check_box) {
-            if (DNSSetting.getUseNotification(this) != isChecked) {
-                DNSSetting.setUseNotification(this, isChecked);
-                if (isChecked) {
-                    PermissionUtility.requestPostNotificationsPermissionIfRequired(
-                            this,
-                            result -> {
-                                DNSSetting.setUseNotification(this, PermissionUtility.isPostNotificationsGranted(this));
-                                IntentUtility.applySettings(this);
-                                this.loadSettings();
-                            }
-                    );
-                }
-            }
         } else if (id == R.id.use_bluetooth_check_box) {
             if (DNSSetting.getUseBluetooth(this) != isChecked) {
                 DNSSetting.setUseBluetooth(this, isChecked);

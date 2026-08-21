@@ -3,8 +3,8 @@ title: 対応Androidバージョン
 type: 互換性
 status: 有効
 created: 2026-08-16
-last-reviewed: 2026-08-16
-applies-to: d66b892
+last-reviewed: 2026-08-22
+applies-to: 2eb5630
 ---
 
 # 対応Androidバージョン
@@ -26,6 +26,7 @@ API 21対応を維持する理由と影響は[ADR-0001](../設計判断/ADR-0001
 
 - API 21～25: `startService()`を使用する
 - API 26以降: `startForegroundService()`と通知チャンネルを使用する
+- API 28以降: アプリ通知と通知チャンネルのブロック状態変更Broadcastを受信する
 - API 24以降: Quick Settings Tileを提供する
 - API 31以降: `BLUETOOTH_CONNECT`を実行時に確認する
 - API 33以降: `POST_NOTIFICATIONS`を実行時に確認する
@@ -43,4 +44,3 @@ API 21対応を維持する理由と影響は[ADR-0001](../設計判断/ADR-0001
 
 詳細なビルド制約は[ビルド設定](../品質管理/ビルド.md)、API 36対応履歴は
 [Android 16対応](Android16対応.md)を参照する。
-
