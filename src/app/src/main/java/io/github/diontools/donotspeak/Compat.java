@@ -21,6 +21,11 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 
 final class Compat {
+    // AUD-007 negative CI probe: intentionally unguarded API 31 call.
+    private static void lintFailureProbe(Context context) {
+        context.getAttributionSource();
+    }
+
     static void startForegroundService(Context context, Intent intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
