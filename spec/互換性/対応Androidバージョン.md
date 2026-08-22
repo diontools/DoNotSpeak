@@ -4,7 +4,7 @@ type: 互換性
 status: 有効
 created: 2026-08-16
 last-reviewed: 2026-08-22
-applies-to: ca84f8b
+applies-to: 9914846
 ---
 
 # 対応Androidバージョン

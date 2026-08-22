@@ -4,7 +4,7 @@ type: 対応計画
 status: 検証待ち
 created: 2026-08-22
 last-reviewed: 2026-08-22
-applies-to: ca84f8b
+applies-to: 9914846
 related-findings:
   - AUD-007
 ---
@@ -138,9 +138,17 @@ Debugビルド検証全体を失敗させ、レポートartifactは保存しな�
   終了コードでビルド検証の失敗として扱う
 - workflow追加後にローカルで`lintDebug assembleDebug`を実行し、0 errors / 33 warningsで
   LintとDebug APKビルドが成功することを確認した
-- workflowのYAML構文と、PR・push対象、Gradleコマンド、artifact非使用の構造を検証した。
-  GitHub Actions上の成功実行と意図的なLintエラーによる
-  ジョブ失敗はコミットとpush後の検証を待つ
+- workflowのYAML構文と、PR・push対象、Gradleコマンド、artifact非使用の構造を検証した
+- 実装コミット`9914846`の`dev`へのpushでGitHub Actions
+  [Android Build Check run 32567063064](https://github.com/diontools/DoNotSpeak/actions/runs/32567063064)が起動し、
+  `lintDebug assembleDebug`が成功した
+- 同じpushの[Android CI run 32567063043](https://github.com/diontools/DoNotSpeak/actions/runs/32567063043)が
+  成功した
+- 同じpushの[Android Emulator Tests run 32567063052](https://github.com/diontools/DoNotSpeak/actions/runs/32567063052)は、
+  初回のAPI 36ジョブで`pm clear`後の`BOOT_COMPLETED`とテスト開始が競合し、
+  `ForegroundServiceDidNotStartInTimeException`により失敗した。失敗ジョブの再実行では
+  API 31・36の両ジョブが成功し、最終runは成功した
+- GitHub Actions上で意図的なLintエラーを含むコミットを実行し、ジョブが失敗することの確認は残る
 
 ## 検証計画
 
