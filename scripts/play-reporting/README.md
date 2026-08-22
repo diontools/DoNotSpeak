@@ -38,10 +38,10 @@ npm ci
 npm run fetch-crashes
 ```
 
-直近7日間のクラッシュとANRを versionCode 91 に限定:
+直近7日間のクラッシュとANRを versionCode 92 に限定:
 
 ```sh
-npm run fetch-crashes -- --hours 168 --type CRASH,ANR --version-code 91
+npm run fetch-crashes -- --hours 168 --type CRASH,ANR --version-code 92
 ```
 
 JSONにも保存:
