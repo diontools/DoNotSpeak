@@ -1,5 +1,6 @@
 package io.github.diontools.donotspeak;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -113,7 +114,14 @@ final class Compat {
                     )
             );
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            tileService.startActivityAndCollapse(intent);
+            startActivityAndCollapseApi24(tileService, intent);
         }
+    }
+
+    @SuppressLint("StartActivityAndCollapseDeprecated")
+    @SuppressWarnings("deprecation")
+    @RequiresApi(Build.VERSION_CODES.N)
+    private static void startActivityAndCollapseApi24(TileService tileService, Intent intent) {
+        tileService.startActivityAndCollapse(intent);
     }
 }

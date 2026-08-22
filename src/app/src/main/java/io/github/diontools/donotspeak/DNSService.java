@@ -791,36 +791,41 @@ public final class DNSService extends Service {
                 if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
             }
         } else {
-            if (this.bluetoothHeadset != null) {
-                List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
-                for (BluetoothDevice device : devices) {
-                    boolean isAudioConnected = this.bluetoothHeadset.isAudioConnected(device);
-                    if (logger != null) logger.Log(TAG, "headset: " + device.getName() + " " + device.getAddress() + " isAudioConnected: " + isAudioConnected);
-                    if (isAudioConnected) isAudioPlaying = true;
-                    if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
-                        if (isAudioConnected) {
-                            if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
-                            return true;
+            try {
+                if (this.bluetoothHeadset != null) {
+                    List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
+                    for (BluetoothDevice device : devices) {
+                        boolean isAudioConnected = this.bluetoothHeadset.isAudioConnected(device);
+                        if (logger != null) logger.Log(TAG, "headset: " + device.getName() + " " + device.getAddress() + " isAudioConnected: " + isAudioConnected);
+                        if (isAudioConnected) isAudioPlaying = true;
+                        if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                            if (isAudioConnected) {
+                                if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                                return true;
+                            }
+                            isConnectedWithoutAudio = true;
                         }
-                        isConnectedWithoutAudio = true;
                     }
                 }
-            }
 
-            if (this.bluetoothA2dp != null) {
-                List<BluetoothDevice> devices = this.bluetoothA2dp.getConnectedDevices();
-                for (BluetoothDevice device : devices) {
-                    boolean isA2dpPlaying = this.bluetoothA2dp.isA2dpPlaying(device);
-                    if (logger != null) logger.Log(TAG, "a2dp: " + device.getName() + " " + device.getAddress() + " isA2dpPlaying: " + isA2dpPlaying);
-                    if (isA2dpPlaying) isAudioPlaying = true;
-                    if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
-                        if (isA2dpPlaying) {
-                            if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
-                            return true;
+                if (this.bluetoothA2dp != null) {
+                    List<BluetoothDevice> devices = this.bluetoothA2dp.getConnectedDevices();
+                    for (BluetoothDevice device : devices) {
+                        boolean isA2dpPlaying = this.bluetoothA2dp.isA2dpPlaying(device);
+                        if (logger != null) logger.Log(TAG, "a2dp: " + device.getName() + " " + device.getAddress() + " isA2dpPlaying: " + isA2dpPlaying);
+                        if (isA2dpPlaying) isAudioPlaying = true;
+                        if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                            if (isA2dpPlaying) {
+                                if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                                return true;
+                            }
+                            isConnectedWithoutAudio = true;
                         }
-                        isConnectedWithoutAudio = true;
                     }
                 }
+            } catch (SecurityException ex) {
+                if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied during device query: " + ex);
+                return false;
             }
         }
 
