@@ -1,7 +1,7 @@
 ---
 title: Lint品質ゲート整備
 type: 対応計画
-status: 検証待ち
+status: 完了
 created: 2026-08-22
 last-reviewed: 2026-08-22
 applies-to: 9914846
@@ -148,7 +148,11 @@ Debugビルド検証全体を失敗させ、レポートartifactは保存しな�
   初回のAPI 36ジョブで`pm clear`後の`BOOT_COMPLETED`とテスト開始が競合し、
   `ForegroundServiceDidNotStartInTimeException`により失敗した。失敗ジョブの再実行では
   API 31・36の両ジョブが成功し、最終runは成功した
-- GitHub Actions上で意図的なLintエラーを含むコミットを実行し、ジョブが失敗することの確認は残る
+- 一時PR [#45](https://github.com/diontools/DoNotSpeak/pull/45)で、API 31の
+  `Context.getAttributionSource()`を無条件に呼ぶ検証用コミット`13ffa51`を実行した
+- [Android Build Check run 32568469636](https://github.com/diontools/DoNotSpeak/actions/runs/32568469636)は
+  `NewApi` 1 error / 34 warningsを検出し、`:app:lintDebug`が終了コード1で失敗した
+- 負試験後は一時PRをマージせず閉じ、ローカルとリモートの検証用ブランチを削除した
 
 ## 検証計画
 
