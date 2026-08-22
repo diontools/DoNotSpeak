@@ -9,7 +9,8 @@
 | ファイル | 内容 |
 | --- | --- |
 | `index.ts` | 本体。単一ファイル |
-| `settings.json` | アップロード先の設定 |
+| `../settings.json` | アプリID。Play用スクリプトの共通設定 |
+| `settings.json` | トラック、AAB、リリースノートの設定 |
 | `credentials.json` | サービスアカウントの鍵。gitignore 対象 |
 | `bundletool.jar` | 実行時にダウンロードされる。gitignore 対象 |
 
@@ -17,14 +18,13 @@
 
 | キー | 値 |
 | --- | --- |
-| `applicationId` | `io.github.diontools.donotspeak` |
 | `track` | `internal`。Play Console 側に存在するトラック名と一致する必要がある |
 | `releaseFilePath` | AAB のパス（このディレクトリからの相対） |
-| `releaseNotesDir` | `../release-notes`。`<言語>-<地域>.txt` のみを読む（`ja-JP.txt` / `en-US.txt`） |
+| `releaseNotesDir` | `../../release-notes`。`<言語>-<地域>.txt` のみを読む（`ja-JP.txt` / `en-US.txt`） |
 
 ## 処理の流れ
 
-1. `settings.json` と `credentials.json` を読む
+1. 共通の `../settings.json`、固有の `settings.json`、`credentials.json` を読む
 2. AAB の sha256 を計算し、`release-notes/` からリリースノートを読む
 3. bundletool をダウンロードし、AAB の manifest から `versionCode` / `versionName` を取り出す
 4. edit を開始し、トラックの存在を確認する
@@ -51,11 +51,11 @@
 CI 専用だが、手元でも動かせる。Play に対して実際に書き込むので注意。
 
 ```sh
-cd publisher
+cd scripts
 npm ci
 # Google Cloud のサービスアカウント鍵を配置する
-cp <ダウンロードした鍵>.json credentials.json
-# ../src/app/build/outputs/bundle/release/app-release.aab が必要
+cp <ダウンロードした鍵>.json publisher/credentials.json
+# ../../src/app/build/outputs/bundle/release/app-release.aab が必要
 npm run upload
 ```
 
@@ -81,5 +81,5 @@ HTTP クライアントは Node 組み込みの fetch を使うため、`node-fe
 
   の 2 点が起きるため、上位バージョンに寄せている。`googleapis-common` が固定を緩めたら
   削除してよい。
-- **bundletool**: バージョンを `index.ts` にハードコードしている。AGP を上げて AAB の
+- **bundletool**: バージョンを `publisher/index.ts` にハードコードしている。AGP を上げて AAB の
   形式が変わると `dump manifest` に失敗しうるので、その際は追従する。

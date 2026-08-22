@@ -26,6 +26,7 @@
     <string name="stop_toast_text">Speak until %1$s</string>
     <string name="stop_until_screen_off">Speak until screen off</string>
     <string name="stopped">Stopped</string>
+    <string name="volume_adjustment_denied">Unable to change the volume. Check the Do Not Disturb settings.</string>
     <string name="notification_channel_name">Status</string>
     <string name="notification_action_untilScreenOff">Enable Until Screen Off</string>
     <string name="notification_subtext_enabled">Tap to show menu</string>
@@ -57,7 +58,14 @@
     <string name="settings_use_adjust_volume_description">Workaround for ColorOS (OPPO / Realme device) limitation</string>
     <string name="settings_restore_volume_on_headphone_connect">Restore volume on headphone connect</string>
     <string name="settings_restore_volume_on_headphone_connect_description">Automatically restore volume level when headphones are connected. Use only when the OS does not automatically restore volume</string>
-    <string name="settings_use_notification">Use Notification</string>
+    <string name="settings_notification_settings">Notifications</string>
+    <string name="settings_notification_status">App notifications: %1$s\nStatus channel: %2$s\nRecovery channel: %3$s</string>
+    <string name="settings_notification_state_enabled">Enabled</string>
+    <string name="settings_notification_state_disabled">Disabled</string>
+    <string name="settings_notification_state_not_created">Not created</string>
+    <string name="settings_notification_state_unavailable">Unavailable</string>
+    <string name="settings_notification_allow">Allow notifications</string>
+    <string name="settings_notification_open_settings">Open notification settings</string>
     <string name="settings_bluetooth_settings">Bluetooth Settings</string>
     <string name="settings_use_bluetooth">Use Bluetooth</string>
     <string name="settings_message">Select the device you want to treat as an earphone.</string>

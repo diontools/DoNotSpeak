@@ -1,0 +1,55 @@
+name: Android Build Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+defaults:
+  run:
+    working-directory: src
+
+jobs:
+  build-check:
+    name: Debug build and Lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: jetbrains
+          java-version: 21
+          cache: gradle
+
+      # Debug builds do not sign an APK, but app/build.gradle loads these properties
+      # while configuring every variant.
+      - name: Generate local.properties
+        run: |
+          touch unused.keystore
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "KEYSTORE=../unused.keystore" >> local.properties
+          echo "STORE_PASSWORD=unused" >> local.properties
+          echo "KEY_ALIAS=unused" >> local.properties
+          echo "KEY_PASSWORD=unused" >> local.properties
+
+      # src/gradlew is stored as 100644 in Git.
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build and run Android Lint
+        run: ./gradlew lintDebug assembleDebug

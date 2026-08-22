@@ -11,18 +11,26 @@ console.log('publishing started')
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 interface Settings {
-    applicationId: string
     track: string
     releaseFilePath: string
     releaseNotesDir: string
 }
 
+interface CommonSettings {
+    applicationId: string
+}
+
 const runner = async () => {
-    // load settings
+    // load common settings
+    const commonSettingsFile = path.resolve(__dirname, '../settings.json')
+    const commonSettingsJson = fs.readFileSync(commonSettingsFile).toString()
+    const commonSettings = JSON.parse(commonSettingsJson) as CommonSettings
+
+    // load publisher settings
     const settingsFile = path.resolve(__dirname, 'settings.json')
     const settingsJson = fs.readFileSync(settingsFile).toString()
     const settings = JSON.parse(settingsJson) as Settings
-    console.log('settings', settings)
+    console.log('settings', { ...commonSettings, ...settings })
 
     // load credentials
     const credentialsFile = path.resolve(__dirname, 'credentials.json')
@@ -83,7 +91,7 @@ const runner = async () => {
     // start edit
     console.log('start edit')
     const appEdit = await publisher.edits.insert({
-        packageName: settings.applicationId,
+        packageName: commonSettings.applicationId,
     })
     const appEditId = appEdit.data.id!
     console.log('appEditId', appEditId)
@@ -92,7 +100,7 @@ const runner = async () => {
     console.log('validate track')
     const trackList = (await publisher.edits.tracks.list({
         editId: appEditId,
-        packageName: settings.applicationId,
+        packageName: commonSettings.applicationId,
     })).data.tracks
     trackList?.forEach(t => console.log(JSON.stringify(t, undefined, 4)))
     const targetTrack = trackList?.find(track => track.track === settings.track)
@@ -104,7 +112,7 @@ const runner = async () => {
     console.log('get uploaded bundle list')
     const bundleList = (await publisher.edits.bundles.list({
         editId: appEditId,
-        packageName: settings.applicationId,
+        packageName: commonSettings.applicationId,
     })).data
     const uploadedBundle = bundleList.bundles?.find(bundle => bundle.versionCode === currentVersionCode)
     console.log('uploadedBundle', uploadedBundle)
@@ -120,7 +128,7 @@ const runner = async () => {
         console.log('patch track', `status: ${status}`)
         await publisher.edits.tracks.patch({
             editId: appEditId,
-            packageName: settings.applicationId,
+            packageName: commonSettings.applicationId,
             track: settings.track,
             requestBody: {
                 track: settings.track,
@@ -138,7 +146,7 @@ const runner = async () => {
         // upload aab file
         console.log('upload aab file')
         const bundle = (await publisher.edits.bundles.upload({
-            packageName: settings.applicationId,
+            packageName: commonSettings.applicationId,
             editId: appEditId,
             media: {
                 mimeType: 'application/octet-stream',
@@ -157,7 +165,7 @@ const runner = async () => {
         console.log('update track')
         await publisher.edits.tracks.update({
             editId: appEditId,
-            packageName: settings.applicationId,
+            packageName: commonSettings.applicationId,
             track: settings.track,
             requestBody: {
                 track: settings.track,
@@ -177,7 +185,7 @@ const runner = async () => {
     console.log('commit')
     const committed = await publisher.edits.commit({
         editId: appEditId,
-        packageName: settings.applicationId,
+        packageName: commonSettings.applicationId,
     })
 
     if (!committed.data.id) throw `commit failed: ${committed.statusText}`

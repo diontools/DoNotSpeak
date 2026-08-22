@@ -1,3 +1,12 @@
+---
+title: Android 16対応
+type: 互換性
+status: 完了
+created: 2026-07-26
+last-reviewed: 2026-08-16
+applies-to: d66b892
+---
+
 # Android 16 (API 36) 対応
 
 targetSdk を 35 → 36 に上げるための調査結果と作業計画。
@@ -60,7 +69,7 @@ inset を自前で処理する。
 1. `versionCode` を 91 に上げ、`compileSdk` / `targetSdk` を 36 に変更して
    ビルドが通ることを確認する
 2. エッジツーエッジ対応（テーマ修正・`Compat` に inset ヘルパー追加・レイアウト適用）
-3. **API 21 エミュレータでの回帰確認**。`spec/build.md` の手順で `classes4.dex` のサイズと
+3. **API 21 エミュレータでの回帰確認**。[ビルド設定](../品質管理/ビルド.md)の手順で `classes4.dex` のサイズと
    `adb install` の成否を必ず見る。compileSdk を上げると D8 の API modeling 抑止が
    効かなくなる可能性があるため、この確認を省略しない
 4. Android 16 (`Pixel_9_API_36_Android_16`) で 3 画面（メインダイアログ / 設定 / 診断）を
@@ -84,4 +93,16 @@ inset を自前で処理する。
 ## 検証方法
 
 対応前後の画面比較と今後の出荷前テストのため、エミュレータ起動・画面遷移・
-スクリーンショット取得を自動化する。詳細は `spec/screenshot-test.md` を参照。
+スクリーンショット取得を自動化する。詳細は[スクリーンショットテスト](../品質管理/スクリーンショットテスト.md)を参照。
+
+## Bluetooth権限回帰
+
+API 36の`Pixel_9_API_36_Android_16`とAPI 31の`DoNotSpeak_API_31`で、Bluetooth権限拒否、
+Bluetooth設定無効、権限説明ダイアログキャンセル、権限許可の4つのandroidTestを各3回連続実行し、
+すべて成功した。
+権限拒否時は保存設定を維持したまま`BLUETOOTH_CONNECT permission: denied`を記録し、
+Bluetoothプロファイルの初期化を待たずに音量0へ到達することを確認した。
+同じAPI 31・36 matrixはGitHub Actions run [31940795652](https://github.com/diontools/DoNotSpeak/actions/runs/31940795652)でも成功した。
+
+実行方法とAPI 31の回帰範囲は
+[Bluetooth権限不足時のエミュレータ検証](../対応計画/AUD-003_Bluetooth権限不足時のエミュレータ検証.md)で管理する。

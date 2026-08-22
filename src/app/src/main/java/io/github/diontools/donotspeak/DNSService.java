@@ -1,6 +1,5 @@
 package io.github.diontools.donotspeak;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.*;
 import android.bluetooth.BluetoothA2dp;
@@ -13,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceCallback;
@@ -22,6 +20,7 @@ import android.media.AudioPlaybackConfiguration;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.widget.Toast;
 import android.media.AudioDeviceInfo;
 
@@ -240,6 +239,10 @@ public final class DNSService extends Service {
                         if (logger != null) logger.Log(TAG, "Headset.ACTION_CONNECTION_STATE_CHANGED " + intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) + " " + intent.getIntExtra(BluetoothProfile.EXTRA_PREVIOUS_STATE, -1) + " -> " + intent.getIntExtra(BluetoothProfile.EXTRA_STATE, -1));
                         DNSService.this.update();
                         break;
+                    case NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED:
+                    case NotificationManager.ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED:
+                        DNSService.this.onNotificationBlockStateChanged(intent);
+                        break;
                 }
             }
         };
@@ -253,6 +256,10 @@ public final class DNSService extends Service {
         intentFilter.addAction(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED);
         intentFilter.addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED);
         intentFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            intentFilter.addAction(NotificationManager.ACTION_APP_BLOCK_STATE_CHANGED);
+            intentFilter.addAction(NotificationManager.ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED);
+        }
 
         this.registerReceiver(this.broadcastReceiver, intentFilter);
 
@@ -537,7 +544,13 @@ public final class DNSService extends Service {
     private void setRebootTimer() {
         DiagnosticsLogger logger = Logger;
         if (logger != null) logger.Log(TAG, "setRebootTimer");
-        this.alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 60 * 60 * 1000, 60 * 60 * 1000, this.rebootIntent);
+        final long intervalMillis = AlarmManager.INTERVAL_HOUR;
+        final long firstTriggerAtMillis = SystemClock.elapsedRealtime() + intervalMillis;
+        this.alarmManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME,
+                firstTriggerAtMillis,
+                intervalMillis,
+                this.rebootIntent);
         this.notificationManager.cancel(NotificationInfo.REQUEST_CODE_REBOOT);
     }
 
@@ -586,6 +599,33 @@ public final class DNSService extends Service {
 
         this.createNotification(this.muteEnabled);
         this.responseStateToTile();
+    }
+
+    private void onNotificationBlockStateChanged(Intent intent) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return;
+        }
+
+        String action = intent.getAction();
+        boolean blocked = intent.getBooleanExtra(NotificationManager.EXTRA_BLOCKED_STATE, false);
+        String channelId = intent.getStringExtra(NotificationManager.EXTRA_NOTIFICATION_CHANNEL_ID);
+        DiagnosticsLogger logger = Logger;
+        if (logger != null) logger.Log(TAG, "notification block state changed action:" + action + " channel:" + channelId + " blocked:" + blocked);
+        if (blocked
+            || (
+                NotificationManager.ACTION_NOTIFICATION_CHANNEL_BLOCK_STATE_CHANGED.equals(action)
+                && !NotificationInfo.ID_STATUS.equals(channelId)
+            )
+        ) {
+            return;
+        }
+
+        NotificationChannel channel = this.notificationManager.getNotificationChannel(NotificationInfo.ID_STATUS);
+        if (this.notificationManager.areNotificationsEnabled()
+            && channel != null
+            && channel.getImportance() != NotificationManager.IMPORTANCE_NONE) {
+            this.createNotification(this.muteEnabled);
+        }
     }
 
     private void createNotification(boolean enabled) {
@@ -666,35 +706,44 @@ public final class DNSService extends Service {
             return;
         }
 
-        if (useAdjustVolume) {
-            try {
-                this.volumeAdjusting = true;
-                for (int failSafeLoopCount = 0; failSafeLoopCount < 50; failSafeLoopCount++) {
-                    int currentVolume = this.getCurrentVolume();
-                    if (logger != null) logger.Log(TAG, "volume current: " + currentVolume + " target: " + targetVolume);
-                    if (currentVolume == targetVolume) {
-                        break;
-                    }
+        try {
+            if (useAdjustVolume) {
+                try {
+                    this.volumeAdjusting = true;
+                    for (int failSafeLoopCount = 0; failSafeLoopCount < 50; failSafeLoopCount++) {
+                        int currentVolume = this.getCurrentVolume();
+                        if (logger != null) logger.Log(TAG, "volume current: " + currentVolume + " target: " + targetVolume);
+                        if (currentVolume == targetVolume) {
+                            break;
+                        }
 
-                    if (currentVolume > targetVolume) {
-                        if (logger != null) logger.Log(TAG, "adjust lower volume");
-                        this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, flags);
-                    } else {
-                        if (logger != null) logger.Log(TAG, "adjust raise volume");
-                        this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, flags);
+                        if (currentVolume > targetVolume) {
+                            if (logger != null) logger.Log(TAG, "adjust lower volume");
+                            this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, flags);
+                        } else {
+                            if (logger != null) logger.Log(TAG, "adjust raise volume");
+                            this.audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, flags);
+                        }
                     }
+                } finally {
+                    this.volumeAdjusting = false;
                 }
-            } finally {
-                this.volumeAdjusting = false;
+            } else {
+                int currentVolume = this.getCurrentVolume();
+                if (currentVolume != targetVolume) {
+                    if (logger != null) logger.Log(TAG, "set volume: " + targetVolume);
+                    this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, flags);
+                    if (logger != null) logger.Log(TAG, "volume: " + this.getCurrentVolume());
+                }
             }
-        } else {
-            int currentVolume = this.getCurrentVolume();
-            if (currentVolume != targetVolume) {
-                if (logger != null) logger.Log(TAG, "set volume: " + targetVolume);
-                this.audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, flags);
-                if (logger != null) logger.Log(TAG, "volume: " + this.getCurrentVolume());
-            }
+        } catch (SecurityException ex) {
+            if (logger != null) logger.Log(TAG, "Volume adjustment denied: " + ex);
+            Toast.makeText(this, R.string.volume_adjustment_denied, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private boolean canUseBluetooth() {
+        return this.useBluetooth && PermissionUtility.isBluetoothGranted(this);
     }
 
     private boolean isHeadsetConnected() {
@@ -715,7 +764,7 @@ public final class DNSService extends Service {
                     return true;
                 }
 
-                if (this.useBluetooth) {
+                if (this.canUseBluetooth()) {
                     if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
                             || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
                     ) {
@@ -735,40 +784,48 @@ public final class DNSService extends Service {
         boolean isConnectedWithoutAudio = false;
         boolean isAudioPlaying = false;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-                && this.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
-        } else {
-            if (this.bluetoothHeadset != null) {
-                List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
-                for (BluetoothDevice device : devices) {
-                    boolean isAudioConnected = this.bluetoothHeadset.isAudioConnected(device);
-                    if (logger != null) logger.Log(TAG, "headset: " + device.getName() + " " + device.getAddress() + " isAudioConnected: " + isAudioConnected);
-                    if (isAudioConnected) isAudioPlaying = true;
-                    if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
-                        if (isAudioConnected) {
-                            if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
-                            return true;
-                        }
-                        isConnectedWithoutAudio = true;
-                    }
-                }
+        if (!this.canUseBluetooth()) {
+            if (!this.useBluetooth) {
+                if (logger != null) logger.Log(TAG, "useBluetooth: false");
+            } else {
+                if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
             }
-
-            if (this.bluetoothA2dp != null) {
-                List<BluetoothDevice> devices = this.bluetoothA2dp.getConnectedDevices();
-                for (BluetoothDevice device : devices) {
-                    boolean isA2dpPlaying = this.bluetoothA2dp.isA2dpPlaying(device);
-                    if (logger != null) logger.Log(TAG, "a2dp: " + device.getName() + " " + device.getAddress() + " isA2dpPlaying: " + isA2dpPlaying);
-                    if (isA2dpPlaying) isAudioPlaying = true;
-                    if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
-                        if (isA2dpPlaying) {
-                            if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
-                            return true;
+        } else {
+            try {
+                if (this.bluetoothHeadset != null) {
+                    List<BluetoothDevice> devices = this.bluetoothHeadset.getConnectedDevices();
+                    for (BluetoothDevice device : devices) {
+                        boolean isAudioConnected = this.bluetoothHeadset.isAudioConnected(device);
+                        if (logger != null) logger.Log(TAG, "headset: " + device.getName() + " " + device.getAddress() + " isAudioConnected: " + isAudioConnected);
+                        if (isAudioConnected) isAudioPlaying = true;
+                        if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                            if (isAudioConnected) {
+                                if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                                return true;
+                            }
+                            isConnectedWithoutAudio = true;
                         }
-                        isConnectedWithoutAudio = true;
                     }
                 }
+
+                if (this.bluetoothA2dp != null) {
+                    List<BluetoothDevice> devices = this.bluetoothA2dp.getConnectedDevices();
+                    for (BluetoothDevice device : devices) {
+                        boolean isA2dpPlaying = this.bluetoothA2dp.isA2dpPlaying(device);
+                        if (logger != null) logger.Log(TAG, "a2dp: " + device.getName() + " " + device.getAddress() + " isA2dpPlaying: " + isA2dpPlaying);
+                        if (isA2dpPlaying) isAudioPlaying = true;
+                        if (this.bluetoothHeadsetAddresses.contains(device.getAddress())) {
+                            if (isA2dpPlaying) {
+                                if (logger != null) logger.Log(TAG, "Bluetooth headset detected");
+                                return true;
+                            }
+                            isConnectedWithoutAudio = true;
+                        }
+                    }
+                }
+            } catch (SecurityException ex) {
+                if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied during device query: " + ex);
+                return false;
             }
         }
 
@@ -780,8 +837,12 @@ public final class DNSService extends Service {
     private boolean isBluetoothInitialized() {
         DiagnosticsLogger logger = Logger;
 
-        if (!this.useBluetooth) {
-            if (logger != null) logger.Log(TAG, "useBluetooth: false");
+        if (!this.canUseBluetooth()) {
+            if (!this.useBluetooth) {
+                if (logger != null) logger.Log(TAG, "useBluetooth: false");
+            } else {
+                if (logger != null) logger.Log(TAG, "BLUETOOTH_CONNECT permission: denied");
+            }
             return true;
         }
 

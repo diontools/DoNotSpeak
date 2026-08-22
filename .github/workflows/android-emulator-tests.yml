@@ -1,0 +1,82 @@
+name: Android Emulator Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  bluetooth-permission:
+    name: Bluetooth permission (API ${{ matrix.api-level }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level:
+          - 31
+          - 36
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: jetbrains
+          java-version: 21
+          cache: gradle
+
+      - name: Generate local.properties
+        working-directory: src
+        run: |
+          touch unused.keystore
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "KEYSTORE=../unused.keystore" >> local.properties
+          echo "STORE_PASSWORD=unused" >> local.properties
+          echo "KEY_ALIAS=unused" >> local.properties
+          echo "KEY_PASSWORD=unused" >> local.properties
+
+      - name: Make scripts executable
+        run: |
+          chmod +x src/gradlew
+          chmod +x scripts/android/run-bluetooth-permission-tests.sh
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # v2.38.0, pinned to the release commit.
+      - name: Run Bluetooth permission tests
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          working-directory: src
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ../scripts/android/run-bluetooth-permission-tests.sh "emulator-${EMULATOR_PORT}"
+
+      - name: Upload emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bluetooth-permission-api-${{ matrix.api-level }}
+          path: src/build/reports/bluetooth-permission-tests
+          if-no-files-found: warn

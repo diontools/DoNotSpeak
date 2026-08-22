@@ -1,0 +1,5 @@
+{
+    "track": "internal",
+    "releaseFilePath": "../../src/app/build/outputs/bundle/release/app-release.aab",
+    "releaseNotesDir": "../../release-notes"
+}

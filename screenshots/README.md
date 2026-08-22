@@ -1,7 +1,7 @@
 # スクリーンショット
 
 `src/app/src/androidTest/` のスクリーンショットテストで取得した画面。
-撮影方法と制約は `spec/screenshot-test.md` を参照。
+撮影方法と制約は[スクリーンショットテスト](../spec/品質管理/スクリーンショットテスト.md)を参照。
 
 ## 構成
 
@@ -23,10 +23,10 @@ screenshots/<versionCode>/api<SDK>/<画面>-<ロケール>-<ナビゲーショ�
 | テーマ | `light` / `dark`（API 29 未満は `default`） |
 
 ナビゲーションとテーマの全組み合わせを撮るのは `ja` のみ。`en` は端末の初期状態である
-`gestural-light` だけ撮る。理由は `spec/screenshot-test.md` を参照。
+`gestural-light` だけ撮る。理由は[スクリーンショットテスト](../spec/品質管理/スクリーンショットテスト.md)を参照。
 
 API 33 未満（api26 / api21）はアプリ単位のロケール切替ができないため、AVD 自体を
-日本語に設定して撮っている。設定手順は `spec/screenshot-test.md` を参照。
+日本語に設定して撮っている。設定手順は[スクリーンショットテスト](../spec/品質管理/スクリーンショットテスト.md)を参照。
 
 ## 用途
 

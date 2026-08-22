@@ -1,13 +1,8 @@
-v1.11.0 2026/07/26
+v1.11.0 2026/08/23
 Support Android 16
 Improve the enable speaker dialog ("Until Screen Off" moved into the duration options, options are now collapsible)
 Restore the previously selected duration
-
-v1.10.0 2025/08/31
-Support Android 15
-Add "Stop this app" shortcut
-Add "Support Developer" link
-Add "restore volume on headphone connect" setting
-Add "Show Menu" button to notification when speaker is enabled
+Show OS notification status and provide notification settings shortcuts
+Fix volume adjustment, Bluetooth permission, and periodic startup check issues
 
 Details (japanese): https://github.com/diontools/DoNotSpeak/blob/master/CHANGELOG.md

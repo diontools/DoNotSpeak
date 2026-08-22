@@ -46,17 +46,40 @@
             android:layout_height="1dp"
             android:background="?android:attr/listDivider" />
 
-    <CheckBox
-            android:id="@+id/use_notification_check_box"
+    <LinearLayout
+            android:id="@+id/notification_settings_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:text="@string/settings_use_notification" />
+            android:orientation="vertical">
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?android:attr/listDivider" />
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/settings_notification_settings"
+                android:textStyle="bold" />
+
+        <TextView
+                android:id="@+id/notification_status_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginTop="4dp" />
+
+        <Button
+                android:id="@+id/notification_settings_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="@string/settings_notification_open_settings" />
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?android:attr/listDivider" />
+
+    </LinearLayout>
 
     <TextView
             android:layout_width="match_parent"
